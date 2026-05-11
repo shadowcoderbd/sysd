@@ -1,0 +1,150 @@
+<h1>Design of a Pub-sub System</h1>
+<h2 id="First-design">First design<a href="#First-design"><span>#</span></a></h2>
+<p>In the previous lesson, we discussed that a producer writes into topics, and consumers subscribe to a topic to read messages from that topic. Since new messages are added at the end of the queue, we can use <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5148400467312640" target="_blank">distributed messaging queues</a> for topics.</p>
+<p>The components we’ll need have been listed below:</p>
+<ul>
+<li>
+<p><strong>Topic queue</strong>: Each topic will be a distributed messaging queue so we can store the messages sent to us from the producer. A producer will write their messages to that queue.</p>
+</li>
+<li>
+<p><strong>Database</strong>: We’ll use a relational database that will store the subscription details. For example, we need to store which consumer has subscribed to which topic so we can provide the consumers with their desired messages. We’ll use a relational database since our consumer-related data is structured and we want to ensure our data integrity.</p>
+</li>
+<li>
+<p><strong>Message director</strong>: This service will read the message from the topic queue, fetch the consumers from the database, and send the message to the consumer queue.</p>
+</li>
+<li>
+<p><strong>Consumer queue</strong>: The message from the topic queue will be copied to the consumer’s queue so the consumer can read the message. For each consumer, we’ll define a separate distributed queue.</p>
+</li>
+<li>
+<p><strong>Subscriber</strong>: When the consumer requests a subscription to a topic, this service will add an entry into the database.</p>
+</li>
+</ul>
+<p>The consumer will subscribe to a topic, and the system will add the subscriber’s details to the database. The producer will write into the topics, and the message director will read the message from the queue, fetch the details to whom it should add the message, and send it to them. The consumers will consume the message from their queue.</p>
+<blockquote>
+<p><strong>Note</strong>: We’ll use fail-over services for the message director and subscriber to guard against failures.</p>
+</blockquote>
+
+<figure class="diagram"><img src="/images/18/3/img_0.svg" alt="Using the distributed messaging queue" loading="lazy" /><figcaption>Using the distributed messaging queue</figcaption></figure>
+<p>Using the distributed messaging queues makes our design simple. However, the huge number of queues needed is a significant concern. If we have millions of subscribers for thousands of topics, defining and maintaining millions of queues is expensive. Moreover, we’ll copy the same message for a topic in all subscriber queues, which is unnecessary duplication and takes up space.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<h2 id="Second-design">Second design<a href="#Second-design"><span>#</span></a></h2>
+<p>Let’s consider another approach to designing a pub-sub system.</p>
+<h3 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h3>
+<p>At a high level, the pub-sub system will have the following components:</p>
+<ul>
+<li>
+<p><strong>Broker</strong>: This server will handle the messages. It will store the messages sent from the producer and allow the consumers to read them.<!-- We will tackle the problems identified in the previous approach using a broker. --></p>
+</li>
+<li>
+<p><strong>Cluster manager</strong>: We’ll have numerous broker servers to cater to our scalability needs. We need a cluster manager to supervise the broker’s health. It will notify us if a broker fails.</p>
+</li>
+<li>
+<p><strong>Storage</strong>: We’ll use a relational database to store consumer details, such as subscription information and retention period.</p>
+</li>
+<li>
+<p><strong>Consumer manager</strong>: This is responsible for managing the consumers. For example, it will verify if the consumer is authorized to read a message from a certain topic or not.</p>
+</li>
+</ul>
+<p>Besides these components, we also have the following design considerations:</p>
+<ul>
+<li>
+<p><strong>Acknowledgment</strong>:  An acknowledgment is used to notify the producer that the received message has been stored successfully. The system will wait for an acknowledgment from the consumer if it has successfully consumed the message.</p>
+</li>
+<li>
+<p><strong>Retention time</strong>: The consumers can specify the retention period time of their messages. The default will be seven days, but it is configurable. Some applications like banking applications require the data to be stored for a few weeks as a business requirement, while an analytical application might not need the data after consumption.</p>
+</li>
+</ul>
+
+<p></p>
+<figure class="diagram"><img src="/images/18/3/img_1.svg" alt="High-level design of a pub-sub system" loading="lazy" /><figcaption>High-level design of a pub-sub system</figcaption></figure>
+<p></p><p></p><p></p>
+<p>Let’s understand the role of each component in detail.</p>
+<h2 id="Broker">Broker<a href="#Broker"><span>#</span></a></h2>
+<p>The broker server is the core component of our pub-sub system. It will handle write and read requests. A broker will have multiple topics where each topic can have multiple <strong>partitions</strong> associated with it. We use partitions to store messages in the local storage for persistence. Consequently, this improves availability.  Partitions contain messages encapsulated in <strong>segments</strong>.
+Segments help identify the start and end of a message using an offset address. Using segments, consumers consume the message of their choice from a partition by reading from a specific offset address. The illustration below depicts the concept that has been described above.</p>
+
+<figure class="diagram"><img src="/images/18/3/img_2.svg" alt="A depiction of how messages are stored within segments inside a partition" loading="lazy" /><figcaption>A depiction of how messages are stored within segments inside a partition</figcaption></figure>
+<p>As we know, a <strong>topic</strong> is a persistent sequence of messages stored in the local storage of the broker.  Once the data has been added to the topic, it cannot be modified. Reading and writing a message from or to a topic is an I/O task for computers, and scaling such tasks is challenging. This is the reason we split the topics into multiple partitions. The data belonging to a single topic can be present in numerous partitions. For example, let’s assume have Topic A and we allocate three partitions for it. The producers will send their messages to the relevant topic. The messages received will be sent to various partitions on basis of the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">round-robin algorithm</span></span>. We’ll use a variation of round-robin: <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">weighted round-robin</span></span>. The following slides show how the messages are stored in various partitions belonging to a single topic.</p>
+
+<figure class="diagram"><img src="/images/18/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_7.svg" alt="" loading="lazy" /></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<p></p>
+<p>We’ll allocate the partitions to various brokers in the system. This just means that different partitions of the same topic will be in different brokers. We’ll follow strict ordering in partitions by adding newer content at the end of existing messages.</p>
+<!--
+Each message will be stored as a **_segment_**.
+
+ that are actually the log files stored on the local storage of the broker. Using segments allows quick entering of messages that boosts availability. 
+
+, which are stored using segments. 
+
+-->
+<p>Consider the slides below. We have various brokers in our system. Each broker has different topics. The topic is divided into multiple partitions.</p>
+
+<figure class="diagram"><img src="/images/18/3/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_10.svg" alt="" loading="lazy" /></figure>
+<p>We discussed that a message will be stored in a segment. We’ll identify each segment using an offset. Since these are immutable records, the readers are independent and they can read messages anywhere from this file using the necessary API functions. The following slides show the segment level detail.</p>
+
+<figure class="diagram"><img src="/images/18/3/img_11.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/18/3/img_12.svg" alt="" loading="lazy" /></figure>
+<p>The broker solved the problems that our first design had. We avoided a large number of queues by partitioning the topic. We introduced parallelism using partitions that avoided bottlenecks while consuming the message.</p>
+<h2 id="Cluster-manager">Cluster manager<a href="#Cluster-manager"><span>#</span></a></h2>
+<p>We’ll have multiple brokers in our cluster. The cluster manager will perform the following tasks:</p>
+<ul>
+<li>
+<p><strong>Broker and topics registry</strong>: This stores the list of topics for each broker.</p>
+</li>
+<li>
+<p><strong>Manage replication</strong>: The cluster manager manages replication by using the leader-follower approach. One of the brokers is the leader. If it fails, the manager decides who the next leader is. In case the follower fails, it adds a new broker and makes sure to turn it into an updated follower. It updates the metadata accordingly. We’ll keep three replicas of each partition on different brokers.</p>
+</li>
+</ul>
+<!--#### Storage
+
+We want to keep the data consistent, so we will use the distributed key-value storage, where the `unique_ID` is the key, and the `message` is the value. This will also increase our fetching speed.
+
+
+![](/api/collection/10370001/4941429335392256/page/5367894619193344/image/5045128699314176?page_type=collection_lesson)
+-->
+<figure class="diagram"><img src="/images/18/3/img_13.svg" alt="Replication at the partitioning level" loading="lazy" /><figcaption>Replication at the partitioning level</figcaption></figure>
+<h2 id="Consumer-manager">Consumer manager<a href="#Consumer-manager"><span>#</span></a></h2>
+<p>The consumer manager will manage the consumers. It has the following responsibilities:</p>
+<ul>
+<li>
+<p><strong>Verify the consumer</strong>: The manager will fetch the data from the database and verify if the consumer is allowed to read a certain message. For example, if the consumer has subscribed to Topic A (but not to Topic B), then it should not be allowed to read from Topic B. The consumer manager verifies the consumer’s request.</p>
+</li>
+<li>
+<p><strong>Retention time management</strong>: The manager will also verify if the consumer is allowed to read the specific message or not. If, according to its retention time, the message should be inaccessible to the consumer, then it will not allow the consumer to read the message.</p>
+</li>
+<li>
+<p><strong>Message receiving options management</strong>: There are two methods for consumers to get data. The first is that our system pushes the data to its consumers. This method may result in overloading the consumers with continuous messages. Another approach is for consumers to request the system to read data from a specific topic. The drawback is that a few consumers might want to know about a message as soon as it is published, but we do not support this function.</p>
+<p>Therefore, we’ll support both techniques. Each consumer will inform the broker that it wants the data to be pushed automatically or it needs the data to read itself. We can avoid overloading the consumer and also provide liberty to the consumer. We’ll save this information in the relational database along with other consumer details.</p>
+</li>
+<li>
+<p><strong>Allow multiple reads</strong>: The consumer manager stores the offset information of each consumer. We’ll use a key-value to store offset information against each consumer. It allows fast fetching and increases the availability of the consumers. If Consumer 1 has read from offset 0 and has sent the acknowledgment, we’ll store it. So, when the consumer wants to read again, we can provide the next offset to the reader for reading the message.</p>
+</li>
+</ul>
+<h2 id="Finalized-design">Finalized design<a href="#Finalized-design"><span>#</span></a></h2>
+<p>The finalized design of our pub-sub system is shown below.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/18/3/img_14.svg" alt="Finalized design" loading="lazy" /><figcaption>Finalized design</figcaption></figure>
+<p></p>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>We saw two designs of pub-sub, using queues and using our custom storage optimized for writing and reading small-sized data.</p>
+<p>There are numerous use cases of a pub-sub. Due to decoupling between producers and consumers, the system can scale dynamically, and the failures are well-contained. Additionally, due to proper accounting of data consumption, the pub-sub is a system of choice for a large-scale system that produces enormous data.  We can determine precisely which data is needed and not needed.</p>
+<!--
+
+We have completed the design of a distributed pub-sub system adhering to functional and non-functional requirements. 
+
+Typical systems today tend to operate on geographically dispersed data centers. For processing user traffic, their servers host ephemeral application modules. Seasonal traffic spikes, latency, and network data corruption all add to the complexity of information systems coping with today's data deluge.
+
+The pub-sub system allows asynchronous communication among various clients and consumers. Its decoupled nature makes it an excellent choice for managing the architecture of dynamically scaled systems. Pub-sub allows scaling without overburdening system components' program logic.
+
+-->

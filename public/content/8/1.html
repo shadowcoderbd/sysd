@@ -1,0 +1,42 @@
+<h1>Introduction to Load Balancers</h1>
+<h2 id="What-is-load-balancing?">What is load balancing?<a href="#What-is-load-balancing?"><span>#</span></a></h2>
+<p>Millions of requests could arrive per second in a typical data center. To serve these requests, thousands (or a hundred thousand) servers work together to share the load of incoming requests.</p>
+<blockquote>
+<p><strong>Note:</strong> Here, it’s important that we consider how the incoming requests will be divided among all the available servers.</p>
+</blockquote>
+<p>A <strong>load balancer</strong> (<strong>LB</strong>) is the answer to the question. The job of the load balancer is to fairly divide all clients’ requests among the pool of available servers. Load balancers perform this job to avoid overloading or crashing servers.</p>
+<p>The load balancing layer is the first point of contact within a data center after the firewall. A load balancer may not be required if a service entertains a few hundred or even a few thousand requests per second. However, for increasing client requests, load balancers provide the following capabilities:</p>
+<ul>
+<li><strong>Scalability</strong>: By adding servers, the capacity of the application/service can be increased seamlessly. Load balancers make such upscaling or downscaling transparent to the end users.</li>
+<li><strong>Availability</strong>: Even if some servers go down or suffer a fault, the system still remains available. One of the jobs of the load balancers is to hide faults and failures of servers.</li>
+<li><strong>Performance</strong>: Load balancers can forward requests to servers with a lesser load so the user can get a quicker response time. This not only improves performance but also improves resource utilization.</li>
+</ul>
+<p>Here’s an abstract depiction of how load balancers work:</p>
+
+<figure class="diagram"><img src="/images/8/1/img_0.svg" alt="Simplified working of a load balancer" loading="lazy" /><figcaption>Simplified working of a load balancer</figcaption></figure>
+<h2 id="Placing-load-balancers">Placing load balancers<a href="#Placing-load-balancers"><span>#</span></a></h2>
+<p>Generally, LBs sit between clients and servers. Requests go through to servers and back to clients via the load balancing layer. However, that isn’t the only point where load balancers are used.</p>
+<p>Let’s consider the three well-known groups of servers. That is the web, the application, and the database servers. To divide the traffic load among the available servers, load balancers can be used between the server instances of these three services in the following way:</p>
+<ul>
+<li>Place LBs between end users of the application and web servers/application gateway.</li>
+<li>Place LBs between the web servers and application servers that run the business/application logic.</li>
+<li>Place LBs between the application servers and database servers.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/8/1/img_1.svg" alt="Possible usage of load balancers in a three-tier architecture" loading="lazy" /><figcaption>Possible usage of load balancers in a three-tier architecture</figcaption></figure>
+<p>In reality, load balancers can be potentially used between any two services with multiple instances within the design of a system.</p>
+<h2 id="Services-offered-by-load-balancers">Services offered by load balancers<a href="#Services-offered-by-load-balancers"><span>#</span></a></h2>
+<p>LBs not only enable services to be scalable, available, and highly performant, they offer some key services like the following:</p>
+<ul>
+<li><strong>Health checking</strong>: LBs use the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">heartbeat protocol</span></span> to monitor the health and, therefore, reliability of end-servers. Another advantage of health checking is the improved user experience.</li>
+<li><strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">TLS termination</span></span></strong>: LBs reduce the burden on end-servers by handling TLS termination with the client.</li>
+<li><strong>Predictive analytics</strong>: LBs can predict traffic patterns through analytics performed over traffic passing through them or using statistics of traffic obtained over time.</li>
+<li><strong>Reduced human intervention</strong>: Because of LB automation, reduced system administration efforts are required in handling failures.</li>
+<li><strong>Service discovery</strong>: An advantage of LBs is that the clients’ requests are forwarded to appropriate hosting servers by inquiring about the  <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">service registry</span></span>.</li>
+<li><strong>Security</strong>: LBs may also improve security by mitigating attacks like <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">denial-of-service (DoS)</span></span> at different layers of the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">OSI model</span></span> (layers 3, 4, and 7).</li>
+</ul>
+<p>As a whole, load balancers provide  <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">flexibility</span></span>,  <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">reliability</span></span>, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">redundancy</span></span>, and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">efficiency</span></span> to the overall design of the system.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Food for thought</p>
+</span></span></div>
+<p>In the coming lessons, we’ll see how load balancers can be used in complex applications and which type of load balancer is appropriate for which use case.</p>

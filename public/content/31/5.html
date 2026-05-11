@@ -1,0 +1,98 @@
+<h1>Client-side Load Balancer for Twitter</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>In the previous lesson, we conceived the design of Twitter using a dedicated load balancer. Although this method works, and we’ve employed it in other designs, it may not be the optimal choice for Twitter. This is because Twitter offers a variety of services on a large scale, using numerous instances and dedicated load-balancers are not a suitable choice for such systems. To understand the concept better, let’s understand the history of Twitter’s design.</p>
+<h3 id="Twitter’s-design-history">Twitter’s design history<a href="#Twitter%E2%80%99s-design-history"><span>#</span></a></h3>
+<p>The initial design of Twitter included a monolithic (Ruby on Rails) application with a MySQL database. As Twitter scaled, the number of services increased and the MySQL database was sharded. A monolithic application design like this is a disaster because of the following reasons:</p>
+<ul>
+<li>A large number of developers work on the same codebase, which makes it difficult to update individual services.</li>
+<li>One service’s upgrade process may lead to the breaking of another.</li>
+<li>Hardware costs grow because a single machine performs numerous services.</li>
+<li>Recovery from failures is both time-consuming and complex.</li>
+</ul>
+<p>With the way Twitter has evolved, the only way out was many microservices where each service can be served through hundreds or thousands of instances.</p>
+<h3 id="Client-side-load-balancing">Client-side load balancing<a href="#Client-side-load-balancing"><span>#</span></a></h3>
+<p>In a client-side load balancing technique, there’s no dedicated intermediate load-balancing infrastructure between any two services with a large number of instances.  A node requesting a set of nodes for a service has a built-in load balancer. We refer to the requesting node or service as a client. The client can use a variety of techniques to select a suitable instance to request the service. The illustration below depicts the concept of client-side load balancing. Every new arriving service or instance will register itself with a service registry so that other services are aware of its existence</p>
+
+<figure class="diagram"><img src="/images/31/5/img_0.svg" alt="How client-side load balancing works" loading="lazy" /><figcaption>How client-side load balancing works</figcaption></figure>
+<p>In the diagram above, Service A has to choose a relatively less-burdened instance of Service B. Therefore, it will make use of the load balancer component inside it to choose the most suitable instance of Service B. Using the same client-side load balancing method, Service B will talk to other services. It’s clear that Service A is the client when it is calling Service B, whereas Service B is the client when it is talking to Service C and D. As a result, there will be no central entity doing load balancing. Instead, every node will do load balancing of its own.</p>
+<p><strong>Advantages</strong>: Using client-side load-balancing has the following benefits.</p>
+<ul>
+<li>Less hardware infrastructure/layers are required to do load balancing.</li>
+<li>Network latency will be reduced because of no intermediate hop.</li>
+<li>Client-side load balancers eliminate bandwidth bottlenecks. On the other hand, in a dedicated load balancing layer, all requests go through a single machine that can choke if traffic multiplies.</li>
+<li>Fewer points of failure in the overall system.</li>
+<li>There is no end users queue waiting for the resource (server) for the particular services because many load balancers are routing the traffic. Eventually, it increases the quality of experience (QoE).</li>
+</ul>
+<p>Many real-world applications like Twitter, Yelp, Netflix, and others use client-side load balancing. We’ll discuss the client-side load balancing techniques used by Twitter in the next section.</p>
+<h2 id="Client-side-load-balancing-in-Twitter">Client-side load balancing in Twitter<a href="#Client-side-load-balancing-in-Twitter"><span>#</span></a></h2>
+<p>Twitter uses a client-side load balancer referred to as <strong>deterministic <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">aperture</span></span></strong> that is part of a larger RPC framework called Finagle. <strong>Finagle</strong> is a <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">protocol-agnostic</span></span>, open-source, and asynchronous RPC library.</p>
+<blockquote>
+<p><strong>Note:</strong> Consider the following question. What does the client-side load balancer of Twitter balance on? That is, what parameters are used to fairly balance the load across different servers?</p>
+</blockquote>
+<p>Twitter primarily uses two distributions to measure the effectiveness of a load balancer:</p>
+<ol>
+<li>The distribution of requests (OSI layer 7)</li>
+<li>The distribution of sessions (OSI layer 5)</li>
+</ol>
+<p>Although requests are the key metric, sessions are an important attribute for achieving a fair distribution. Therefore, we’ll develop techniques for fair distribution of requests as well as sessions. Let’s start with the simple technique of Power of Two Random Choices (P2C) for request distribution first.</p>
+<h3 id="Request-distribution-using-P2C">Request distribution using P2C<a href="#Request-distribution-using-P2C"><span>#</span></a></h3>
+<p>The <strong>P2C technique</strong> for request distribution gives uniform request distribution as long as sessions are uniformly distributed. In P2C, the system randomly picks two unique instances (servers) against each request, and selects the one with the least amount of load. Let’s look at the illustration below to understand P2C.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_1.svg" alt="Power of two random choices" loading="lazy" /><figcaption>Power of two random choices</figcaption></figure>
+<p>P2C is based on the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">simple idea</span></span> that comparison between two randomly selected nodes provides load distribution that is exponentially better than random selection</p>
+<p>Now that we’ve established how to distribute requests fairly, let’s explore different techniques of session distribution.</p>
+<h3 id="Session-distribution">Session distribution<a href="#Session-distribution"><span>#</span></a></h3>
+<p><strong>Solution 1</strong>: We’ll start our discussion with the <strong>Mesh topology</strong>. Using this approach, each client (load balancer) starts a session with all of the given instances of a service. The illustration below represents the concept of mesh topology.</p>
+
+<p></p>
+<p class="caption"><em>Mesh topology</em></p>
+<p>Obviously, this method is fair because the sessions are evenly distributed. However, the even distribution of sessions comes at a very high cost, especially when scaled to thousands of servers. Apart from that, some unhealthy or stale sessions may lead to failures.</p>
+<p><strong>Solution 2</strong>: To solve the problem of scalability with solution 1, Twitter devised another solution called <strong>random aperture</strong>. This technique randomly chooses a subset of servers for session establishment.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_2.svg" alt="Random aperture" loading="lazy" /><figcaption>Random aperture</figcaption></figure>
+<p>Of course, random selection will reduce the number of established sessions as we can see in the diagram above. However, the question is, how many servers will be chosen randomly? This is not an easy question to answer and the answer varies, depending on the request concurrency of a client.</p>
+<p>To answer the question above, Twitter installed a <strong>feedback controller</strong> inside the random aperture that decides the subset size based on the client’s load. As a result, we’re able to reduce the session load and ensure scalability. However, this solution isn’t fair. We can see the imbalance in the illustration above such that <strong>Server 4</strong> has no session whereas <strong>Server 0</strong> has three sessions.</p>
+<p>This imbalance creates problems such as idle servers, high load on a few servers, and so on. Therefore, we need a solution that is both fair and scalable.</p>
+<p><strong>Solution 3</strong>: We learned from solution 2 that we can scale by subsetting the number of session establishments. However, we failed to do the session distribution fairly. To resolve the problem, Twitter came up with a <strong>deterministic aperture</strong> solution. The key benefits of this approach are:</p>
+<ul>
+<li>Little coordination is required between clients and servers to converge on a solution.</li>
+<li>Minimal disruption occurs if there are any changes in the number of clients or server instances for whatever reason.</li>
+</ul>
+<p>For this solution, we represent clients and servers in a ring with equally distanced intervals, where each object on the ring represents the node or server labeled with a number. The illustration below shows what Twitter refers to as the discrete ring coordinates (that is, a specific point on the ring).</p>
+
+<figure class="diagram"><img src="/images/31/5/img_3.svg" alt="Ring coordinates" loading="lazy" /><figcaption>Ring coordinates</figcaption></figure>
+<p>Now, we compose client and server rings to derive a relationship between them. We’ve also defined an aperture size of 3. Each client will create a session with three servers in the ring. Clients select a server by circulating clockwise in the ring. This approach is similar to consistent hashing, except that here we guarantee equal distribution of servers across the ring. Let’s see the illustration below where clients have sessions with servers chosen from the given list of servers, respectively.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_4.svg" alt="Merge client and server ring coordinates" loading="lazy" /><figcaption>Merge client and server ring coordinates</figcaption></figure>
+<p>In the diagram above, client 0 establishes sessions with servers 4, 5, and 0. Client 1 establishes sessions with servers 0, 1, and 2, whereas Client 2 establishes sessions with servers 2, 3, and 4. When the aperture rotates or moves in the given subset of arrays of the same size, each client’s service has new servers available to create sessions. The number of sessions established per server is shown in the figure below.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_5.svg" alt="Number of sessions established per server" loading="lazy" /><figcaption>Number of sessions established per server</figcaption></figure>
+<p>We can see that there’s no idle server or server with a high load in the histogram graph above. Thus, we achieved a fair distribution for the clients belonging to the same service. It’s clear that we’ve half resolved the problem by improving the session distribution among servers as compared to the random aperture (solution 02). However, the problem of unfair distribution can escalate as the number of clients grows. In that case, some servers will get crowded when more than one client (service) talks to the back-end servers. Let’s see the illustration below to understand the problem.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_6.svg" alt="Two different clients creating session with backend servers" loading="lazy" /><figcaption>Two different clients creating session with backend servers</figcaption></figure>
+<p>The illustration above depicts that the problem compounded as we increased the number of clients (services). The solution is continuous ring coordinates where we derive relationships between clients and servers using overlapping ring slices, rather than specific points on the rings. The important thing here is that the overlapping of rings can be partial since servers on the ring may not have enough instances to divide among the clients equally. Let’s look at the illustration below.</p>
+
+<figure class="diagram"><img src="/images/31/5/img_7.svg" alt="Overlapping among clients' services and servers" loading="lazy" /><figcaption>Overlapping among clients' services and servers</figcaption></figure>
+<p>The illustration above shows that clients 0 and 1 (symmetrically) share the same server (server 1). It means that there is fractional overlapping concerning the ring coordinates. However, this overlapping can lead to asymmetric sharing as well. Symmetric or asymmetric, the load balancing can be done through P2C. For instance, in the diagram above, servers 1 and 3 will receive half the load that server 2 gets. This means that a server can receive more or less load, depending on its overlapped slice size with a client.</p>
+<p>Now, we know how to map clients to the subset of the servers. We’ll use P2C with continuous ring coordinates. The client will pick points (coordinations) in its range instead of picking the instance of the server. The selection process of clients to create sessions with backend servers are as follows:</p>
+<ol>
+<li>
+<p>Pick two coordinates (offset, offset + width) within its range and map these coordinates to the discrete instances (servers).</p>
+</li>
+<li>
+<p>Select the one instance with the most negligible load from two chosen instances (P2C) by its degree of intersection.</p>
+</li>
+</ol>
+<!--
+When we compared instances load, there is a chance that some instances (servers) could be picked less due to smaller intersecting slices. We need to normalize the smaller intersecting slice inversely proportional to the intersection size to avoid this bias. -->
+<blockquote>
+<p><strong>Note:</strong> Continuous aperture is scalable and fair at the cost of an additional session over boundary node due to partial overlapping. It is also able to achieve little coordination and minimal disruption.</p>
+</blockquote>
+<p>Let’s look at the below table to get an overview of the discussed approaches.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="173"/><col width="176"/><col width="169"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Approach</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Scalability</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Fair distribution</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Cost effectiveness</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>Mesh topology</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✖️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✖️</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>Random aperture</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✖️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>Deterministic aperture</strong></p><p class="ql-align-center"><strong>(discrete ring)</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>weak</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>Deterministic aperture</strong></p><p class="ql-align-center"><strong>(continuous ring)</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><strong>✔️</strong></p></td></tr></tbody></table>
+<p></p>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>This design problem highlights that tweaking the performance of common building blocks and utilizing the right (rich) combination of them is necessary for real-world services. Our needs from one service to the next will dictate which design point we choose in our solution space. In this chapter, we saw examples of how Twitter uses a combination of data stores and custom algorithms for load-balancing.</p>
+
+<p></p>

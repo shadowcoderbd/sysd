@@ -1,0 +1,58 @@
+<h1>Facebook, WhatsApp, Instagram, Oculus Outage</h1>
+<p>In October 2021, Facebook experienced a global outage for about six hours, affecting its other affiliates, including Messenger, WhatsApp, Mapillary, Instagram, and Oculus. Popular media reported the impact of this failure prominently. The <em>New York Times</em> reported the following headline: “Gone in Minutes, Out for Hours: Outage Shakes Facebook.”</p>
+<p>According to one estimate, this outage cost Facebook about $100 million in revenue losses and many billions due to the declining stock of the company.</p>
+<p>Let’s look at the sequence of events that caused this global problem.</p>
+<h2 id="The-sequence-of-events">The sequence of events<a href="#The-sequence-of-events"><span>#</span></a></h2>
+<p>The following sequence of events led to the outage of Facebook and its accompanied services:</p>
+<ul>
+<li>A routine maintenance system was needed to find out the spare capacity on Facebook’s backbone network.</li>
+<li>Due to a configuration error, the maintenance system disconnected all the data centers from each other on the backbone network. Earlier, an automated configuration review tool was used to look for any issues in the configuration, but tools like these aren’t perfect. In this specific case, the review tool missed the problems present in a configuration.</li>
+<li>The authoritative domain name systems (DNSs) of Facebook had a health check rule that if it couldn’t reach Facebook’s internal data centers, it would stop replying to client DNS queries by withdrawing the routes.</li>
+<li>When the networks routes where Facebook’s authoritative DNS was hosted were withdrawn, all cached mapping of human-readable names to IPs soon timed out at all public DNS resolvers. When a client resolves <a href="http://www.facebook.com/" target="_blank">www.facebook.com</a>, the DNS resolver first goes to one of the root DNS servers, which provides a list of authoritative DNS servers for <code>.com</code>. The resolver connects to one of them, and then they provide IPs for the authoritative DNS servers for Facebook. However, after route withdrawal, it was impossible to reach them.</li>
+<li>Then, no one was able to reach Facebook and its subsidiaries.</li>
+</ul>
+<p>The slides below depict the events in pictorial form.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/39/2/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/39/2/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/39/2/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/39/2/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/39/2/img_4.svg" alt="" loading="lazy" /></figure>
+<h2 id="Analysis">Analysis<a href="#Analysis"><span>#</span></a></h2>
+<p>Some of the key takeaways from the series of events shown above are the following:</p>
+<ul>
+<li><strong>From common activity to catastrophe</strong>: The withdrawal or addition of the network routes is a relatively common activity. The confluence of bugs (first a faulty configuration, and then a bug in an audit tool not able to detect such a problem) triggered a chain of events, which resulted in cascading failures. <strong>A cascading failure</strong> is when one failure can trigger another failure, ultimately bringing the whole system down.</li>
+<li><strong>Reasons for slow restoration</strong>: It might seem odd that it took six hours to restore the service. Wasn’t it easy to reannounce the withdrawn routes? At the scale that Facebook is operating on, rarely is anything done manually, and there are automated systems to perform changes. The internal tools probably relied on the DNS infrastructure, and when all data centers are offline from the backbone, it would have been virtually impossible to use those tools. Manual intervention would have been necessary. Manually bootstrapping a system of this scale isn’t easy. The usual physical and digital security mechanisms that were in place made it a slow process to intervene manually.</li>
+<li><strong>Low probability events can occur</strong>: In retrospect, it might seem odd that authoritative DNS systems disconnect themselves if internal data centers aren’t accessible. This is another example where a very rare event, such as none of the data centers being accessible, happened, triggering another event.</li>
+<li><strong>Pitfalls of automation</strong>: Facebook has been an early advocate of automating network configuration changes, effectively saying that software can do a better job of running the network than humans, who are more prone to errors. However, software can have bugs, such as this one.</li>
+</ul>
+
+<h2 id="Lessons-learned">Lessons learned<a href="#Lessons-learned"><span>#</span></a></h2>
+<ul>
+<li><strong>Ready operations team</strong>: There can be a hidden single point of failure in complex systems. The best defense against such faults is to have the operations team ready for such an occurrence through regular training. Thinking clearly under high-stress situations becomes necessary to deal with such events.</li>
+<li><strong>Simple system design</strong>: As systems get bigger, they become more complex, and they have emergent behaviors. To understand the overall behavior of the system, it might not be sufficient to understand only the behavior of its components. Cascading failures can arise. This is one reason to keep the system design as simple as possible for the current needs and evolve the design slowly. Unfortunately, there’s no perfect solution to deal with this problem. We should accept the possibility of such failures, perform continuous monitoring, have the ability to solve issues when they arise, and learn from the failures to improve the system.</li>
+<li><strong>Contingency plan</strong>: Some third-party services rely on Facebook for single sign-on. When the outage occurred, third-party services were up and running, but their clients were unable to use them because Facebook’s login facility was also unavailable. This is another example of assuming that some service will always remain available and of a hidden single point of failure.</li>
+<li><strong>Hosting DNS to independent third-party providers</strong>: There are a few services that are so robustly designed and perfected over time that their clients start assuming that the service is and will always be 100% available. The DNS is one such service, and it has been very carefully crafted. Designers often assume that it will never fail. Hosting DNS to independent third-party providers might be a way to guard against such problems. DNS allows multiple authoritative servers, and an organization might have many at different places. Although, we should note that DNS at Facebook’s scale isn’t simple, is tightly connected to their backbone infrastructure, and changes frequently. Delegating such a piece to an independent third party is expensive, and it might reveal internal service details. So, there can be a trade-off between business and robustness needs.</li>
+<li><strong>Trade-offs</strong>: There can be some surprising trade-offs. An example here is the need for data security and the need for rapid manual repair. Because so many physical and digital safeguards were in place, manual intervention was slow. This is a catch-22 situation—lowering security needs can cause immense trouble, and slow repair for such events can also make it hard for the companies. The hope is that the need for such repairs is a very rare event.</li>
+<li><strong>Surge in load</strong>: The failure of large players disrupts the entire Internet. Third-party public resolvers, such as Google and Cloudflare, saw a surge in the load due to unsuccessful DNS retries.</li>
+<li><strong>Resuming the service</strong>: Restarting a large service isn’t as simple as flipping a switch. When the load suddenly becomes almost zero, turning them up suddenly may lead to a many megawatt uptick in power usage. This might even cause issues for the electric grid. Complex systems usually have a steady state, and if they go out of that steady state, care must be taken to bring them back.</li>
+</ul>
+<!---
+Referenes:
+Facebook Engineering https://engineering.fb.com/2021/10/05/networking-traffic/outage-details/
+
+Stock loss: https://www.bloomberg.com/news/articles/2021-10-04/zuckerberg-loses-7-billion-in-hours-as-facebook-plunges
+
+loss in revenue: https://fortune.com/2021/10/04/facebook-outage-cost-revenue-instagram-whatsapp-not-working-stock/
+
+Wikipedia:
+https://en.wikipedia.org/wiki/2021_Facebook_outage#cite_note-nyc-5
+
+Systems Approach blog:
+https://systemsapproach.substack.com/p/what-can-we-learn-from-internet-outages
+
+-->
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>

@@ -1,0 +1,101 @@
+<h1>In-depth Investigation of CDN: Part 1</h1>
+<p>In this lesson, we’ll go into the details of certain concepts, such as CDN models and multi-tier/layered CDN architecture, that we mentioned in the previous lessons. We’ll also introduce some new concepts, including dynamic content caching optimization and various techniques to discover the nearby proxy servers in CDNs.</p>
+<h2 id="Content-caching-strategies-in-CDN">Content caching strategies in CDN<a href="#Content-caching-strategies-in-CDN"><span>#</span></a></h2>
+<p>Identifying content to cache is important in delivering up-to-date and popular web content. To ensure timely updates, two classifications of CDNs are used to get the content from the origin servers.</p>
+<h3 id="Push-CDN">Push CDN<a href="#Push-CDN"><span>#</span></a></h3>
+<p>Content gets sent automatically to the CDN proxy servers from the origin server in the push CDN model. The content delivery to the CDN proxy servers is the content provider’s responsibility. Push CDN is appropriate for static content delivery, where the origin server decides which content to deliver to users using the CDN. The content is pushed to proxy servers in various locations according to the content’s popularity. If the content is rapidly changing, the push model might struggle to keep up and will do redundant content pushes.</p>
+<!--
+The main problem with the Push approach is that if content updates frequently and the origin server serves other heavy traffic, this frequent sync will create more trouble. For instance, the origin server will be busy publishing the updated content and putting the additional traffic in the queue. At one time, the queue will be increasing exponentially and would be difficult to handle. 
+-->
+
+<figure class="diagram"><img src="/images/11/4/img_0.svg" alt="Push content to PoPs" loading="lazy" /><figcaption>Push content to PoPs</figcaption></figure>
+<h3 id="Pull-CDN">Pull CDN<a href="#Pull-CDN"><span>#</span></a></h3>
+<p>A CDN pulls the unavailable data from origin servers when requested by a user. The proxy servers keep the files for a specified amount of time and then remove them from the cache if they’re no longer requested to balance capacity and cost.</p>
+<p>When users request web content in the pull CDN model, the CDN itself is responsible for pulling the requested content from the origin server and serving it to the users. Therefore, this type of CDN is more suited for serving dynamic content.</p>
+
+<figure class="diagram"><img src="/images/11/4/img_1.svg" alt="Content pull from origin server to the CDN PoPs" loading="lazy" /><figcaption>Content pull from origin server to the CDN PoPs</figcaption></figure>
+<p>As stated, the push CDN is mostly used for serving static content. Since static content is served to a wide range of users for longer than dynamic content, the push CDN scheme maintains more replicas than the pull CDN, thus improving availability. On the other hand, the pull CDN is favored for frequently changing content and a high traffic load. Low storage consumption is one of the main benefits of the pull CDN.</p>
+
+<blockquote>
+<p><strong>Note:</strong> Most content providers use both pull and push CDN caching approaches to get the benefits of both.</p>
+</blockquote>
+<h2 id="Dynamic-content-caching-optimization">Dynamic content caching optimization<a href="#Dynamic-content-caching-optimization"><span>#</span></a></h2>
+<p>Since dynamic content often changes, it’s a good idea to cache it optimally. This section deals with the optimization of frequently changing content.</p>
+<p>Certain dynamic content creation requires the execution of scripts that can be executed at proxy servers instead of running on the origin server. Dynamic data can be generated using various parameters, which can be beneficial if executed at the proxy servers. For example, we can generate dynamic content based on user location, time of day at a location, third-party APIs specific to a location (for instance, weather API), and so on. So, it’s optimal to run the scripts at proxy servers instead of the origin servers.</p>
+<p>To reduce the communication between the origin server and proxy servers and storage requirements at proxy servers, it’s useful to employ compression techniques as well. For example, Cloudflare uses Railgun to compress dynamic content.</p>
+<!--
+Railgun consists of *listener* installed on the origin server and *sender* installed on the Cloudflare data centers. When an HTTP request comes to Cloudflare, it checks whether the request is for the Railgun-enabled website. If yes, the HTTP request is routed to the *sender*; otherwise, standard HTTP is used. The *sender* transforms the request into a compressed binary chunk and transmits it to the respective *listener*. The *listener* services the request and performs an HTTP request to the origin server. Railgun uses the cache techniques based on the page version comparison to determine the changed data from the previous one and achieve around 99.6% compression. 
+-->
+<p>Another popular approach for dynamic data compression is <strong>Edge Side Includes (ESI)</strong> markup language. Usually, a small portion of the web pages changes in a certain time. It means fetching a full web page on each small change contains a lot of redundant data. To resolve this performance penalty, ESI specifies where content was changed so that the rest of the web page content can be cached. It assembles dynamic content at the CDN edge server or client browser. ESI isn’t standardized yet by the World Wide Web Consortium (W3C), but many CDN providers use it.</p>
+<blockquote>
+<p><strong>Note</strong>: <strong>Dynamic Adaptive Streaming one HTTP (DASH)</strong> uses a manifest file with URIs of the video with different resolutions so that the client can fetch whatever is appropriate as per prevailing network and end node conditions. Netflix uses a proprietary DASH version with a Byte-range in the URL for further content request and delivery optimization.</p>
+</blockquote>
+<h2 id="Multi-tier-CDN-architecture">Multi-tier CDN architecture<a href="#Multi-tier-CDN-architecture"><span>#</span></a></h2>
+<p>The content provider sends the content to a large number of clients through a CDN. The task of distributing data to all the CDN proxy servers simultaneously is challenging and burdens the origin server significantly. CDNs follow a tree-like structure to ease the data distribution process for the origin server. The edge proxy servers have some peer servers that belong to the same hierarchy. This set of servers receives data from the parent nodes in the tree, which eventually receive data from the origin servers. The data is copied from the origin server to the proxy servers by following different paths in the tree.</p>
+<p>The tree structure for data distribution allows us to scale our system for increasing users by adding more server nodes to the tree. It also reduces the burden on the origin server for data distribution. A CDN typically has one or two tiers of proxy servers (caches). The following illustration shows the two tiers of proxy servers:</p>
+
+<figure class="diagram"><img src="/images/11/4/img_2.svg" alt="Data distribution among CDN proxy servers" loading="lazy" /><figcaption>Data distribution among CDN proxy servers</figcaption></figure>
+<p>Whenever a new proxy server enters the tree of a CDN, it requests the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">control core</span></span>, which maintains information on all the proxy servers in the CDN and provides initial content with the configuration data.</p>
+<p>Research shows that many contents have long-tail distribution. This means that, at some point, only a handful of content is very popular, and then we have a long tail of less popular content. Here, a <strong>multi-layer cache</strong> might be used to handle long-tail content.</p>
+
+<figure class="diagram"><img src="/images/11/4/img_3.svg" alt="Many kinds of data exhibit the long-tailed phenomenon" loading="lazy" /><figcaption>Many kinds of data exhibit the long-tailed phenomenon</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p>Now that we’ve seen a way to distribute content from the origin server to all the proxy servers of the CDN, we should also educate ourselves on how users can use these proxy servers to get the data more efficiently. We’ll discuss how the nearest proxy server is chosen when clients make requests and how the CDN is located in the upcoming sections of this lesson.</p>
+
+<h2 id="Find-the-nearest-proxy-server-to-fetch-the-data">Find the nearest proxy server to fetch the data<a href="#Find-the-nearest-proxy-server-to-fetch-the-data"><span>#</span></a></h2>
+<p>It’s vital for the user to fetch data from the nearest proxy server because the CDN aims to reduce user-perceived latency by bringing the data close to the user. However, the question remains of how users worldwide request data from the nearest proxy server. The goal of this section is to answer that question.</p>
+<h3 id="Important-factors-that-affect-the-proximity-of-the-proxy-server">Important factors that affect the proximity of the proxy server<a href="#Important-factors-that-affect-the-proximity-of-the-proxy-server"><span>#</span></a></h3>
+<p>There are two important factors that are relevant to finding the nearest proxy server to the user:</p>
+<ul>
+<li><strong>Network distance</strong> between the user and the proxy server is crucial. This is a function of the following two things:
+<ul>
+<li>The first is the length of the network path.</li>
+<li>The second is the capacity (bandwidth) limits along the network path.</li>
+</ul>
+</li>
+</ul>
+<p>The shortest network path with the highest capacity (bandwidth) is the nearest proxy server to the user in question. This path helps the user download content more quickly.</p>
+<ul>
+<li><strong>Requests load</strong> refers to the load a proxy server handles at any point in time. If a set of proxy servers are overloaded, the request routing system should forward the request to a location with a lesser load. This action balances out the proxy server load and, consequently, reduces the response latency.</li>
+</ul>
+<!--
+One way is to redirect the users from a particular network to a specific proxy server, but what if the users from that network belong to different organizations. Some organizations use their own proxy servers because of security reasons, and also, all of the clients can get limited benefit from a shared cache containing other organizations' content. However, most traffic (77.9%) uses HTTPS, which securely proceeds requests and responses by enabling the encrypted connection between the web server and the user's web browser. This layer of security slows down the request and response processing. Some organizations use both protocols, where need security use HTTPS and for fast processing use HTTP. 
+-->
+<p>Let’s look at the techniques that can be used to route users to the nearest proxy server.</p>
+<h3 id="DNS-redirection">DNS redirection<a href="#DNS-redirection"><span>#</span></a></h3>
+<p>In a typical <em>DNS resolution</em>, we use a DNS system to get an IP against a human-readable name. However, the DNS can also return another URI (instead of an IP) to the client. Such a mechanism is called <strong>DNS redirect</strong>.</p>
+<p>Content providers can use DNS redirect to send a client to a specific CDN. As an example, if the client tries to resolve a name that has the word “video” in it, the authoritative DNS server provides another URL (for example, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>c</mi><mi>d</mi><mi>n</mi><mi mathvariant="normal">.</mi><mi>x</mi><mi>y</mi><mi>z</mi><mi mathvariant="normal">.</mi><mi>c</mi><mi>o</mi><mi>m</mi></mrow><annotation encoding="application/x-tex">cdn.xyz.com</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord mathnormal">c</span><span class="mord mathnormal">d</span><span class="mord mathnormal">n</span><span class="mord">.</span><span class="mord mathnormal">x</span><span class="mord mathnormal">yz</span><span class="mord">.</span><span class="mord mathnormal">co</span><span class="mord mathnormal">m</span></span></span></span>). The client does another DNS resolution, and the CDN’s authoritative DNS provides an IP address of an appropriate CDN proxy server to fetch the required content.</p>
+<p>Depending on the location of the user, the response of the DNS can be different. Let’s see the slides below to understand how DNS redirection works:</p>
+<!--
+In the DNS redirection approach, the user's request for the IP address of the requested page will first reach the CDN's authoritative DNS. CDN's DNS server will return the IP address of the proxy server nearest to the user, thus redirecting the user to the nearest proxy server. This process is transparent to the users. However, depending on the location of the user, the response of the DNS can be different. Let's see the slides below to understand how DNS redirection works.
+
+One more issue is there are multiple CDNs; how does a user know which CDN to use as a proxy server. As we know CDN proxy server is not only a single machine. Instead, it consists of a cluster of machines. The reason behind the discussed issues is the users configured proxy servers. If the users configure the edge proxy server, we are not sure whether the users can benefit from a CDN's content distribution. So, we have to look for a solution where the edge proxy servers are configured by another entity instead of users to fully utilize CDN's content distribution. So to redirect a user to the most suitable edge server to utilize the CDNs content distribution to the maximum, we can use an approach called [DNS](https://www.educative.io/pageeditor/10370001/4941429335392256/5728619204182016) **redirection** that was first used by <keyword><word>Akamai</word><meaning>Akamai was the first major CDN provider and became the industry leader.</meaning></keyword>.  -->
+
+<figure class="diagram"><img src="/images/11/4/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/11/4/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/11/4/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/11/4/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/11/4/img_8.svg" alt="" loading="lazy" /></figure>
+<blockquote>
+<p><strong>Note</strong>: The nearest proxy server doesn’t necessarily mean the one that’s geographically the closest. It could be, but it’s not only the geography that matters. Other factors like network distance, bandwidth, and traffic load already on that route also matter.</p>
+</blockquote>
+<p>There are two steps in the DNS redirection approach:</p>
+<ol>
+<li>In the first step, it maps the clients to the appropriate network location.</li>
+<li>In the second step, it distributes the load over the proxy servers in that location to balance the load among the proxy servers (see <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5728619204182016" target="_blank">DNS</a> and <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank">Load Balancers</a> building blocks for more details on this).</li>
+</ol>
+<p>DNS redirection takes both of these important factors—network distance and requests load—into consideration, and that reduces the latency towards a proxy server.</p>
+<p>To shift a client from one machine in a cluster to another, the DNS replies at the second step are given with short TTLs so that the client repeats the resolution after a short while. DNS keeps delivering the content by routing requests to other active servers in case of hardware failures and network congestion. It does so by load balancing the traffic, using intelligent failover, and maintaining servers across many data centers, which achieves good reliability and performance.</p>
+<p>Since the load at proxy servers changes over time, the content provider needs to make appropriate changes in the DNS to make the DNS redirection effective. Many CDN providers like <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Akamai</span></span> use DNS redirection in their routing system.</p>
+<h3 id="Anycast">Anycast<a href="#Anycast"><span>#</span></a></h3>
+<p><strong>Anycast</strong> is a routing methodology in which all the edge servers located in multiple locations share the same single IP address. It employs the <strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Border Gateway Protocol</span></span> (BGP)</strong> to route clients based on the Internet’s natural network flow. A CDN provider can use the anycast mechanism so that clients are directed to the nearest proxy servers for content.</p>
+<h3 id="Client-multiplexing">Client multiplexing<a href="#Client-multiplexing"><span>#</span></a></h3>
+<p><strong>Client multiplexing</strong> involves sending a client a list of candidate servers. The client then chooses one server from the list to send the request to. This approach is inefficient because the client lacks the overall information to choose the most suitable server for their request. This may result in sending requests to an already-loaded server and experiencing higher access latency.</p>
+<h3 id="HTTP-redirection">HTTP redirection<a href="#HTTP-redirection"><span>#</span></a></h3>
+<p><strong>HTTP redirection</strong> is the simplest of all approaches. With this scheme, the client requests content from the origin server. The origin server responds with an HTTP protocol to redirect the user via a URL of the content.</p>
+<p>Below is an example of an HTML snippet provided by Facebook. As is highlighted in line 8, the user is redirected to the CDN to download the logo of Facebook:</p>
+
+<p>123456789101112131415<!––  The code below is taken from Facebook. --><divclass="fb_content clearfix "id="content"role="main"><div><divclass="_8esj _95k9 _8esf _8opv _8f3m _8ilg _8icx _8op_ _95ka"><divclass="_8esk"><divclass="_8esl"><divclass="_8ice"><imgclass="fb_logo"src="https://static.xx.fbcdn.net/rsrc.php/y8/r/dF5SId3UHWd.svg"></div><h2class="_8eso">Facebook helps you connect and share with the people in your life.</h2></div></div></div></div></div><<!––  The code below is taken from Faceboo</p>
+<p></p>
+<p>In the next lesson, we discuss the different details of content consistency and proxy server deployment in CDN.</p>

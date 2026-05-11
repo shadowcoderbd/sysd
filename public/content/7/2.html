@@ -1,0 +1,114 @@
+<h1>How the Domain Name System Works</h1>
+<p>Through this lesson, we’ll answer the following questions:</p>
+<ul>
+<li>How is the DNS hierarchy formed using various types of DNS name servers?</li>
+<li>How is caching performed at different levels of the Internet to reduce the querying burden over the DNS infrastructure?</li>
+<li>How does the distributed nature of the DNS infrastructure help its robustness?</li>
+</ul>
+<p>Let’s get started.</p>
+
+<h2 id="DNS-hierarchy">DNS hierarchy<a href="#DNS-hierarchy"><span>#</span></a></h2>
+<p>As stated before, the DNS isn’t a single server that accepts requests and responds to user queries. It’s a complete infrastructure with <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">name servers</span></span> at different hierarchies.</p>
+<p>There are mainly four types of servers in the DNS hierarchy:</p>
+<ol>
+<li><strong>DNS resolver:</strong> Resolvers initiate the querying sequence and forward requests to the other DNS name servers. Typically, DNS resolvers lie within the premise of the user’s network. However, DNS resolvers can also cater to users’ DNS queries through caching techniques, as we will see shortly. These servers can also be called local or default servers.</li>
+<li><strong>Root-level name servers:</strong> These servers receive requests from local servers. Root name servers maintain name servers based on top-level domain names, such as <code>.com</code>, <code>.edu</code>, <code>.us</code>, and so on. For instance, when a user requests the IP address of <a href="http://educative.io/" target="_blank">educative.io</a>, root-level name servers will return a list of top-level domain (TLD) servers that hold the IP addresses of the <code>.io</code> domain.</li>
+<li><strong>Top-level domain (TLD) name servers:</strong> These servers hold the IP addresses of authoritative name servers.  The querying party will get a list of IP addresses that belong to the authoritative servers of the organization.</li>
+<li><strong>Authoritative name servers:</strong> These are the organization’s DNS name servers that provide the IP addresses of the web or application servers.</li>
+</ol>
+
+<figure class="diagram"><img src="/images/7/2/img_0.svg" alt="DNS hierarchy for resolution of domain/host names" loading="lazy" /><figcaption>DNS hierarchy for resolution of domain/host names</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h3 id="Iterative-versus-recursive-query-resolution">Iterative versus recursive query resolution<a href="#Iterative-versus-recursive-query-resolution"><span>#</span></a></h3>
+<p>There are two ways to perform a DNS query:</p>
+<ol>
+<li><strong>Iterative:</strong> The local server requests the root, TLD, and the authoritative servers for the IP address.</li>
+<li><strong>Recursive:</strong> The end user requests the local server. The local server further requests the root DNS name servers. The root name servers forward the requests to other name servers.</li>
+</ol>
+<p>In the following illustration (on the left), DNS query resolution is iterative from the perspective of the local/ISP server:</p>
+
+<figure class="diagram"><img src="/images/7/2/img_1.svg" alt="Iterative versus recursive query" loading="lazy" /><figcaption>Iterative versus recursive query</figcaption></figure>
+<blockquote>
+<p><strong>Note:</strong> Typically, an iterative query is preferred to reduce query load on DNS infrastructure.</p>
+</blockquote>
+
+<h2 id="Caching">Caching<a href="#Caching"><span>#</span></a></h2>
+<p><strong>Caching</strong> refers to the temporary storage of frequently requested <a href="https://www.educative.io/edpresso/what-is-the-difference-between-dns-a-record-and-cname" target="_blank">resource records</a>. A <strong><em>record</em></strong> is a data unit within the DNS database that shows a name-to-value binding. Caching reduces response time to the user and decreases network traffic. When we use caching at different hierarchies, it can reduce a lot of querying burden on the DNS infrastructure. Caching can be implemented in the browser, operating systems, local name server within the user’s network, or the ISP’s DNS resolvers.</p>
+<p>The slideshow below demonstrates the power of caching in the DNS:</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/7/2/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/7/2/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/7/2/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/7/2/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/7/2/img_6.svg" alt="" loading="lazy" /></figure>
+<blockquote>
+<p><strong>Note:</strong> Even if there is no cache available to resolve a user’s query and it’s imperative to visit the DNS infrastructure, caching can still be beneficial. The local server or ISP DNS resolver can cache the IP addresses of TLD servers or authoritative servers and avoid requesting the root-level server.</p>
+</blockquote>
+<h2 id="DNS-as-a-distributed-system">DNS as a distributed system<a href="#DNS-as-a-distributed-system"><span>#</span></a></h2>
+<p>Although the DNS hierarchy facilitates the distributed Internet that we know today, it’s a distributed system itself. The distributed nature of DNS has the following advantages:</p>
+<ul>
+<li>It avoids becoming a single point of failure (SPOF).</li>
+<li>It achieves low query latency so users can get responses from nearby servers.</li>
+<li>It gets a higher degree of flexibility during maintenance and updates or upgrades. For example, if one DNS server is down or overburdened, another DNS server can respond to user queries.</li>
+</ul>
+<p>There are 13 logical root name servers (named letter <strong>A</strong> through <strong>M</strong>) with many instances spread throughout the globe. These servers are managed by 12 different organizations.</p>
+<p>Let’s now go over how DNS is scalable, reliable, and consistent.</p>
+<h3 id="Highly-scalable">Highly scalable<a href="#Highly-scalable"><span>#</span></a></h3>
+<p>Due to its hierarchical nature, DNS is a highly scalable system. Roughly 1,000 replicated instances of 13 root-level servers are spread throughout the world strategically to handle user queries. The working labor is divided among TLD and root servers to handle a query and, finally, the authoritative servers that are managed by the organizations themselves to make the entire system work. As shown in the DNS hierarchy tree above, different services handle different portions of the tree enabling scalability and manageability of the system.</p>
+
+<h3 id="Reliable">Reliable<a href="#Reliable"><span>#</span></a></h3>
+<p>Three main reasons make the DNS a reliable system:</p>
+<ol>
+<li><strong>Caching:</strong> The caching is done in the browser, the operating system, and the local name server, and the ISP DNS resolvers also maintain a rich cache of frequently visited services. Even if some DNS servers are temporarily down, cached records can be served to make DNS a reliable system.</li>
+<li><strong>Server replication:</strong> DNS has replicated copies of each logical server spread systematically across the globe to entertain user requests at low latency. The redundant servers improve the reliability of the overall system.</li>
+<li><strong>Protocol:</strong> Although many clients use DNS over unreliable user datagram protocol (UDP), UDP has its advantages. <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">UDP</span></span> is much faster and, therefore, improves DNS performance. Furthermore, Internet service’s reliability has improved since its inception, so UDP is usually favored over TCP. A DNS resolver can resend the UDP request if it didn’t get a reply to a previous one. This request-response needs just one round trip, which provides a shorter delay as compared to TCP, which needs a three-way handshake before data exchange.</li>
+</ol>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h3 id="Consistent">Consistent<a href="#Consistent"><span>#</span></a></h3>
+<p>DNS uses various protocols to update and transfer information among replicated servers in a hierarchy. DNS compromises on strong consistency to achieve high performance because data is read frequently from DNS databases as compared to writing. However, DNS provides eventual consistency and updates records on replicated servers lazily. Typically, it can take from a few seconds up to three days to update records on the DNS servers across the Internet. The time it takes to propagate information among different DNS clusters depends on the DNS infrastructure, the size of the update, and which part of the DNS tree is being updated.</p>
+<p>Consistency can suffer because of caching too. Since authoritative servers are located within the organization, it may be possible that certain resource records are updated on the authoritative servers in case of server failures at the organization. Therefore, cached records at the default/local and ISP servers may be outdated. To mitigate this issue, each cached record comes with an expiration time called <strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">time-to-live (TTL)</span></span></strong>.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Test-it-out">Test it out<a href="#Test-it-out"><span>#</span></a></h2>
+<p>Let’s run a couple of commands. Click on the terminal to execute the following commands. Copy the following commands in the terminal to run them. Study the output of the commands:</p>
+<ol>
+<li><code>nslookup www.google.com</code></li>
+<li><code>dig www.google.com</code></li>
+</ol>
+
+<p>Terminal 1TerminalClick to Connect...W</p>
+<p>The following slide deck highlights some important aspects of <code>nslookup</code> and <code>dig</code> output.</p>
+
+<figure class="diagram"><img src="/images/7/2/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/7/2/img_8.svg" alt="" loading="lazy" /></figure>
+<p>Let’s go through the meaning of the output:</p>
+<h3 id="The-nslookup-output">The <code>nslookup</code> output<a href="#The-nslookup-output"><span>#</span></a></h3>
+<ul>
+<li>
+<p>The <code>Non-authoritative answer</code>, as the name suggests, is the answer provided by a server that is not the authoritative server of Google. It isn’t in the list of authoritative nameservers that Google maintains. So, where does the answer come from? The answer is provided by second, third, and fourth-hand name servers configured to reply to our DNS query—for example, our university or office DNS resolver, our ISP nameserver, our ISP’s ISP nameserver, and so on. In short, it can be considered as a cached version of Google’s authoritative nameservers response. If we try multiple domain names, we’ll realize that we receive a cached response most of the time.</p>
+</li>
+<li>
+<p>If we run the same command multiple times, we’ll receive the same IP addresses list but in a different order each time. The reason for that is DNS is indirectly performing <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank">load balancing</a>. It’s an important term that we’ll gain familiarity with in the coming lessons.</p>
+</li>
+</ul>
+<h3 id="The-dig-output">The <code>dig</code> output<a href="#The-dig-output"><span>#</span></a></h3>
+<ul>
+<li>
+<p>The <code>Query time: 4 msec</code> represents the time it takes to get a response from the DNS server. For various reasons, these numbers may be different in our case.</p>
+</li>
+<li>
+<p>The <code>300</code> value in the <em><code>ANSWER SECTION</code></em> represents the number of seconds the cache is maintained in the DNS resolver. This means that Google’s ADNS keeps a TTL value of five minutes (<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mn>300</mn><mtext> </mtext><mi>s</mi><mi>e</mi><mi>c</mi></mrow><mn>60</mn></mfrac></mrow><annotation encoding="application/x-tex">\frac{300\ sec}{60}</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:1.1901em; vertical-align:-0.345em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em"><span><span class="pstrut" style="height:3em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">60</span></span></span></span><span><span class="pstrut" style="height:3em"></span><span class="frac-line"></span></span><span><span class="pstrut" style="height:3em"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">300</span><span class="mspace mtight"><span class="mtight"> </span></span><span class="mord mathnormal mtight">sec</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>).</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> We invite you to test different services for their TTL and query times to strengthen your understanding. You may use the above terminal for this purpose.</p>
+</blockquote>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>

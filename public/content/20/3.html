@@ -1,0 +1,114 @@
+<h1>Design of a Blob Store</h1>
+<h2 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h2>
+<p>Let’s identify and connect the components of a blob store system. At a high level, the components are clients, front-end servers, and storage disks.</p>
+
+<figure class="diagram"><img src="/images/20/3/img_0.svg" alt="The high-level design of a blob store" loading="lazy" /><figcaption>The high-level design of a blob store</figcaption></figure>
+<p>The client’s requests are received at the front-end servers that process the request. The front-end servers store the client’s blob onto the storage disks attached to them.</p>
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>Let’s look into the API design of the blob store. All of the functions below can only be performed by a registered and authenticated user. For the sake of brevity, we don’t include functionalities like registration and authentication of users.</p>
+<p><strong>Create container</strong></p>
+<p>The <code>createContainer</code> operation creates a new container under the logged-in account from which this request is being generated.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">createContainer</span><span class="mtk9">(</span><span class="mtk1">containerName</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>containerName</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the name of the container. It should be unique within a storage account.</p></td></tr></tbody></table>
+<p><strong>Upload blobs</strong></p>
+<p>The client’s data is stored in the form of Bytes in the blob store. The data can be put into a container with the following code:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">putBlob</span><span class="mtk9">(</span><span class="mtk1">containerPath</span><span class="mtk9">,</span><span class="mtk1"> blobName</span><span class="mtk9">,</span><span class="mtk1"> data</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>containerPath</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the path of the container in which we upload the blob. It consists of the <code>accountID</code> and <code>containerID</code>.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>blobName</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the name of the blob. It should be unique within a container, otherwise our system will give the blob that was uploaded later a version number.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>data</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a file that the user wants to upload to the blob store.</p></td></tr></tbody></table>
+<blockquote>
+<p><strong>Note:</strong> This API is just a logical way to spell out needs. We might use a multistep streaming call for actual implementation if the data size is very large.</p>
+</blockquote>
+<p><strong>Download blobs</strong></p>
+<!--The client can get the data using the path that was returned at the time of uploading data.-->
+<p>Blobs are identified by their unique name or ID.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">getBlob</span><span class="mtk9">(</span><span class="mtk1">blobPath</span><span class="mtk9">)</span></span><br/></code></pre>
+<!-- * `blobPath` is the fully qualified path of the data/file -->
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>blobPath</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the fully qualified path of the data or file, including its unique ID.</p></td></tr></tbody></table>
+<p><strong>Delete blob</strong></p>
+<p>The <code>deleteBlob</code> operation marks the specified blob for deletion. The actual blob is deleted during garbage collection.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">deleteBlob</span><span class="mtk9">(</span><span class="mtk1">blobPath</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>blobPath</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the path of the blob that the user wants to delete.</p></td></tr></tbody></table>
+<p><strong>List blobs</strong></p>
+<p>The <code>listBlobs</code> operation returns a list of blobs under the specified container or path.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">listBlobs</span><span class="mtk9">(</span><span class="mtk1">containerPath</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>containerPath</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the path to the container from which the user wants to get the list of blobs.</p></td></tr></tbody></table>
+<p><strong>Delete container</strong></p>
+<p>The <code>deleteContainer</code> operation marks the specified container for deletion. The container and any blobs in it are deleted later during garbage collection.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">deleteContainer</span><span class="mtk9">(</span><span class="mtk1">containerPath</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>containerPath</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the path to the container that the user wants to delete.</p></td></tr></tbody></table>
+<p><strong>List containers</strong></p>
+<p>The <code>listContainers</code> operation returns a list of the containers under the specified user’s blob store account.</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">listContainers</span><span class="mtk9">(</span><span class="mtk1">accountID</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="670"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>accountID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the ID of the user who wants to list their containers.</p></td></tr></tbody></table>
+<blockquote>
+<p>Note: The APIs used to retrieve blobs provide metadata containing size, version number, access privileges, name, and so on.</p>
+</blockquote>
+<h2 id="Detailed-design">Detailed design<a href="#Detailed-design"><span>#</span></a></h2>
+<p>We start this section by identifying the key components that we need to complete our blob store design. Then, we look at how these components connect to fulfill our functional requirements.</p>
+<h3 id="Components">Components<a href="#Components"><span>#</span></a></h3>
+<p>Here is a list of components that we use in the blob store design:</p>
+<ul>
+<li><strong>Client:</strong>  This is a user or program that performs any of the API functions that are specified.</li>
+<li><strong>Rate limiter:</strong> A rate limiter limits the number of requests based on the user’s subscription or limits the number of requests from the same IP address at the same time. It doesn’t allow users to exceed the predefined limit.</li>
+<li><strong>Load balancer:</strong> A load balancer distributes incoming network traffic among a group of servers. It’s also used to reroute requests to different regions depending on the location of the user, different data centers within the same region, or different servers within the same data center. <strong>DNS</strong> load balancing can be used to reroute the requests among different regions based on the location of the user.</li>
+<li><strong>Front-end servers:</strong> Front-end servers forward the users’ requests for adding or deleting data to the appropriate storage servers.</li>
+<li><strong>Data nodes:</strong> Data nodes hold the actual blob data. It’s also possible that they contain a part of the blob’s data. Blobs are split into small, fixed-size pieces called <strong>chunks</strong>. A data node can accommodate all of the chunks of a blob or at least some of them.</li>
+<li><strong>Master node:</strong> A master node is the core component that manages all data nodes. It stores information about storage paths and the access privileges of blobs. There are two types of access privileges: private and public. A <em>private</em> access privilege means that the blob is only accessible by the account containing that blob. A <em>public</em> access privilege means that anyone can access that blob.
+<blockquote>
+<p><strong>Note:</strong> Each of the data nodes in the cluster send the master node a heartbeat and a chunk report regularly. The presence of a <strong>heartbeat</strong> indicates that the data node is operational. A <strong>chunk report</strong> lists all the chunks on a data node. If a data node fails to send a heartbeat, the master node considers that node dead and then processes the user requests on the replica nodes. The master node maintains a log of pending operations that should be replayed on the dead data node when it recovers.</p>
+</blockquote>
+</li>
+<li><strong>Metadata storage:</strong> Metadata storage is a distributed database that’s used by the master node to store all the metadata. Metadata consists of account metadata, container metadata, and blob metadata.
+<ul>
+<li><strong><em>Account metadata</em></strong> contains the account information for each user and the containers held by each account.</li>
+<li><strong><em>Container metadata</em></strong> consists of the list of the blobs in each container.</li>
+<li><strong><em>Blob metadata</em></strong> consists of where each blob is stored. The blob metadata is discussed in detail in the next lesson.</li>
+</ul>
+</li>
+<li><strong>Monitoring service:</strong> A monitoring service monitors the data nodes and the master node. It alerts the administrator in case of disk failures that require human intervention. It also gets information about the total available space left on the disks to alert administrators to add more disks.</li>
+<li><strong>Administrator:</strong> An administrator is responsible for handling notifications from the monitoring services and conducting routine checkups of the overall service to ensure reliability.</li>
+</ul>
+<p>The architecture of how these components interconnect is shown in the diagram below:</p>
+
+<figure class="diagram"><img src="/images/20/3/img_1.svg" alt="The detailed design of a blob store" loading="lazy" /><figcaption>The detailed design of a blob store</figcaption></figure>
+<h3 id="Workflow">Workflow<a href="#Workflow"><span>#</span></a></h3>
+<p>We describe the workflow based on the basic operations we can perform on a blob store. We assume that the user has successfully logged in and a container has already been created. A unique ID is assigned to each user and container. The user performs the following operations in a specific container.</p>
+<p><strong>Write a blob</strong></p>
+<ol>
+<li>The client generates the upload blob request. If the client’s request successfully passes through the rate limiter, the load balancer forwards the client’s request to one of the front-end servers. The front-end server then requests the master node for the data nodes it should contact to store the blob.</li>
+<li>The master node assigns the blob a unique ID using a <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5216880444309504" target="_blank">unique ID generator system</a>. It then splits the large-size blob into smaller, fixed-size chunks and assigns each chunk a data node where that chunk is eventually stored. The master node determines the amount of storage space that’s available on the data nodes using a <strong>free-space management system</strong>.</li>
+<li>After determining the mapping of chunks to data nodes, the front-end servers write the chunks to the assigned data nodes.</li>
+<li>We replicate each chunk for redundancy purposes. All choices regarding chunk replication are made at the master node. Hence, the master node also allocates the storage and data nodes for storing replicas.</li>
+<li>The master node stores the blob metadata in the metadata storage. We discuss the blob’s metadata schema in detail in the next lesson.</li>
+<li>After writing the blob, a fully qualified path of the blob is returned to the client. The path consists of the user ID, container ID where the user has added the blob, the blob ID, and the access level of the blob.</li>
+</ol>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p><strong>Reading a blob</strong></p>
+<ol>
+<li>When a read request for a blob reaches the front-end server, it asks the master node for that blob’s metadata.</li>
+<li>The master node first checks whether that blob is private or public, based on the path of the blob and whether we’re authorized to transfer that blob or not.</li>
+<li>After authorizing the blob, the master node looks for the chunks for that blob in the metadata and looks at their mappings to data nodes. The master node returns the chunks and their mappings (data nodes) to the client.</li>
+<li>The client then reads the chunk data from the data nodes.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> The metadata information for reading the blob is cached at the client machine, so that the next time a client wants to read the same blob, we won’t have to burden the master node. Additionally, the client’s read operation will be faster the next time.</p>
+</blockquote>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p><strong>Deleting a blob</strong>
+Upon receiving a delete blob request, the master node marks that blob as deleted in the metadata, and frees up the space later using a garbage collector. We learn more about garbage collectors in the next lesson.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>
+<p>In the next lesson, we talk about the design considerations of a blob store.</p>
+
+<p></p>

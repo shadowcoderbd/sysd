@@ -1,0 +1,106 @@
+<h1>Design Improvements of a Web Crawler</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>This lesson gives us a detailed rundown of the improvements that are required to enhance the functionality, performance, and security of our web crawler design. We have divided this lesson into two sections:</p>
+<ol>
+<li>Functionality and performance enhancement design improvements—extensibility and multi-worker architecture.</li>
+<li>Security-enhancement design improvements—crawler traps.</li>
+</ol>
+<p>Let’s dive into these sections.</p>
+<h2 id="Design-improvements">Design improvements<a href="#Design-improvements"><span>#</span></a></h2>
+<p>Our current design is simplistic and has some inherent shortcomings and challenges. Let’s highlight them one by one and make some adjustments to our design along the way.</p>
+<ul>
+<li>
+<p><strong>Shortcoming</strong>: Currently, our design supports the HTTP protocol and only extracts textual content. This leads to the question of how we can extend our crawler to facilitate multiple communication protocols and extract various types of files.</p>
+<p><strong>Adjustment</strong>: Since we have two separate components for serving communication handling and extracting, HTML Fetcher and Extractor, let’s discuss their modifications one by one.</p>
+<ol>
+<li><strong>HTML Fetcher</strong>: We have only discussed the HTTP module in this component so far because of the widely-used HTTP URLs scheme. We can easily extend our design to incorporate other communication protocols like File Transfer Protocol (FTP). The workflow will then have an intermediary step where the crawler invokes the concerned communication module based on the URL’s scheme. The subsequent steps will remain the same.</li>
+<li><strong>Extractor</strong>: Currently, we only extract the textual content from the downloaded document placed in the Document Input Stream (DIS). This document contains other file types as well, for example, images and videos. If we wish to extract other content from the stored document, we need to add new modules with functionalities to process those media types. Since we use a blob store for content storage, storing the newly-extracted content comprising text, images, and videos won’t be a problem. <!--In addition to adding new extracting modules, we also need to update the database schema accordingly. Keeping in mind this extensibility requirement, using a NoSQL database, MongoDB,  for the content datastore is a better choice.--></li>
+</ol>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/35/4/img_0.svg" alt="The extensibility of the HTML fetcher and extractor" loading="lazy" /><figcaption>The extensibility of the HTML fetcher and extractor</figcaption></figure>
+<ul>
+<li>
+<p><strong>Shortcoming</strong>: The current design doesn’t explain how the multi-worker concept integrates into this system.</p>
+<p><strong>Adjustment</strong>: Every worker needs a URL to work on from the priority queue. Different websites require different times for workers to finish crawling, so each worker will dequeue a new URL upon its availability. <!--We can utilize a **load balancer** between the priority queue and the independent workers to optimize task division among them. It will ensure optimal task division along with providing the fault tolerance capability.--></p>
+<!--We also need to implement the priority queue in a way to ensure no two workers dequeue the same URL while implementing the multi-worker architecture. (Removing this because queues are thread-safe)-->
+<p>There are several ways to achieve this multi-worker architecture for our system. Some of them are as follows:</p>
+<ol>
+<li>
+<p><strong>Domain level log</strong>: The crawler assigns one whole domain to a worker. All the URLs branching out of the initial URL are the responsibility of the same crawler. We ensure this by caching the hash of the hostname against the worker ID for guaranteed future assignment to the same worker. This also helps us avoid any redundant crawling of that domain’s web pages by any worker.</p>
+<p>This approach is best-suited for achieving <strong>reverse URL indexing</strong>, which involves traversing the web address directories in a reversed order. It ensures the storage efficiency of the URL storing process for later use and prevents extensive repetitive string matching processes for duplication testing.</p>
+</li>
+<li>
+<p><strong>Range division</strong>: The range of URLs given to each crawler; the crawler distributes a range of URLs from the priority queue among workers to avoid clashes. Like the previous approach, the crawler must hash the range associated with each worker.</p>
+</li>
+<li>
+<p><strong>Per URL crawling</strong>: Queue all the URLs; a worker takes a URL and enqueues the subsequently found URLs into the priority queue. Those new URLs are readily available to crawl through for other workers. To avoid enqueuing multiple similar links that direct to the same web page, we calculate the checksum of the canonicalized URL.</p>
+</li>
+</ol>
+</li>
+</ul>
+<!--* **Shortcoming:** The design does not provide details on the responsible crawling mechanism at the HTML fetcher level.
+
+   **Adjustment:** Once the crawler starts communicating with the server for downloading the web page content, there are multiple factors that it needs to take into consideration. Let us go over them individually.
+
+   1. The crawler must implement application layer logic to counter the **crawler traps**. The crawler must be intelligent enough to limit its crawling at a specific domain after a finite amount of time or web page visits. There are two types of web crawler traps: intentional and non-intentional, a product of poor website development;  both exhaust the crawler by making it overspend its resources. A crawler should smartly exit a web page and store that URL as a no-go area for its future traversals to ensure performance effectiveness.
+
+   2. When initiating communication with the webserver, the crawler needs to fetch a document named `robots.txt`. This file contains the dos and don'ts specifications for a crawler listed by the Webmasters. Adhering to this document is an integral part of the crawling process. It also facilitates the crawler in accessing the domain-specified web pages prioritized for crawling, besides limiting its access to specific web pages. 
+
+      Another essential component of this document is the revisit frequency instructions for the crawler. A popular website might demand a frequent revisit, contrary to a website that rarely updates its content. This standard of websites communicating with the web crawlers is called `Robots Exclusion Protocol`.
+
+    3. Since each domain has a limited incoming and outgoing bandwidth allocation, the crawler needs to be polite enough to limit its crawling at a specific domain. Instead of having a static crawl speed for every domain, a better approach is to adjust the crawl speed based on a domain's **Time to First Byte (TTFB)** value. Higher the TTFB value, slower the server, and hence crawling that domain too fast might lead to more time-out requests – inaccurate crawling.-->
+<h2 id="Crawler-traps">Crawler traps<a href="#Crawler-traps"><span>#</span></a></h2>
+<p>A <strong>crawler trap</strong> is a URL or a set of URLs that cause indefinite crawler resource exhaustion. This section dedicates itself to the classification, identification, and prevention of crawler traps.</p>
+<h3 id="Classification">Classification<a href="#Classification"><span>#</span></a></h3>
+<p>There can be many classification schemes for crawler traps, but let’s classify them based on the URL scheme.</p>
+<p>Mostly, web crawler traps are the result of poor website structuring, such as:</p>
+<ul>
+<li><strong>URLs with query parameters</strong>: These query parameters can hold an immense amount of values, all while generating a large number of useless web pages for a single domain: <code>HTTP://www.abc.com?query</code>.</li>
+<li><strong>URLs with internal links</strong>: These links redirect in the same domain and can create an infinite cycle of redirection between the web pages of a single domain, making the crawler crawl the same content over and over again.</li>
+<li><strong>URLs with infinite calendar pages</strong>: These have never-ending combinations of web pages based on the varying date values, and can create a large number of pointless web pages for a single domain.</li>
+<li><strong>URLs for the dynamic content generation</strong>: These are query-based and can generate a massive number of web pages based on the dynamic content resulting from these queries. Such URLs might become a never-ending crawl on a single domain.</li>
+<li><strong>URLs with repeated/cyclic directories</strong>: They form an indefinite loop of redirections. For example, <code>HTTP://www.abc.com/first/second/first/second/...</code>.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/35/4/img_1.svg" alt="Classification of web crawler traps" loading="lazy" /><figcaption>Classification of web crawler traps</figcaption></figure>
+<p>Mostly, the crawler traps are unintended because of the poor structuring of the website. Interestingly, crawler traps can also be placed intentionally to dynamically generate an endless series of web pages with the pure purpose of exhausting a crawler’s bandwidth. These traps severely impact the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">throughput</span></span> of a crawler and hamper its performance.</p>
+<p>These crawler traps might be detrimental to the crawler, but they also seriously affect the website’s SEO ranking.</p>
+<h3 id="Identification">Identification<a href="#Identification"><span>#</span></a></h3>
+<p>It’s essential to categorize the crawling traps to correctly identify them and think of design adjustments accordingly.</p>
+<p>There are mainly two layers to the process of identifying a crawler trap:</p>
+<ol>
+<li>
+<p><strong>Analyzing the URL scheme</strong>: The URLs with a poor URL structure, for example, those with cyclic directories: <code>HTTP://www.abc.com/first/second/first/second/...</code> will create crawler traps. Hence, filtering such URLs beforehand will rescue our crawler resources.</p>
+</li>
+<li>
+<p><strong>Analyzing the total number of web pages against a domain</strong>: An impossibly large number of web pages against a domain in the URL frontier is a strong indicator of a crawler trap. So, limiting the crawl at such a domain will be of utmost importance.</p>
+</li>
+</ol>
+
+<figure class="diagram"><img src="/images/35/4/img_2.svg" alt="The identification process of web crawler traps" loading="lazy" /><figcaption>The identification process of web crawler traps</figcaption></figure>
+<h3 id="Solution">Solution<a href="#Solution"><span>#</span></a></h3>
+<p>Our design lacks details on the responsible crawling mechanism to avoid crawler traps for the identifications described above.</p>
+<p>Crawling is a resource and time-consuming task, and it’s of extreme importance to efficiently avoid crawler traps in order to achieve timely and helpful crawling. Once the crawler starts communicating with the server for downloading the web page content, there are multiple factors that it needs to take into consideration,  mainly at the HTML-fetcher level. Let’s go over these factors individually.</p>
+<ol>
+<li>
+<p>The crawler must implement an application-layer logic to counter the crawler traps. This logic might be based on the observed number of web pages exceeding a specified threshold.</p>
+<p>The crawler must be intelligent enough to limit its crawling at a specific domain after a finite amount of time or web page visits. A crawler should smartly exit a web page and store that URL as a no-go area for future traversals to ensure performance effectiveness.</p>
+</li>
+<li>
+<p>When initiating communication with the web server, the crawler needs to fetch a file named <code>robots.txt</code>. This file contains the dos and don’ts for a crawler listed by the web masters. Adhering to this document is an integral part of the crawling process. It also allows the crawler to access certain domain-specified web pages prioritized for crawling, without limiting its access to specific web pages.</p>
+<p>Another essential component of this document is the revisit frequency instructions for the crawler. A popular website might demand a frequent revisit, contrary to a website that rarely updates its content. This standard of websites communicating with the web crawlers is called the <strong>Robots Exclusion Protocol</strong>. This protocol prevents the crawlers from unnecessarily spending crawling resources on uncrawlable web pages.</p>
+</li>
+</ol>
+
+<figure class="diagram"><img src="/images/35/4/img_3.svg" alt="The robots exclusion protocol" loading="lazy" /><figcaption>The robots exclusion protocol</figcaption></figure>
+<blockquote>
+<p>The <code>robots.txt</code> file doesn’t protect crawlers from malicious or intended crawler traps. The other explained mechanisms must handle those traps.</p>
+</blockquote>
+<ol start="3">
+<li>Since each domain has a limited incoming and outgoing bandwidth allocation, the crawler needs to be polite enough to limit its crawling at a specific domain. Instead of having a static crawl speed for every domain, a better approach is to adjust the crawl speed based on a domain’s <strong>Time to First Byte</strong> (<strong>TTFB</strong>) value. The higher the TTFB value, the slower the server. And so, crawling that domain too fast might lead to more time-out requests and incomplete crawling.</li>
+</ol>
+<p>These modifications in the design will ensure a crawler capable of avoiding crawler traps and hence optimizing resources’ usage.</p>
+
+<p></p>

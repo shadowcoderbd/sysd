@@ -1,0 +1,78 @@
+<h1>Design of a Monitoring System</h1>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let’s sum up what we want our monitoring system to do for us:</p>
+<!--
+- Monitor servers' health, i.e., are the filesystem, network, and system timer working correctly?
+- Detect a failure of the server (software or hardware failure)
+- Find the CPU/memory/disk usage 
+- Performance bottlenecks software
+- File system malfunction
+- Connection loss
+-->
+<ul>
+<li>
+<p>Monitor critical local processes on a server for crashes.</p>
+</li>
+<li>
+<p>Monitor any anomalies in the use of CPU/memory/disk/network bandwidth by a process on a server.</p>
+</li>
+<li>
+<p>Monitor overall server health, such as CPU, memory, disk, network bandwidth, average load, and so on.</p>
+</li>
+<li>
+<p>Monitor hardware component faults on a server, such as memory failures, failing or slowing disk, and so on.</p>
+</li>
+<li>
+<p>Monitor the server’s ability to reach out-of-server critical services, such as network file systems and so on.</p>
+</li>
+<li>
+<p>Monitor all network switches, load balancers, and any other specialized hardware inside a data center.</p>
+</li>
+<li>
+<p>Monitor power consumption at the server, rack, and data center levels.</p>
+</li>
+<li>
+<p>Monitor any power events on the servers, racks, and data center.</p>
+</li>
+<li>
+<p>Monitor routing information and DNS for external clients.</p>
+</li>
+<li>
+<p>Monitor network links and paths’ latency inside and across the data centers.</p>
+</li>
+<li>
+<p>Monitor network status at the peering points.</p>
+</li>
+<li>
+<p>Monitor overall service health that might span multiple data centers—for example, a CDN and its performance.</p>
+</li>
+</ul>
+<p>We want automated monitoring that identifies an anomaly in the system and informs the alert manager or shows the progress on a dashboard. Cloud service providers provide a health status of their services:</p>
+<ul>
+<li>AWS: <a href="https://health.aws.amazon.com/health/status" target="_blank">https://health.aws.amazon.com/health/status</a></li>
+<li>Azure: <a href="https://status.azure.com/en-us/status" target="_blank">https://status.azure.com/en-us/status</a></li>
+<li>Google: <a href="https://status.cloud.google.com/" target="_blank">https://status.cloud.google.com/</a></li>
+</ul>
+<!--
+> You can view the AWS service health dashboard [here](https://status.aws.amazon.com/). -->
+<p>The design of distributed monitoring will consist of the following building block:</p>
+<p><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4862646238576640" target="_blank"><strong>Blob storage</strong></a>: We’ll use blob storage to store our information about metrics.</p>
+
+<h2 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h2>
+<p>The high-level components of our monitoring service are the following:</p>
+<ul>
+<li>
+<p><strong>Storage</strong>: A time-series database stores metrics data, such as the current CPU use or the number of exceptions in an application.</p>
+</li>
+<li>
+<p><strong>Data collector service</strong>: This fetches the relevant data from each service and saves it in the storage.</p>
+</li>
+<li>
+<p><strong>Querying service</strong>: This is an API that can query on the time-series database and return the relevant information.</p>
+</li>
+</ul>
+<!--* **Visualizers**: Generate dashboards or UI to monitor the metrics.-->
+<figure class="diagram"><img src="/images/14/1/img_0.svg" alt="High-level design of a monitoring system" loading="lazy" /><figcaption>High-level design of a monitoring system</figcaption></figure>
+<p>Let’s dive deep into the components mentioned above in the next lesson.</p>
+
+<p></p><p></p>

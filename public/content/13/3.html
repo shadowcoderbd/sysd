@@ -1,0 +1,84 @@
+<h1>Prerequisites of a Monitoring System</h1>
+<h2 id="Monitoring:-metrics-and-alerting">Monitoring: metrics and alerting<a href="#Monitoring:-metrics-and-alerting"><span>#</span></a></h2>
+<p>A good monitoring system needs to clearly define what to measure and in what units (metrics). The monitoring system also needs to define threshold values of all metrics and the ability to inform appropriate stakeholders (alerts) when values are out of acceptable ranges. Knowing the state of our infrastructure and systems ensures service stability. The support team can respond to issues more quickly and confidently if they have access to information on the health and performance of the deployments. Monitoring systems that collect measurements, show data, and send warnings when something appears wrong are helpful for the support team.</p>
+<p>To further understand metrics, alerts, and their connection with monitoring, we’ll go over their significance, their potential benefits, and the data we might want to keep track of.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Metrics">Metrics<a href="#Metrics"><span>#</span></a></h2>
+<p><strong>Metrics</strong> objectively define what we should measure and what units will be appropriate. Metric values provide an insight into the system at any point in time For example, a web server’s ability to handle a certain amount of traffic per second or its ability to join a pool of web servers are examples of high-level data correlated with a component’s specific purpose or activity. Another example can be measuring network performance in terms of throughput (megabits per second) and latency (round-trip time). We need to collect values of metrics with minimal performance penalty. We may use user-perceived latency or the amount of computational resources to measure this penalty.</p>
+
+<p>Values that track how many physical resources our operating system uses can be a good starting point. If we have a monitoring system in place, we don’t have to do much additional work to get data regarding processor load, CPU statistics like cache hits and misses, RAM usage by OS and processes, page faults, disc space, disc read and write latencies, swap space usage, and so on. Metrics provided by many web servers, database servers, and other software help us determine whether everything is running smoothly or not.</p>
+
+<blockquote>
+<p><strong>Note:</strong> Connect to the following terminal to see details about the CPU utilization of processes that are currently active on the virtual machine.</p>
+</blockquote>
+
+<p>Terminal 1TerminalClick to Connect...W</p>
+<p>We use the <code>top</code> command to view Linux processes. Running this command opens an interactive view of the running system containing a summary of the system and a list of processes or threads. The default view has the following:</p>
+<ul>
+<li>
+<p>On the top, we can see how long the machine has been turned on, how many users are logged in, and the average load on the machine for the past few minutes.</p>
+</li>
+<li>
+<p>On the next line, we can see the state (<code>running</code>, <code>sleeping</code>, or <code>stopped</code>) of tasks running on the machine.</p>
+</li>
+<li>
+<p>Next, we have the CPU consumption values.</p>
+</li>
+<li>
+<p>Lastly, we have an overview of physical memory how much of it is free, used, buffered, or available.</p>
+</li>
+</ul>
+<p>Now, let’s take the following steps to see a change in the CPU usage:</p>
+<ol>
+<li>Quit by entering <code>q</code> in the terminal.</li>
+<li>Run <code>nohup ./script.sh &amp;&gt;/dev/null &amp;</code>. This script has an infinite loop running in it, and running the command will execute the script in the background.</li>
+<li>Run the <code>top</code> command to observe an increase in CPU usage.</li>
+</ol>
+
+<h3 id="Populate-the-metrics">Populate the metrics<a href="#Populate-the-metrics"><span>#</span></a></h3>
+<p>The metrics should be logically centralized for global monitoring and alerting purposes. Fetching metrics is crucial to the monitoring system. Metrics can either be pushed or pulled into a monitoring system, depending on the preference of the user.</p>
+<p>Here, we confront a fundamental design challenge now: Do we utilize push or pull? Should the server proactively send the metrics’ values out, or should it only expose an endpoint and wait reactively for an inquiry?</p>
+<p>In pull strategy, each monitored server merely needs to store the metrics in memory and send them to an exposed endpoint. The exposed endpoint allows the monitoring application to fetch the metrics itself. Servers sending too much data or sending data too frequently can’t overload the monitoring system. The monitoring system will pull data as per its own schedule.</p>
+<p>In other situations, though, pushing may be beneficial, such as when a firewall prevents the monitoring system from accessing the server directly. The monitoring system has the ability to adjust a global configuration about the data to be collected and the interval at which servers and switches should push the data.</p>
+<p>Push and pull terminologies might be confusing. Whenever we discuss push or pull strategy, we’ll consider it from the monitoring system’s perspective. That is, either the system will pull the metrics values from the applications, or the metrics will be pushed to the monitoring system. To avoid confusion, we’ll stick to the monitoring system’s viewpoint.</p>
+<!--
+### Populating the metrics 
+
+The metrics should be centralized for global monitoring and alerting purposes. The fetching of metrics is crucial to the monitoring system. Metrics can either be pushed or pulled into a monitoring system, depending on the preference of the user. 
+
+<!--
+When the server to be monitored is offline or slow, we won't obtain the metrics that we need the most......
+
+Here, we confront a fundamental design challenge now: whether to utilize _push_ or _pull_, whether the server should proactively send the metrics out, or only expose an endpoint and wait reactively for an inquiry.
+
+In pull strategy, each monitored server merely needs to store the metrics in memory and send them to an exposed endpoint. The exposed endpoint allows the monitoring application to fetch the metrics itself.
+If the servers send too much data or too frequently, they don't have to worry about overloading the monitoring system. The monitoring system has the ability to adjust a global configuration about the data to be collected and the interval at which it should be collected.
+
+<!-- If the monitoring system is somewhere else, it doesn't matter......
+
+In other situations, though, pushing may be beneficial. For example, when a firewall prevents the monitoring system from accessing the server directly.
+-->
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<blockquote>
+<p><strong>Note:</strong> At times, we use the word “metrics” when we should have used “metrics’ values.” However, we can figure out which of them is being referred to through the context they’re being used in.</p>
+</blockquote>
+<h3 id="Persist-the-data">Persist the data<a href="#Persist-the-data"><span>#</span></a></h3>
+<p>Figuring out how to store the metrics from the servers that are being monitored is important. A centralized in-memory metrics repository may be all that’s needed. However, for a large data center with millions of things to monitor, there will be an enormous amount of data to store, and a time-series database can help in this regard.</p>
+<p><strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Time-series databases</span></span></strong> help maintain durability, which is an important factor. Without a historical view of events in a monitoring system, it isn’t very useful. Samples having a value of time stamp are stored in chronological sequence. So, a whole metric’s timeline can be shown in the form of a time series.</p>
+
+<h3 id="Application-metrics">Application metrics<a href="#Application-metrics"><span>#</span></a></h3>
+<p>We may need to add code or APIs to expose metrics we care about for other components, notably our own applications. We embed logging or monitoring code in our applications, called <strong>code instrumentation</strong>, to collect information of interest.</p>
+<!--Adding _instrumentation_ to our services is a term used to describe the process of collecting and displaying metrics.-->
+<p>Looking at metrics as a whole can shed light on how our systems are performing and how healthy they are. Monitoring systems employ these inputs to generate a comprehensive view of our environment, automate responses to changes like commissioning more E2C instances if the applications’ traffic increases, and warn humans when necessary.
+Metrics are system measurements that allow analyzing historical trends, correlations, and changes in the performance, consumption, or error rates.</p>
+<!--To analyze historical trends, correlations, and changes in the performance, consumption, or error rates, metrics are the basic numbers that are used.
+-->
+<h2 id="Alerting">Alerting<a href="#Alerting"><span>#</span></a></h2>
+
+<p><strong>Alerting</strong> is the part of a monitoring system that responds to changes in metric values and takes action. There are two components to an alert definition: a metrics-based condition or threshold, and an action to take when the values fall outside of the permitted range.</p>
+
+<p></p>

@@ -1,0 +1,17 @@
+<h1>System Design: The Pub-sub Abstraction</h1>
+<h2 id="What-is-a-pub-sub-system?">What is a pub-sub system?<a href="#What-is-a-pub-sub-system?"><span>#</span></a></h2>
+<p><strong>Publish-subscribe messaging</strong>, often known as <strong>pub-sub messaging</strong>, is an asynchronous service-to-service communication method that’s popular in serverless and microservices architectures. Messages can be sent asynchronously to different subsystems of a system using the pub-sub system. All the services subscribed to the pub-sub model receive the message that’s pushed into the system.</p>
+<p>For example, when Cristiano Ronaldo, a famous athlete, posts on Instagram or shares a tweet, all of his followers are updated. Here, Cristiano Ronaldo is the publisher, his post or tweet is the message, and all of his followers are subscribers.</p>
+<!--To boost performance, reliability, and scalability, pub-sub messaging can enable event-driven architectures or decouple applications.-->
+<figure class="diagram"><img src="/images/18/1/img_0.svg" alt="The pub-sub system" loading="lazy" /><figcaption>The pub-sub system</figcaption></figure>
+<p></p><p></p>
+<h2 id="Motivation">Motivation<a href="#Motivation"><span>#</span></a></h2>
+<p>The hardware infrastructure of distributed systems consists of millions of machines. Using a pub-sub system to communicate asynchronously increases scalability. Producers and consumers are disconnected and operate independently, thereby allowing us to scale and develop them separately. The decoupling between components, producers and consumers, allows greater scalability because adding or removing any component doesn’t affect the other components.</p>
+<h2 id="How-do-we-design-a-pub-sub-system?">How do we design a pub-sub system?<a href="#How-do-we-design-a-pub-sub-system?"><span>#</span></a></h2>
+<p>We have divided the pub-sub system design into the following lessons:</p>
+<ol>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5155663642099712" target="_blank"><strong>Introduction</strong></a>: In this lesson, we learn about the use cases of the pub-sub system, define its requirements, and design the API for it.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5367894619193344" target="_blank"><strong>Design</strong></a>: In this lesson, we discuss two designs of the pub-sub system, one with messaging queues and the other with a broker.</li>
+</ol>
+
+<p></p>

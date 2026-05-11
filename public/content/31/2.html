@@ -1,0 +1,71 @@
+<h1>Requirements of Twitter’s Design</h1>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let’s understand the functional and non-functional requirements below:</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>The following are the functional requirements of Twitter:</p>
+<ul>
+<li>
+<p><strong>Post Tweets</strong>: Registered users can post one or more Tweets on Twitter.</p>
+</li>
+<li>
+<p><strong>Delete Tweets</strong>: Registered users can delete one or more of their Tweets on Twitter.</p>
+</li>
+<li>
+<p><strong>Like or dislike Tweets</strong>: Registered users can like and dislike public and their own Tweets on Twitter.</p>
+</li>
+<li>
+<p><strong>Reply to Tweets</strong>: Registered users can reply to the public Tweets on Twitter.</p>
+</li>
+<li>
+<p><strong>Search Tweets</strong>: Registered users can search Tweets by typing keywords, hashtags, or usernames in the search bar on Twitter.</p>
+</li>
+<li>
+<p><strong>View user or home timeline</strong>: Registered users can view the user’s timeline, which contains their own Tweets. They can also view the home’s timeline, which contains followers’ Tweets on Twitter.</p>
+</li>
+<li>
+<p><strong>Follow or unfollow the account</strong>: Registered users can follow or unfollow other users on Twitter.</p>
+</li>
+<li>
+<p><strong>Retweet a Tweet</strong>: Registered users can Retweet public Tweets of other users on Twitter.</p>
+</li>
+</ul>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<ul>
+<li>
+<p><strong>Availability</strong>: Many people and organizations use Twitter to communicate time-sensitive information (service outage messages). Therefore, our service must be highly available and have a good uptime percentage.</p>
+</li>
+<li>
+<p><strong>Latency</strong>: The latency to show the most recent top Tweets in the home timeline could be a little high. However, near real-time services, such as Tweet distribution to followers, must have low latency.</p>
+</li>
+<li>
+<p><strong>Scalability</strong>:
+The workload on Twitter is read-heavy, where we have many readers and relatively few writers, which eventually requires the scalability of computational resources. Some estimates suggest a 1:1000 write-to-read ratio for Twitter. Although the Tweet is limited to 280 characters, and the video clip is limited to 140s by default, we need high storage capacity to store and deliver Tweets posted by public figures to their millions of followers.</p>
+</li>
+<li>
+<p><strong>Reliability</strong>: All Tweets remain on Twitter. This means that Twitter never deletes its content. So there should be a promising strategy to prevent the loss or damage of the uploaded content.</p>
+</li>
+<li>
+<p><strong>Consistency</strong>: There’s a possibility that a user on the east coast of the US does not get an immediate status (like, reply, and so on.) update on the Tweet, which is liked or Retweeted by a user on the west coast of the US. However, the user on the west coast of the US needs an immediate status update on his like or reply. An effective technique is needed to offer rapid feedback to the user (who liked someone’s post), then to other specified users in the same region, and finally to all worldwide users linked to the Tweet.</p>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/31/2/img_0.svg" alt="Non-functional requirements of Twitter" loading="lazy" /><figcaption>Non-functional requirements of Twitter</figcaption></figure>
+<p>Furthermore, we must identify which essential resources must be estimated in the Twitter design. We used Twitter as an example in our <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5711642666467328" target="_blank">Back-of-the-Envelope</a> chapter, so we won’t repeat that exercise here.</p>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>Twitter’s design utilizes the following building blocks that we discussed in the initial chapters.</p>
+
+<figure class="diagram"><img src="/images/31/2/img_1.svg" alt="Building blocks used in Twitter design" loading="lazy" /><figcaption>Building blocks used in Twitter design</figcaption></figure>
+<ul>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5728619204182016" target="_blank">DNS</a></strong> is the service that maps human-friendly Twitter domain names to machine-readable IP addresses.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank">Load balancers</a></strong> distribute the read/write requests among the respective services.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6499939719053312" target="_blank">Sequencers</a></strong> generate the unique IDs for the Tweets.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4901035478351872" target="_blank">Databases</a></strong> store the metadata of Tweets and users.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4862646238576640" target="_blank">Blob stores</a></strong> store the images and video clips attached with the Tweets.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4747701493432320" target="_blank">Key-value stores</a></strong> are used for multiple purposes such as indexing, identifying the specified counter to update its value, identifying the Tweets of a particular user and many more.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4996814243889152" target="_blank">Pub-sub</a></strong> is used for real-time processing such as elimination of redundant data, organizing data, and much more.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6071347163955200" target="_blank">Sharded counters</a></strong> help to handle the count of multiple features such as viewing, liking, Retweeting, and so on,. of the accounts with millions of followers.</li>
+<li>A <strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5053577315221504" target="_blank">cache</a></strong> is used to store the most requested and recent data in RAM to give users a quick response.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6624266925899776" target="_blank">CDN</a></strong> helps end users to access the data with low latency.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6310983387840512" target="_blank">Monitoring</a></strong> analyses all outgoing and incoming traffic, identifies the redundancy in the storage system, figures out the failed node, and so on.</li>
+</ul>
+<p>In the next lesson, we’ll discuss the design of the Twitter system.</p>

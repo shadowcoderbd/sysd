@@ -1,0 +1,41 @@
+<h1>System Design: Google Maps</h1>
+<h2 id="What-is-Google-Maps?">What is Google Maps?<a href="#What-is-Google-Maps?"><span>#</span></a></h2>
+<p>Let’s introduce the problem by assuming that we want to travel from one place to another. Here are the possible things that we might want to know:</p>
+<ul>
+<li>What are the best possible paths that take us to our destination, depending on the vehicle type we’re using?</li>
+<li>How long in miles is each path?</li>
+<li>How much time does each path take to get us to our destination?</li>
+</ul>
+<p>A maps application (like Google Maps or Apple Maps) enables users to answer all of the above questions easily. The following illustration shows the paths calculated by Google maps from “Los Angeles, USA” to “New York City, USA.”</p>
+
+<figure class="diagram"><img src="/images/28/1/img_0.svg" alt="Three paths suggested by Google maps for traveling from Los Angeles to New York" loading="lazy" /><figcaption>Three paths suggested by Google maps for traveling from Los Angeles to New York</figcaption></figure>
+<h2 id="When-do-we-use-a-maps-service?">When do we use a maps service?<a href="#When-do-we-use-a-maps-service?"><span>#</span></a></h2>
+
+<p>Individuals and organizations rely on location data to navigate around the world. Maps help in these cases:</p>
+<ul>
+<li>Individuals can find the locations of and directions to new places quickly, instead of wasting their time and the costs of travel, such as gas.</li>
+<li>Individuals use maps to see their <strong>estimated time of arrival (ETA)</strong> and the shortest path based on current traffic data.</li>
+<li>Many modern applications rely heavily on maps, such as ride-hailing services, autonomous vehicles, and hiking maps. For example:
+<ul>
+<li>Waymo’s self-driving car system uses Google Maps to navigate efficiently, quickly, and safely.</li>
+<li>Uber uses Google Maps as part of its application to assist drivers and provide customers with a visual representation of their journey.</li>
+</ul>
+</li>
+<li>Routing and logistics-based companies reduce the time it takes to make deliveries. By using a map’s unique real-time and historical traffic data, it minimizes the overall cost of deliveries by reducing gas usage and time spent stuck in traffic.</li>
+</ul>
+<p>In 2022, more than five million businesses are using Google Maps. It provides an API for enterprises to use a map system in their application.</p>
+<!-- Large enterprises use Google maps to visualize information, establish context, analyze results, and produce deep insights. Following are a few of the main advantages of location data for businesses:
+* Assists in creating better customer experiences.
+* Helps in the optimization of a company's operations.
+* Connects insights that customers couldn't see before, allowing them to make smart decisions. -->
+<h2 id="How-will-we-design-Google-Maps?">How will we design Google Maps?<a href="#How-will-we-design-Google-Maps?"><span>#</span></a></h2>
+<p>We divide the design of Google Maps into five lessons:</p>
+<ol>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5704949308850176" target="_blank"><strong>Requirements</strong></a>: In this lesson, we’ll list the functional and non-functional requirements of a Google Maps system. We will also identify the challenges involved in designing such a system. Lastly, we’ll estimate the resources like servers and bandwidth needed to serve queries by millions of users.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6659265711833088" target="_blank"><strong>Design</strong></a>: This lesson consists of the high-level and API design of a system like Google maps. We’ll describe the services and the workflow of the system.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4659727862071296" target="_blank"><strong>Meeting the challenges</strong></a>:
+We will discuss how we overcome the challenges that we highlighted in the requirements lesson.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6026783136940032" target="_blank"><strong>Detailed design</strong></a>: Based on the solution to the challenges, we will improve our earlier design and also elaborate on different aspects of it. We will describe the detailed design, including storage schema.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6335210467098624" target="_blank"><strong>Evaluation</strong></a>: This lesson explains how our designed Google Maps system fulfills all the requirements.</li>
+</ol>
+<p>Let’s start by understanding the requirements for designing a system like Google Maps.</p>

@@ -1,0 +1,77 @@
+<h1>Design of a Client-side Monitoring System</h1>
+<p>A service has no visibility of the errors that don’t occur at its infrastructure. Still, such failures are equally frustrating for the customers, and they might have to ask their friends, “Is the service X down for you as well?” or head to sites like Downdetector to see if anyone else is reporting the same issues. They might report the problem via a Tweet or some other communication channel. However, all such cases have a slow feedback loop. As a service provider, we want to detect such problems as quickly as possible to take remedial measures. Let’s design such a system.</p>
+<h2 id="Initial-design">Initial design<a href="#Initial-design"><span>#</span></a></h2>
+<p>To ensure that the client’s requests reach the server, we’ll act as clients and perform reachability and health checks. We’ll need various vantage points across the globe. We can run a service, let’s call it prober, that periodically sends requests to the service to check availability. This way, we can monitor reachability to our service from many different places.</p>
+
+<figure class="diagram"><img src="/images/15/2/img_0.svg" alt="Prober checking availability of website" loading="lazy" /><figcaption>Prober checking availability of website</figcaption></figure>
+<h3 id="Issues-with-probers">Issues with probers<a href="#Issues-with-probers"><span>#</span></a></h3>
+<p>We can have the following issues with probers:</p>
+<ul>
+<li>
+<p><strong>Incomplete coverage</strong>: We might not have good coverage across all autonomous systems. There are 100,000 unique autonomous systems on the Internet as of March 2021. It’s not cost-effective or even possible to put those many probes across the globe. Country or ISP-specific regulations and the need for periodic maintenance are additional hurdles to implementing such a scheme.</p>
+</li>
+<li>
+<p><strong>Lack of user imitation</strong>: Such probes might not represent a typical user behavior to explain how a typical user will use the service.</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The initial design is based on active probing.</p>
+</blockquote>
+<h2 id="Improve-the-design">Improve the design<a href="#Improve-the-design"><span>#</span></a></h2>
+<p>Instead of using a prober on vantage points, we can embed the probers into the actual application instead. We’ll have the following two components:</p>
+<ul>
+<li>
+<p><strong>Agent</strong>: This is a prober embedded in the client application that sends the appropriate service reports about any failures.</p>
+</li>
+<li>
+<p><strong>Collector</strong>: This is a report collector independent of the primary service. It’s made independent to avoid the situations where client agents want to report an error to the failed service. We summarize errors reports from collectors and look for spikes in the errors graph to see client-side issues.</p>
+</li>
+</ul>
+<p>The following illustration shows how an agent reaches an independent collector when primary service isn’t reachable:</p>
+<!--
+The service operators will need an external, independent ground truth about the system. Doing so, we can now look for a spike in the errors.
+-->
+<figure class="diagram"><img src="/images/15/2/img_1.svg" alt="Evaluating the agent's report to see a spike in errors" loading="lazy" /><figcaption>Evaluating the agent's report to see a spike in errors</figcaption></figure>
+<p>These collectors are a hierarchy of big data processing systems. We can place them near the client network, and over time, we can accumulate these statistics from all such localized sites. We’ll use online stream processing systems to make such a system near real-time. If we’re mainly looking for summary statistics, our system can tolerate the loss of some error reports. Some reports will be relative to the overall user population. We might say 1% of service users are “some.” If we don’t want to lose any reports, we’ll need to design a system with more care, which will be more expensive.</p>
+<p>Now, we’ll solve the following concerns:</p>
+<ul>
+<li>Can a user activate and deactivate client-side reports?</li>
+<li>How do client-side agents reach collectors under faulty conditions?</li>
+<li>How will we protect user privacy?</li>
+</ul>
+<h2 id="Activate-and-deactivate-reports">Activate and deactivate reports<a href="#Activate-and-deactivate-reports"><span>#</span></a></h2>
+<p>We’ll use a custom HTML header to send appropriate information to the collectors.  Though a client accesses the service via a browser, a specific browser should know about this feature to appropriately fill in the header information in the HTTP requests. For organizations that make browsers and provide services (for example, Chromium-based browsers), such features can be incorporated and standardized over time.</p>
+<p>Another solution can be to use a client-side application that the service controls, and then we can easily include such headers over HTTP.</p>
+<p>The client can fill in the request header if the client has already consented to that. The service can then reply with appropriate values for the policy and collection endpoints.</p>
+
+<figure class="diagram"><img src="/images/15/2/img_2.svg" alt="Activate and deactivate reports" loading="lazy" /><figcaption>Activate and deactivate reports</figcaption></figure>
+<h2 id="Reach-collectors-under-faulty-conditions">Reach collectors under faulty conditions<a href="#Reach-collectors-under-faulty-conditions"><span>#</span></a></h2>
+<p>The collectors need to be in a different failure domain from the web service endpoint that we’re trying to monitor. The client side can try various collectors in different failure domains until one works. We can see a similar pattern in the following examples. At times, we refer to such a phenomenon as being outside the blast radius of a fault.</p>
+<p>If we want to see the reachability of an IP, we host the service on a different IP. If we monitor the availability of a domain, we host the collector on a different domain. And if we want to detect that an autonomous system route isn’t hijacked, we host the service in a different autonomous system. Though, for last-mile errors, there isn’t much we could do as a service provider. We might accumulate such events at the client side and report them on the next connectivity. A service can influence the remaining component failures.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="323"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">1.2.3.4 unreachable</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Different server IP</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Can't resolve example.com</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Different domain</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">AS 1234 hijacked</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Different ASN</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">CDN available</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Different/no CDN</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Last-mile problems</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">No readily available fall-back for the service</p></td></tr></tbody></table>
+<h2 id="Protect-user-privacy">Protect user privacy<a href="#Protect-user-privacy"><span>#</span></a></h2>
+<p>The human user who uses the client-side software should be in full control to precisely know what data is collected and sent with each request. The user should also be able to reactivate the feature any time they wish. If we use our client-side application (and not a browser application), we have a lot of flexibility in what diagnostic could be included in the report. For a browser-based client, we can avoid the following information:</p>
+<ul>
+<li>We can avoid including traceroute hops to see a client to the service path. Users can be susceptible to their geographic location. It might be akin to collecting location information.</li>
+<li>We can avoid including which DNS resolver is being used. Again, details of DNS can leak some information about the location.</li>
+<li>We can avoid including round-trip-time (RTT) and packet loss information.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> As a guiding rule, we should try to collect as little information as possible, and it must only be used for the specific purpose a user gave consent for.</p>
+</blockquote>
+<p>Ideally, for a web-based client, we should only collect the information that’s logged in the weblog when any request has been successful.</p>
+<p>We shouldn’t use any active probing except to test the service’s standard functionality and report such probes’ results. So, traceroute and RTT or packet loss information is excluded.</p>
+<p>Any intermediary (like ISPs or middleboxes) can’t change, add, or remove the error reporting mechanism due to encryption. Similarly, designated collectors are the only place where such data can go.</p>
+
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<ul>
+<li>
+<p>In a distributed system, it’s difficult to detect and respond to errors on the client side. So, it’s necessary to monitor such events to provide a good user experience.</p>
+</li>
+<li>
+<p>We can handle errors using an independent agent that sends service reports about any failures to a collector. Such collectors should be independent of the primary service in terms of infrastructure and deployment.</p>
+</li>
+</ul>
+
+<p></p>

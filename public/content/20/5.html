@@ -1,0 +1,31 @@
+<h1>Evaluation of a Blob Store's Design</h1>
+<p>Let’s evaluate how our design helps us achieve our requirements.</p>
+<h2 id="Availability">Availability<a href="#Availability"><span>#</span></a></h2>
+<p>The replication part of our design makes the system available. For reading the data, we keep four replicas for each blob. Having replicas, we can distribute the request load. If one node fails, the other replica node can serve the request.
+Moreover, our replica placement strategy handles a whole data center failure and can even handle the situation of region unavailability due to <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">natural disasters</span></span>. We ensure that enough replicas are available at any point in time using our monitoring service, which makes a copy of the data in a timely manner if the number of failed replicas exceeds the specified threshold.</p>
+<p>For write requests, we replicate the data within the cluster in a fault-tolerant way and quickly respond to the user, making the system available for write requests.</p>
+<p>To keep the master node available, we keep a backup of its state. In the case of a master-node failure, we start a new instance of the master node, initializing it from the saved state.</p>
+<h2 id="Durability">Durability<a href="#Durability"><span>#</span></a></h2>
+<p>The replication and monitoring services ensure the durability of the data. The data, once uploaded, is synchronously replicated within a storage cluster. If data loss occurs at one node, we can recover the data from the other nodes. The monitoring service monitors the storage disks. If any disk fails, the monitoring service alerts the administrators to change the disk and sends messages to the master node to copy the content on that disk on to the other available disk or the newly added disk. The master node then updates the mapping accordingly.</p>
+
+<figure class="diagram"><img src="/images/20/5/img_0.svg" alt="Guarantees provided by the blob store" loading="lazy" /><figcaption>Guarantees provided by the blob store</figcaption></figure>
+<h2 id="Scalability">Scalability<a href="#Scalability"><span>#</span></a></h2>
+<p>The partitioning and splitting of blobs into small-sized chunks helps us scale for billions of blob requests. Blobs are partitioned into separate ranges and served by different partition servers. The partition mappings specify which partition server will serve which particular blob range requests. Partitioning also provides automatic load balancing between partition servers to fulfill the blobs’ traffic needs.</p>
+<p>Our system is horizontally scalable for storage. As need for storage arises, we add more data nodes. At some point, though, our master node can become a bottleneck. A single master node can handle 10,000 queries per second (QPS).</p>
+
+<p></p>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Throughput">Throughput<a href="#Throughput"><span>#</span></a></h2>
+<p>We save chunks of a blob on different data nodes that distribute the requests for a blob to multiple machines. Parallel fetching of chunks from multiple data nodes helps us achieve high throughput.</p>
+<p>Additionally, caching at different layers— the client side, front-end servers, and the master node—improves our throughput and reduces latency.</p>
+<h2 id="Reliability">Reliability<a href="#Reliability"><span>#</span></a></h2>
+<p>We achieve reliability through our monitoring techniques. For example, the heartbeat protocol keeps the master node updated on the status of data nodes. This enables the master node to request data from reliable nodes only. Furthermore, it takes necessary precautions to ensure reliable service. For example, the failure of a node triggers the master node to request an additional replica node.</p>
+<p>The monitoring services also alert the administrators to change faulty hardware like failed disks or broken network links or switches. To ensure a reliable service, the master node keeps track of the available space on the disk. If the available space left reaches a certain threshold, an alert is sent to the administrators to add new disks.</p>
+<h2 id="Consistency">Consistency<a href="#Consistency"><span>#</span></a></h2>
+<p>We synchronously replicate the disk data blocks inside a storage cluster upon a write request, making the data strongly consistent inside the storage cluster. This is done on the user’s critical path. We serve the subsequent read requests on this data from the same storage cluster until we haven’t replicated this data in another data center and or on other storage clusters.</p>
+<p>After responding to the write request and replicating data within the storage cluster, we asynchronously replicate blobs in the data centers placed far away or in other regions to ensure availability.</p>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>We saw that a blob store is designed to store large-sized and unstructured data. A blob store helps applications store images, videos, audio, and so on. Nowadays, it’s used by many applications like YouTube, Facebook, Instagram, Twitter, and more. We designed a system where users can perform a blob store’s basic function. Lastly, we evaluated our design based on our non-functional requirements.</p>
+
+<p></p>

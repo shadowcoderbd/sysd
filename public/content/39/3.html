@@ -1,0 +1,102 @@
+<h1>AWS Kinesis Outage Affecting Many Organizations</h1>
+<p><strong>Amazon Kinesis</strong> allows us to aggregate, process, and analyze real-time streaming data to get timely insights and react quickly to the information it provides. It continuously captures gigabytes of data from hundreds of thousands of sources per second. The Kinesis service’s frontend handles authentication, throttling, and distributes workloads to its back-end “workhorse” cluster via database sharding. On November 25, 2020, the Amazon Kinesis service was disrupted in the US-East-1 (Northern Virginia) region, affecting thousands of other third-party services. The failure was significant enough to take out a large portion of Internet services.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/39/3/img_0.svg" alt="" loading="lazy" /></figure>
+<p></p>
+<h2 id="Sequence-of-events">Sequence of events<a href="#Sequence-of-events"><span>#</span></a></h2>
+<ul>
+<li>
+<p>According to Amazon, the event was triggered by adding a small capacity to the AWS front-end fleet of servers, scheduled from 2:44 a.m. PST to 3:47 a.m. PST.</p>
+</li>
+<li>
+<p>The addition of the new capacity caused all the servers in the fleet to exceed the maximum number of threads that are allowed by an operating system configuration.</p>
+</li>
+<li>
+<p>Due to exceeding the limit on threads, cache construction was failing to complete, and front-end servers were ending with useless shard maps that left them unable to route requests to back-end clusters.</p>
+</li>
+<li>
+<p>Other primary Amazon services also stopped working, including Amazon Cognito and CloudWatch.</p>
+<ul>
+<li>
+<p>Kinesis Data Streams is used by Amazon Cognito to gather and analyze API usage patterns. Because of the long-running issue with Kinesis Data Streams, a hidden error in the buffering code—which is required for Cognito services—caused the Cognito web servers to start blocking on the backlogged Kinesis Data Stream buffers. As a result, Cognito customers witnessed an increase in API failures and latencies for Cognito user pools and identity pools, making it impossible for external users to authenticate or receive temporary AWS credentials.</p>
+</li>
+<li>
+<p>CloudWatch uses Kinesis Data Streams to process metrics and log data. The <code>PutMetricData</code> and <code>PutLogEvents</code> APIs in CloudWatch encountered higher error rates and latencies, and alerts were set to <code>INSUFFICIENT DATA</code>. The great majority of metrics were unable to be processed due to higher error rates and latencies. When CloudWatch was experiencing these greater issues, internal and external clients couldn’t persist all metric data to the CloudWatch service.</p>
+</li>
+</ul>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/39/3/img_1.svg" alt="Sequence of events" loading="lazy" /><figcaption>Sequence of events</figcaption></figure>
+<ul>
+<li>
+<p>Due to the problems with CloudWatch metrics, two services were also impacted. First, AutoScaling policies that rely on CloudWatch measurements suffered delays.  Second, Lambda experienced the effect. Currently, posting metric data to CloudWatch is required as a part of Lambda function invocation. If CloudWatch is unavailable, Lambda metric agents are meant to buffer metric data locally for a period of time. The metric data buffering became so large that it generated memory congestion on the underlying service hosts utilized for Lambda function invocations, leading to higher error rates.</p>
+</li>
+<li>
+<p>Increased API failures and event processing delays plagued CloudWatch Events and EventBridge. EventBridge is used by Elastic Container Service (ECS) and Elastic Kubernetes Service (EKS) to drive internal processes for managing client clusters and jobs. This has an impact on new cluster provisioning, existing cluster scaling, and task deprovisioning.
+​​</p>
+</li>
+</ul>
+<ul>
+<li>
+<p>Apart from the service issues, Amazon also experienced delays in communicating service status to their customers. Amazon uses two dashboards for communication with their customers, Service Health Dashboard and Personal Health Dashboard. The Service Health Dashboard informs all customers of events, such as the current one. It was down because of its dependency on Cognito, which was impacted by this event.</p>
+</li>
+<li>
+<p>Apart from the disruption in the Amazon services, this also had a ripple effect on thousands of third-party online services, applications, and websites. This includes Adobe Spark, Acorns, Coinbase, <em>Washington Post</em>, and hundreds of such services.</p>
+</li>
+</ul>
+
+<h2 id="Analysis">Analysis<a href="#Analysis"><span>#</span></a></h2>
+<ul>
+<li>
+<p><strong>Complexity of enhancing scalability</strong>: We’ve been stressing the need for horizontal scalability in all of our design problems.  This outage event shows that in practice, adding more capacity to a serving cluster so that we don’t deny any client requests can be challenging and can have unintended side effects.</p>
+</li>
+<li>
+<p><strong>The need for a trained team</strong>:  Training the production team to deal with such unforeseen situations is a challenging task, but it’s worth it and can result in expedited recovery. In addition, randomly restarting the front-end servers and suspecting that the memory pressure causes the problem alludes to the challenges of reaching the root causes under the stress of time.</p>
+</li>
+<li>
+<p><strong>Reading from authoritative servers during bootstrap</strong>: During the bootstrap process, it’s a good idea to take data from the authoritative metadata store rather than from the front-end servers to reduce the impact of such failures.</p>
+</li>
+<li>
+<p><strong>Identification of faults in initial stages</strong>: There’s a need for automated processes to identify the causes of failure within the initial stages of its occurrence.</p>
+</li>
+<li>
+<p><strong>Proper testing mechanisms can reduce the severity of the fault</strong>: The new capacity that’s causing the servers in the fleet to exceed the maximum number of threads is a potential bug that should have been fixed earlier than before restarting the servers. This reflects the inability to properly test the system. There should be a kind of simulator to test all cases before deploying additional capacity into the fleet.</p>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/39/3/img_2.svg" alt="" loading="lazy" /></figure>
+<ul>
+<li><strong>Finding potential bugs before planned events</strong>: The issue with Kinesis Data Streams triggered a latent bug in the buffering code that caused the Cognito web servers to begin to block on the backlogged Kinesis Data Stream buffers. The potential bugs should be identified and fixed before critical planned events, such as adding capacity or software and hardware maintenance.</li>
+</ul>
+<ul>
+<li><strong>Adopting automated processes for resource allocation</strong>: The Cognito team sought to reduce the effect of the Kinesis faults in the early phases of the event by providing extra capacity and therefore boosting their ability to buffer calls to Kinesis. Instead of manually assigning capacity, there should be an automated system to increase or reallocate capacity in such events.</li>
+</ul>
+
+<p></p>
+<h2 id="Lessons-learned">Lessons learned<a href="#Lessons-learned"><span>#</span></a></h2>
+<ul>
+<li>
+<p><strong>Testing</strong>: Proper testing and identifying the potential bugs are essential. In this case, the number of threads exceeding a maximum limit defined by the operating system seems to be a possible bug.</p>
+</li>
+<li>
+<p><strong>Ready operations team</strong>: A bug bringing an overall system to a halt is the single point of failure, which is possible in a complex system. The production team should be trained and ready for such events.</p>
+</li>
+<li>
+<p><strong>Reducing number of servers</strong>: To get significant headroom in the thread count used as the total threads, there’s a need to move to more powerful CPU and memory servers. This will reduce the total number of servers and the threads required by each server to communicate across the fleet. Having fewer servers means that each server maintains fewer threads. Amazon is adding fine-grained alarming for thread consumption in the service.</p>
+</li>
+<li>
+<p><strong>Front-end fleet changes</strong>: Several changes are required to radically improve the cold start time for the front-end fleet. Moreover, the front-end server cache needs to be moved to a dedicated fleet.</p>
+</li>
+<li>
+<p><strong>Avoiding recurrent failures</strong>: To avoid recurrent failures in the future, extensive AWS services, like CloudWatch and others, must be moved to a separate, partitioned front-end fleet.</p>
+</li>
+</ul>
+
+<p></p>
+<figure class="diagram"><img src="/images/39/3/img_3.svg" alt="Lessons learned during the Kinesis outage" loading="lazy" /><figcaption>Lessons learned during the Kinesis outage</figcaption></figure>
+<p></p>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>

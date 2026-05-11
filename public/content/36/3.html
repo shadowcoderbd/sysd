@@ -1,0 +1,65 @@
+<h1>High-level Design of WhatsApp</h1>
+<h2 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h2>
+<p>At an abstract level, the high-level design consists of a chat server responsible for communication between the sender and the receiver. When a user wants to send a message to another user, both connect to the chat server. Both users send their messages to the chat server. The chat server then sends the message to the other intended user and also stores the message in the database.</p>
+
+<figure class="diagram"><img src="/images/36/3/img_0.svg" alt="The high-level design of WhatsApp messenger" loading="lazy" /><figcaption>The high-level design of WhatsApp messenger</figcaption></figure>
+<p>The following steps describe the communication between both clients:</p>
+<ol>
+<li>User A and user B create a communication channel with the chat server.</li>
+<li>User A sends a message to the chat server.</li>
+<li>Upon receiving the message, the chat server acknowledges back to user A.</li>
+<li>The chat server sends the message to user B and stores the message in the database if the receiver’s status is offline.</li>
+<li>User B sends an acknowledgment to the chat server.</li>
+<li>The chat server notifies user A that the message has been successfully delivered.</li>
+<li>When user B reads the message, the application notifies the chat server.</li>
+<li>The chat server notifies user A that user B has read the message.</li>
+</ol>
+<p>The process is shown in the following illustrations:</p>
+
+<figure class="diagram"><img src="/images/36/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/36/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/36/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/36/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/36/3/img_5.svg" alt="" loading="lazy" /></figure>
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>WhatsApp provides a vast amount of features to its users via different APIs. Some features are mentioned below:</p>
+<ul>
+<li>Send message</li>
+<li>Get message or receive message</li>
+<li>Upload a media file or document</li>
+<li>Download document or media file</li>
+<li>Send a location</li>
+<li>Send a contact</li>
+<li>Create a status</li>
+</ul>
+<p>However, we’ll discuss essential APIs related to the first four features.</p>
+<h3 id="Send-message">Send message<a href="#Send-message"><span>#</span></a></h3>
+<p>The <code>sendMessage</code> API is as follows:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">sendMessage</span><span class="mtk9">(</span><span class="mtk1">sender_ID</span><span class="mtk9">,</span><span class="mtk1"> reciever_ID</span><span class="mtk9">,</span><span class="mtk1"> type</span><span class="mtk9">,</span><span class="mtk1"> text</span><span class="mtk9">=</span><span class="mtk1">none</span><span class="mtk9">,</span><span class="mtk1"> media_object</span><span class="mtk9">=</span><span class="mtk1">none</span><span class="mtk9">,</span><span class="mtk1"> document</span><span class="mtk9">=</span><span class="mtk1">none</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>This API is used to send a <code>text</code> message from a sender to a receiver by making a POST API call to the <code>/messages</code> API endpoint. Generally, the sender’s and receiver’s IDs are their phone numbers. The parameters used in this API call are described in the following table:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>sender_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier of the user who sends the message.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>reciever_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier of the user who receives the message.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>type</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The default message <code>type</code> is text. This represents whether the sender sends a media file or a document.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>text</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This feild contains the text that has to be sent as a message.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>media_object</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This parameter is defined based on the type parameter. It represents the media file to be sent.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>document</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This represents the document file to be sent.</p></td></tr></tbody></table>
+<p></p>
+<h3 id="Get-message">Get message<a href="#Get-message"><span>#</span></a></h3>
+<p>The <code>getMessage</code> API is as follows:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">getMessage</span><span class="mtk9">(</span><span class="mtk1">user_Id</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>Using this API call, users can fetch all unread messages when they come online after being offline for some time.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>user_Id</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier representing the user who has to fetch all unread messages.</p></td></tr></tbody></table>
+<p></p>
+<h3 id="Upload-media-or-document-file">Upload media or document file<a href="#Upload-media-or-document-file"><span>#</span></a></h3>
+<p>The <code>uploadFile</code> API is as follows:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">uploadFile</span><span class="mtk9">(</span><span class="mtk1">file_type</span><span class="mtk9">,</span><span class="mtk1"> file</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>We can upload media files via the <code>uploadFile</code> API by making a POST request to the <code>/v1/media</code> API endpoint. A successful response returns an ID that’s forwarded to the receiver. The maximum file size for media that can be uploaded is 16 MB, while the limit is 100 MB for a document.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>file_type</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This represents the type of file uploaded via the API call.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>file</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This contains the file being uploaded via the API call. </p></td></tr></tbody></table>
+<p></p>
+<h3 id="Download-a-document-or-media-file">Download a document or media file<a href="#Download-a-document-or-media-file"><span>#</span></a></h3>
+<p>The <code>downloadFile</code> API is as follows:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">downloadFile</span><span class="mtk9">(</span><span class="mtk1">user_id</span><span class="mtk9">,</span><span class="mtk1"> file</span><span class="mtk9">,</span><span class="mtk1"> file_id</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>The parameters of this API call are explained in the following table:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>user_id</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier of the user who will download a file.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>file</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This contains the file to be downloaded.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>file_id</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier of a file. It’s generated while uploading a file via <code>uploadFIle()</code> API call. The <code>downloadFile()</code> API call downloads the media file through this identifier.</p></td></tr></tbody></table>
+<p>In the next lesson, we’ll focus on the detailed design of the WhatsApp system.</p>
+
+<p></p><p></p>

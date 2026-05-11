@@ -1,0 +1,49 @@
+<h1>Detailed Design of the Typeahead Suggestion System</h1>
+<h2 id="Detailed-design">Detailed design<a href="#Detailed-design"><span>#</span></a></h2>
+<p>Let’s go over the flow and interaction of the components shown in the illustration below. Our design is divided into two main parts:</p>
+<ul>
+<li>A suggestion service</li>
+<li>An assembler</li>
+</ul>
+
+<figure class="diagram"><img src="/images/37/5/img_0.svg" alt="The detailed design of the typeahead suggestion system" loading="lazy" /><figcaption>The detailed design of the typeahead suggestion system</figcaption></figure>
+<p></p>
+<h3 id="Suggestion-service">Suggestion service<a href="#Suggestion-service"><span>#</span></a></h3>
+<p>At the same time that a user types a query in the search box, the <code>getSuggestions(prefix)</code> API calls hit the suggestions services. The top ten popular queries are returned from the distributed cache, Redis.</p>
+<h3 id="Assembler">Assembler<a href="#Assembler"><span>#</span></a></h3>
+<p>In the previous lesson, we discussed how tries are built, partitioned, and stored in the database. However, the creation and updation of a trie shouldn’t come in the critical path of a user’s query. We shouldn’t update the trie in real time for the following reasons:</p>
+<ul>
+<li>There could be millions of users entering queries every second. During such phases with large amounts of incoming traffic, updating the trie in real time on every query can slow down our <strong>suggestion service</strong>.</li>
+<li>We have to provide top suggestions that might not frequently change after the creation or updation of the trie. So, it’s less important to update the trie frequently.</li>
+</ul>
+<p>In light of the reasons given above, we have a separate service called an assembler that’s responsible for creating and updating tries after a certain configurable amount of time. The assembler consists of the following different services:</p>
+<ul>
+<li>
+<p><strong>Collection service:</strong> Whenever a user types, this service collects the log that consists of phrases, time, and other metadata and dumps it in a database that’s processed later. Since the size of this data is huge, the <strong>Hadoop Distributed File System (HDFS)</strong> is considered a suitable storage system for storing this raw data.</p>
+<p>An example of the raw data from the collection service is shown in the following table. We record the time so that the system knows when to update the frequency of a certain phrase.</p>
+</li>
+</ul>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="314"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Phrases</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Date and Time (DD-MM-YYYY  HH:MM:SS)</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIVERSAL</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">23-03-2022 10:16:18</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIVERSITY</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">23-03-2022 10:20:11</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIQUE</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">23-03-2022 10:21:10</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIQUE</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">23-03-2022 10:22:24</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIVERSITY</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">23-03-2022 10:25:09</p></td></tr></tbody></table>
+<ul>
+<li>
+<p><strong>Aggregator:</strong> The raw data collected by the <strong>collection service</strong> is usually not in a consolidated shape. We need to consolidate the raw data to process it further and to create or update the tries. An aggregator retrieves the data from the HDFS and distributes it to different workers. Generally, the MapReducer is responsible for aggregating the frequency of the prefixes over a given interval of time, and the frequency is updated periodically in the associated Cassandra database. <strong>Cassandra</strong> is suitable for this purpose because it can store large amounts of data in a tabular format.</p>
+<p>The following table shows the processed and consolidated data within a particular period. This table is updated regularly by the aggregator and is stored in a hash table in a database like Cassandra. For simplicity, we assume that our data is case insensitive.</p>
+</li>
+</ul>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="250"/><col width="250"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Phrases</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Frequency</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Time Interval</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIVERSAL</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1400</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1st 15 minutes</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIVERSITY</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1340</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1st 15 minutes</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">UNIQUE</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1200</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1st 15 minutes</p></td></tr></tbody></table>
+<p></p>
+<ul>
+<li>
+<p><strong>Trie builder:</strong> This service is responsible for creating or updating tries. It stores these new and updated tries on their respective shards in the trie database via ZooKeeper. Tries are stored in persistent storage in a file so that we can rebuild our trie easily if necessary. NoSQL document databases such as MongoDB are suitable for storing these tries. This storage of a trie is needed when a machine restarts.</p>
+<p>The trie is updated from the aggregated data in the Cassandra database. The existing snapshot of a trie is updated with all the new terms and their corresponding frequencies. Otherwise, a new trie is created using the data in the Cassandra database.</p>
+<p>Once a trie is created or updated, the system makes it available for the suggestion service.</p>
+</li>
+</ul>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>

@@ -1,0 +1,81 @@
+<h1>Detailed Design of a Monitoring System</h1>
+<p>We’ll discuss the core components of our monitoring system, identify the shortcomings of our design, and improve the design to fulfill our requirements.</p>
+
+<h2 id="Storage">Storage<a href="#Storage"><span>#</span></a></h2>
+<p>We’ll use time-series databases to save the data locally on the server where our monitoring service is running. Then, we’ll integrate it with a separate storage node. We’ll use blob storage to store our metrics.</p>
+<!--, and it will also handle our requirement of working better in a distributed environment. -->
+<p>We need to store metrics and know which action to perform if a metric has reached a particular value. For example, if CPU usage exceeds 90%, we generate an alert to the end user so the alert receiver can do take the necessary steps, such as allocate more resources to scale. For this purpose, we need another storage area that will contain the rules and actions. Let’s call it a rules databse. Upon any violation of the rules, we can take appropriate action.</p>
+<p>Here, we have identified two more components in our design—that is, a rules and action database and a storage node (a blob store).</p>
+
+<figure class="diagram"><img src="/images/14/2/img_0.svg" alt="Adding blob storage and a rules and action database" loading="lazy" /><figcaption>Adding blob storage and a rules and action database</figcaption></figure>
+<h2 id="Data-collector">Data collector<a href="#Data-collector"><span>#</span></a></h2>
+<p>We need a monitoring system to update us about our several data centers. We can stay updated if the information about our processes reaches us, which is possible through logging. We’ll choose a pull strategy. Then, we’llextract our relevant metrics from the logs of the application. As discussed in our logging design, we used a <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4835612456124416#Using-distributed-messaging-queue" target="_blank">distributed messaging queue</a>. The message in the queue has the service name, ID, and a short description of the log. This will help us identify the metric and its information for a specific service. Exposing the relevant metrics to the data collector is necessary for monitoring any service so that our data collector can get the metrics from the service and store them into the time-series database.</p>
+<p>A real-world example of a monitoring system based on the pull-based approach is <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">DigitalOcean</span></span>. It monitors millions of machines that are dispersed globally.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h3 id="Service-discoverer">Service discoverer<a href="#Service-discoverer"><span>#</span></a></h3>
+<p>The data collector is responsible for fetching metrics from the services it monitors. This way, the monitoring system doesn’t need to keep a track of services. Instead, it can find them using discoverer service. We’ll save the relative information of the services we have to monitor. We’ll use a service discovery solution and integrate with several platforms and tools, including EC2, Kubernetes, and Consul. This will allow us to discover which services we have to monitor. Similar dynamic discovery can be used for newly commissioned hardware.</p>
+<p>Let’s add our newly identified component to our existing design.</p>
+
+<figure class="diagram"><img src="/images/14/2/img_1.svg" alt="Adding the service discoverer" loading="lazy" /><figcaption>Adding the service discoverer</figcaption></figure>
+<h2 id="Querying-service">Querying service<a href="#Querying-service"><span>#</span></a></h2>
+<p>We want a service to access the database and fetch the relevant query results. We need this because we want to view the errors like values of a particular node’s memory usage, or send an alert if a metric exceeds the set limit. Let’s add the two components we need along with querying.</p>
+<h3 id="Alert-Manager">Alert Manager<a href="#Alert-Manager"><span>#</span></a></h3>
+<p>The alert manager is responsible for sending alerts upon violations of set rules. It can send alerts as an email, a Slack message, and so on.</p>
+<h3 id="Dashboard">Dashboard<a href="#Dashboard"><span>#</span></a></h3>
+<p>We can set dashboards by using the collected metrics to display the required information—for example, the number of requests in the current week.</p>
+<p>Let’s add the components discussed above, which completes our design of the monitoring system.</p>
+
+<figure class="diagram"><img src="/images/14/2/img_2.svg" alt="Detailed design of monitoring system" loading="lazy" /><figcaption>Detailed design of monitoring system</figcaption></figure>
+<p>Our all-in-one monitoring service works for actively tracking systems and services. It collects and stores data, and it supports searches, graphs, and alerts.</p>
+<h2 id="Pros">Pros<a href="#Pros"><span>#</span></a></h2>
+<ul>
+<li>The design of our monitoring service ensures the smooth working of the operations and keeps an eye on signs of impending problems.</li>
+</ul>
+<!--The monitoring service can identify that service is down if that service does not respond as the data cannot be fetched.
+
+An excessive amount of data can overburden the system. But by fetching data ourselves, we do not overload the network traffic. 
+-->
+<ul>
+<li>
+<p>Our design avoids overloading the network traffic by fetching the data itself.</p>
+</li>
+<li>
+<p>The monitoring service provides higher availability.</p>
+</li>
+</ul>
+<h2 id="Cons">Cons<a href="#Cons"><span>#</span></a></h2>
+<ul>
+<li>
+<p>The system seems scalable, but managing more servers to monitor can be a problem. For example, we have a dedicated server responsible for running the monitoring service. It can be a single point of failure (SPOF). To cater to SPOF, we can have a failover server for our monitoring system. Then, we also need to maintain consistency between actual and failover servers. However, such a design will also hit a scalability ceiling as the number of servers further increase.</p>
+</li>
+<li>
+<p>Monitoring collects an enormous amount of data 24/7, and keeping it forever might not be feasible.  We need a policy and
+mechanisms to delete unwanted data periodically to efficiently utilize the resources.</p>
+</li>
+</ul>
+<!--Over time, our blob storage will have a lot of data; managing and making it available for the queries will be hectic. So the system lacks high availability.
+-->
+<p>Let’s think of a way to overcome the problems with our monitoring service.</p>
+
+<h2 id="Improving-our-design">Improving our design<a href="#Improving-our-design"><span>#</span></a></h2>
+<p>We want to improve our design so that our system can scale better and decide what data to keep and what to delete. Let’s see how the push-based approach works. In a push-based approach, the application pushes its data to the monitoring system.</p>
+
+<figure class="diagram"><img src="/images/14/2/img_3.svg" alt="Push-based monitoring system" loading="lazy" /><figcaption>Push-based monitoring system</figcaption></figure>
+<p>We used a pull-based strategy to avoid network congestion. This also allows the applications to be free of the aspect that they have to send the relevant monitoring data of to the system. Instead, the monitoring system fetches or pulls the data itself. To cater to scaling needs, we need to apply a push-based approach too. We’ll use a hybrid approach by combining our pull-based strategy with the push-based strategy.</p>
+<p>We’ll keep using a pull-based strategy for several servers within a data center. We’ll also assign several monitoring servers for hundreds or thousands of servers within a data center—let’s say one server monitoring 5,000 servers. We’ll call them secondary monitoring servers.</p>
+<p>Now, we’ll apply the push-based strategy. The secondary monitoring systems will push their data to a primary data center server. The primary data center server will push its data to a global monitoring service responsible for checking all the data centers spread globally.</p>
+<p>We’ll use blob storage to store our excessive data, apply elastic search, and view our relevant stats using a visualizer. As our servers or data centers increase, we’ll add more monitoring systems. The design for this is given below.</p>
+<blockquote>
+<p><strong>Note</strong>: Using a hierarchy of systems for scaling is a common design pattern in system design. By increasing nodes on a level or introducing additional levels in the hierarchy, we get the ability to scale according to our current needs.</p>
+</blockquote>
+
+<figure class="diagram"><img src="/images/14/2/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/14/2/img_5.svg" alt="" loading="lazy" /></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<p>Humans need to consume enormous amounts of data, and even after different kinds of data summarizations, the data can still be huge. Next, we’ll tackle how to present enormous data to human administrators.</p>
+<!--
+We have summed up the components required for our monitoring system. In the next [lesson](https://www.educative.io/collection/page/10370001/4941429335392256/5232629720285184), we will discuss an innovative way to view the health of thousands of servers in a data center.-->
+<p></p>

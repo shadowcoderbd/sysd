@@ -1,0 +1,119 @@
+<h1>Design of a Web Crawler</h1>
+<h2 id="Design">Design<a href="#Design"><span>#</span></a></h2>
+<p>This lesson describes the building blocks and the additional components involved in the design and workflow of the web crawling process with respect to its requirements.</p>
+<h3 id="Components">Components<a href="#Components"><span>#</span></a></h3>
+<p>Here are the details of the building blocks and the components needed for our design:</p>
+<ul>
+<li>
+<p><strong>Scheduler</strong>: This is one of the key building blocks that schedules URLs for crawling. It’s composed of two units: a priority queue and a relational database.</p>
+<ol>
+<li>
+<p><strong>A priority queue (URL frontier)</strong>: The queue hosts URLs that are made ready for crawling based on the two properties associated with each entry: <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">priority</span></span> and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">updates frequency</span></span>.</p>
+</li>
+<li>
+<p><strong>Relational database</strong>:  It stores all the URLs along with the two associated parameters mentioned above. The database gets populated by new requests from the following two input streams:</p>
+</li>
+</ol>
+<ul>
+<li>The user’s <em>added URLs</em>, which include seed and runtime added URLs.</li>
+<li>The crawler’s <em>extracted URLs</em>.</li>
+</ul>
+</li>
+</ul><span>
+</span><!---
+      1. Priority (tolerance level) -- As a requirement, we need to assign variable priorities to URLs, depending on their content. This attribute defines the precedence of a URL while in the URL frontier.
+      2. Frequency of updates (periodicity) -- For recrawling purposes, we need to define the recrawl frequency for each URL as well. This attribute ensures a defined number of placements in the URL frontier, for each URL. 
+---><span> </span>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<ul>
+<li>
+<p><strong>DNS resolver</strong>: The web crawler needs a DNS resolver to map hostnames to IP addresses for HTML content fetching. Since DNS lookup is a time-consuming process, a better approach is to create a customized DNS resolver and cache frequently-used IP addresses within their time-to-live because they’re bound to change after their time-to-live.</p>
+</li>
+<li>
+<p><strong>HTML fetcher</strong>: The HTML fetcher initiates communication with the server that’s hosting the URL(s). It downloads the file content based on the underlying communication protocol. We focus mainly on the <em>HTTP protocol</em> for textual content, but the <em>HTML fetcher</em> is easily extendable to other communication protocols, as is mentioned in the section on the non-functional requirements of the web crawler.</p>
+</li>
+</ul>
+
+<p>QuestionHow does the crawler handle URLs with variable priorities?Show Answer</p>
+<ul>
+<li>
+<p><strong>Service host</strong>: This component acts as the brain of the crawler and is composed of worker instances. For simplicity, we will refer to this whole component or a single worker as a crawler. There are three main tasks that this service host/crawler performs:</p>
+<ol>
+<li>It handles the multi-worker architecture of the crawling operation. Based on the availability, each worker communicates with the URL frontier to dequeue the next available URL for crawling.<!--To efficiently achieve this task, it uses a client-side **load balancer** to facilitate the communication among the microservices of the crawler.--></li>
+<li>Each worker is responsible for acquiring the DNS resolutions of the incoming URLs from the DNS resolver.</li>
+<li>Each worker acts as a gateway between the scheduler and the HTML fetcher by sending the necessary DNS resolution information to the HTML fetcher for communication initiation.</li>
+</ol>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/35/3/img_0.svg" alt="Service host interaction with other components" loading="lazy" /><figcaption>Service host interaction with other components</figcaption></figure>
+<ul>
+<li>
+<p><strong>Extractor</strong>: Once the HTML fetcher gets the web page, the next step is to extract two things from the webpage: URLs and the content. The extractor sends the extracted URLs directly and the content with the <strong>document input stream (DIS)</strong> to the duplicate eliminator. DIS is a cache that’s used to store the extracted document, so that other components can access and process it. Over here, we can use Redis as our cache choice because of its advanced data structure functionality.</p>
+<p>Once it’s verified that the duplicates are absent in the data stores, the extractor sends the URLs to the task scheduler that contains the URL frontier and stores the content in blob storage for indexing purposes.</p>
+</li>
+<li>
+<p><strong>Duplicate eliminator</strong>: Since the web is all interconnected, the probability of two different URLs referring to the same web page or different URLs referring to various web pages having the same content is evident. The crawler needs a component to perform a dedup test to eliminate the risk of exploiting resources by storing and processing the same content twice. The duplicate eliminator calculates the checksum value of each extracted URL and compares it against the URLs checksum data store. If found, it discards the extracted URL. Otherwise, it adds a new entry to the database with the calculated checksum value.</p>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/35/3/img_1.svg" alt="Dedup testing in action" loading="lazy" /><figcaption>Dedup testing in action</figcaption></figure>
+<p>The duplicate eliminator repeats the same process with the extracted content and adds the new webpage’s checksum value in the document checksum data store for future matchings.</p>
+<p>Our proposed design for the duplicate eliminator can be made robust against these two issues:</p>
+<ol>
+<li>By using URL redirection, the new URL can pass through the URL dedup test. But, the second stage of the document dedup wouldn’t allow content duplication in the blob storage.</li>
+<li>By changing just one Byte in a document, the checksum of the modified document is going to come out different than the original one.</li>
+</ol>
+<ul>
+<li><strong>Blob store</strong>: Since a web crawler is the backbone of a search engine, storing and indexing the fetched content and relevant metadata is immensely important. The design needs to have a distributed storage, such as a blob store, because we need to store large volumes of unstructured data.</li>
+</ul>
+
+<p>The following illustration shows the pictorial representation of the overall web crawler design:</p>
+<figure class="diagram"><img src="/images/35/3/img_2.svg" alt="The overall web crawler design" loading="lazy" /><figcaption>The overall web crawler design</figcaption></figure>
+<h3 id="Workflow">Workflow<a href="#Workflow"><span>#</span></a></h3>
+<ol>
+<li>
+<p><strong>Assignment to a worker</strong>: The crawler (service host) initiates the process by loading a URL from the URL frontier’s priority queue and assigns it to the available worker.</p>
+</li>
+<li>
+<p><strong>DNS resolution</strong>: The worker sends the incoming URL for DNS resolution. Before resolving the URL, the DNS resolver checks the cache and returns the requested IP address if it’s found. Otherwise, it determines the IP address, sends it back to the worker instance of the crawler, and stores the result in the cache.</p>
+</li>
+</ol>
+
+<p>Point to ponder!</p>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<ol start="3">
+<li>
+<p><strong>Communication initiation by the HTML fetcher</strong>: The worker forwards the URL and the associated IP address to the HTML fetcher, which initiates the communication between the crawler and the host server.</p>
+</li>
+<li>
+<p><strong>Content extraction</strong>: Once the worker establishes the communication, it extracts the URLs and the HTML document from the web page and places the document in a cache for other components to process it.</p>
+</li>
+<li>
+<p><strong>Dedup testing</strong>: The worker sends the extracted URLs and the document for dedup testing to the duplicate eliminator. The duplicate eliminator calculates and compares the checksum of both the URL and the document with the checksum values that have already been stored.</p>
+<p>The duplicate eliminator discards the incoming request in case of a match. If there’s no match, it places the newly-calculated checksum values in the respective data stores and gives the go-ahead to the extractor to store the content.</p>
+</li>
+<li>
+<p><strong>Content storing</strong>: The extractor sends the newly-discovered URLs to the scheduler, which stores them in the database and sets the values for the priority and recrawl frequency variables.</p>
+<p>The extractor also writes the required portions of the newly discovered document—currently in the DIS—into the database.</p>
+</li>
+<li>
+<p><strong>Recrawling</strong>: Once a cycle is complete, the crawler goes back to the first point and repeats the same process until the URL frontier queue is empty.</p>
+<p>The URLs stored in the scheduler’s database have priority and periodicity assigned to them. Enqueuing new URLs into the URL frontier depends on these two factors.</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Because of multiple instances of each service and microservices architecture, our design can make use of client-side load balancing (see <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5379128533975040" target="_blank">Client-side Load Balancer for Twitter</a>).</p>
+</blockquote>
+
+<p>The following slideshow gives a detailed overview of the web crawler workflow:</p>
+<figure class="diagram"><img src="/images/35/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/35/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/35/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/35/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/35/3/img_7.svg" alt="" loading="lazy" /></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p>In the next lesson, we’ll explore some shortcomings in our design and their potential workarounds.</p><p></p>

@@ -1,0 +1,65 @@
+<h1>Evaluation of TinyURL's Design</h1>
+<h2 id="Reviewing-the-requirements">Reviewing the requirements<a href="#Reviewing-the-requirements"><span>#</span></a></h2>
+<p>The last stage of a system design is to evaluate it as per the non-functional requirements mentioned initially. Let’s look at each metric one by one.</p>
+<h3 id="Availability">Availability<a href="#Availability"><span>#</span></a></h3>
+<p>We need high availability for users generating new short URLs and redirecting them based on the existing short URLs.</p>
+<p>Most of our building blocks, like databases, caches, and application servers have built-in replication that ensures availability and fault tolerance. The short URL generation system will not impact the availability either, as it depends on an easily replicable database of available and used unique IDs.</p>
+<p>To handle disasters, we can perform frequent backups of the storage and application servers, preferably twice a day, as we can’t risk losing URLs data. We can use the Amazon S3 storage service for backups, as it facilitates cross-zonal replicating and restoration as well. In the worst-case scenario, we might lose 3.3 Million (with 6.6 Million daily requests assumed) newly generated short URLs that are not backed up on that specific day.</p>
+<p>Our design uses <strong>global server load balancing (GSLB)</strong> to handle our system traffic. It ensures intelligent request distribution among different global servers, especially in the case of on-site failures.</p>
+<p>We also apply a limit on the requests from clients to secure the intrinsic points of failures. To protect the system against DoS attacks, we use rate limiters between the client and web servers to limit each user’s resource allocation. This will ensure a good and smooth traffic influx and mitigate the exploitation of system resources.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/34/5/img_0.svg" alt="Guarantees provided by our URL shortening service" loading="lazy" /><figcaption>Guarantees provided by our URL shortening service</figcaption></figure>
+<h3 id="Scalability">Scalability<a href="#Scalability"><span>#</span></a></h3>
+<p>Our design is scalable because our data can easily be distributed among horizontally sharded databases. We can employ a consistent hashing scheme to balance the load between the application and database layers.</p>
+
+<p>Alternate to consistent hashing in load balancer</p>
+<p>Our choice of the database for mapping URLs, MongoDB, also facilitates horizontal scaling. Some interesting reasons for selecting a NoSQL database are:</p>
+<ol>
+<li>
+<p>When a user accesses our system without logging in, our system doesn’t save the <code>UserID</code>. Since we’re flexible with storing data values, and it aligns more with the schematic flexibility provided by the NoSQL databases, using one for our design is preferable.</p>
+</li>
+<li>
+<p>Scaling a traditional relational database horizontally is a daunting process and poses challenges to meeting our scalability requirements. We want to scale and automatically distribute our system’s data across multiple servers. For this requirement, a NoSQL database would best serve our purpose.</p>
+</li>
+</ol>
+<p>Moreover, the large number of unique IDs available in the sequencer’s design also ensures the scalability of our system.</p>
+
+<h3 id="Readability">Readability<a href="#Readability"><span>#</span></a></h3>
+<p>The use of a base-58 encoder, instead of the base-64 encoder, enhances the readability of our system. We divide the readability into two sections:</p>
+<ul>
+<li><strong>Distinguishable characters</strong> like <code>0</code> (zero), <code>O</code> (capital o), <code>I</code> (capital i), and <code>l</code> (lower case L) are eliminated, excluding the possibility of mistaking a character for another look-alike character.</li>
+<li><strong>Non-alphanumeric characters</strong> like  <code>+</code> (plus) and <code>/</code> (slash) are also eliminated to only have alphanumeric characters in short URLs. Second, it also helps avoid other system-dependent encodings and makes the URLs readily available for all modern file systems and URLs schemes. Such characters may lead to undesired behavior and output during parsing.</li>
+</ul>
+<p>This non-functional requirement enhances the user interactivity of our system and makes short URL usage less error-prone for the users.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="567"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Requirements</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Techniques</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Availability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>The Amazon S3 service backs up the storage and cache servers daily. We can restore them upon fault occurrence.</li><li>Global server load balancing to handle the system's traffic.</li><li>Rate limiters to limit each user's resource allocation.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Scalability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Horizontal sharding of the database. </li><li>Distribution of the data based on consistent hashing.</li><li>MongoDB - as the NoSQL database.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Readability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Introduction of the base-58 encoder to generate short URLs.</li><li>Removal of non-alphanumeric characters.</li><li>Removal of look-alike characters.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Latency</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Unnoticeable delay in the overall operation.</li><li>MongoDB, because of its low latency and high throughput in reading tasks.</li><li>Distributed cache to minimize the service delays.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Unpredictability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li> Randomly selecting and associating an ID to each request, from the pool of unused and readily available unique IDs.</li></ul></td></tr></tbody></table>
+<h3 id="Latency">Latency<a href="#Latency"><span>#</span></a></h3>
+<p>Our system ensures low latency with its following features:</p>
+<ul>
+<li>
+<p>Even the most time-consuming step across the short URL generation process, encoding, takes a few milliseconds. The overall time to generate a short URL is relatively low, ensuring there are no significant delays in this process.</p>
+</li>
+<li>
+<p>Our system is redirection-heavy. Writing on the database is minimal compared to reading, and its performance depends on how well it copes with all the redirection requests, compared to the shortening requests. We deliberately chose MongoDB because of its low latency and high throughput in reading-intensive tasks.</p>
+</li>
+<li>
+<p>Moreover, the probability of the user using the freshly generated short URL in the next few seconds is relatively low. During this time, synchronous replication to other locations is feasible and therefore adds to the overall low latency of the system for the user.</p>
+</li>
+<li>
+<p>The deployment of a distributed cache in our design also ensures that the system redirects the user with the minimum delay possible.</p>
+</li>
+</ul>
+<p>As a result of such design modifications, the system enjoys low latency and high throughput, providing good performance.</p>
+<h3 id="Unpredictability">Unpredictability<a href="#Unpredictability"><span>#</span></a></h3>
+<p>One of the requirements is to make our system’s short URLs unpredictable, enhancing the security of our system.</p>
+<p>As the sequencer generates unique IDs in a sequence and distributes ranges among servers. Each server has a pre-assigned range of unique IDs, assigning them serially to the requests will make it easy to predict the following short URL. To counter it, we can randomly select a unique ID from the available ones and associate it to the long URL, encompassing the unpredictability of our system.</p>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>The URL shortening system is an effective service with multiple advantages. Our design of the URL shortening service is simple, yet it fulfills all the requirements of a performant design. The key features offered by our design are:</p>
+<ol>
+<li>A dynamic short URL range</li>
+<li>Improved readability</li>
+</ol>
+<p>A possible addition could be the introduction of (local) salt to further increase the unpredictability (security) of the design.</p>
+
+<p></p>

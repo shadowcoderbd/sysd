@@ -1,0 +1,84 @@
+<h1>Design of a Key-value Store</h1>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let’s list the requirements of designing a key-value store to overcome the problems of traditional databases.</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>The functional requirements are as follows:</p>
+<ul>
+<li>
+<p><strong>Configurable service</strong>: Some applications might have a tendency to trade strong consistency for higher availability. We need to provide a configurable service so that different applications could use a range of consistency models. We need tight control over the trade-offs between availability, consistency, cost-effectiveness, and performance.</p>
+</li>
+<li>
+<p><strong>Ability to always write</strong>: The applications should always have the ability to write into the key-value storage. If the user wants strong consistency, this requirement might not always be fulfilled due to the implications of the CAP theorem.</p>
+</li>
+<li>
+<p><strong>Hardware heterogeneity</strong>: The system shouldn’t have distinguished nodes. Each node should be functionally able to do any task. Though servers can be heterogeneous, newer hardware might be more capable than older ones.</p>
+</li>
+</ul>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>The non-functional requirements are as follows:</p>
+<ul>
+<li>
+<p><strong>Scalable</strong>: Key-value stores should run on tens of thousands of servers distributed across the globe. Incremental scalability is highly desirable. We should add or remove the servers as needed with minimal to no disruption to the service availability. Moreover, our system should be able to handle an enormous number of users of the key-value store.</p>
+</li>
+<li>
+<p><strong>Available</strong>: We need to provide continuous service, so availability is very important. This property is configurable. So, if the user wants strong consistency, we’ll have less availability and vice versa.</p>
+</li>
+<li>
+<p><strong>Fault tolerance</strong>: The key-value store should operate uninterrupted despite failures in servers or their components.</p>
+</li>
+</ul>
+<!--
+
+
+* **Latency**: Service latency should not exceed a few hundred milliseconds as we want our system to be always available to the users. 
+
+* **Decentralization**: We don't want any centralized components.
+
+* **ACID properties**: It affects the availability of the application, hence ensuring it will not be part of our design.
+
+-->
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Assumptions">Assumptions<a href="#Assumptions"><span>#</span></a></h2>
+<p>We’ll assume the following to keep our design simple:</p>
+<ul>
+<li>
+<p>The data centers hosting the service are trusted (non-hostile).</p>
+</li>
+<li>
+<p>All the required authentication and authorization are already completed.</p>
+</li>
+<li>
+<p>User requests and responses are relayed over HTTPS.</p>
+</li>
+</ul>
+
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>Key-value stores, like ordinary hash tables, provide two primary functions, which are <code>get</code> and <code>put</code>.</p>
+<p>Let’s look at the API design.</p>
+<p><strong>The <code>get</code> function</strong></p>
+<p>The API call to get a value should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark" data-lang="txt"><span><span class="mtk1">get(key)</span></span><br/></code></pre>
+<p>We return the associated value on the basis of the parameter <code>key</code>. When data is replicated, it locates the object replica associated with a specific key that’s hidden from the end user. It’s done by the system if the store is configured with a weaker data consistency model. For example, in eventual consistency, there might be more than one value returned against a key.</p>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="178"/><col width="381"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">It’s the <code>key</code> against which we want to get <code>value</code>.</p></td></tr></tbody></table>
+<p><strong>The <code>put</code> function</strong></p>
+<p>The API call to put the value into the system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark" data-lang="txt"><span><span class="mtk1">put(key, value)</span></span><br/></code></pre>
+<p>It stores the <code>value</code> associated with the <code>key</code>. The system automatically determines where data should be placed. Additionally, the system often keeps metadata about the stored object. Such metadata can include the version of the object.</p>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="178"/><col width="381"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">It's the <code>key</code> against which we have to store <code>value</code>.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>value</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">It's the object to be stored against the <code>key</code>.</p></td></tr></tbody></table>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h3 id="Data-type">Data type<a href="#Data-type"><span>#</span></a></h3>
+<p>The key is often a primary key in a key-value store, while the value can be any arbitrary binary data.</p>
+<!-- One can even use a fast compressor (like Google's Snappy) before storing the value to reduce data over the network and in storage. -->
+<blockquote>
+<p><strong>Note:</strong> Dynamo uses MD5 hashes on the key to generate a 128-bit identifier. These identifiers help the system determine which server node will be responsible for this specific key.</p>
+</blockquote>
+<p>In the next lesson, we’ll learn how to design our key-value store. First, we’ll focus on adding scalability, replication, and versioning of our data to our system.  Then, we’ll ensure the functional requirements and make our system fault tolerant. We’ll fulfill a few of our non-functional requirements first because implementing our functional requirements depends on the method chosen for scalability.</p>
+<blockquote>
+<p><strong>Note:</strong> This chapter is based on <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Dynamo</span></span>, which is an influential work in the domain of key-value stores.</p>
+</blockquote>

@@ -1,0 +1,126 @@
+<h1>Introduction to Pub-sub</h1>
+<p>Pub-sub messaging offers asynchronous communication. Let’s explore the use cases where it is beneficial to have a pub-sub system.</p>
+<h2 id="Use-cases-of-pub-sub">Use cases of pub-sub<a href="#Use-cases-of-pub-sub"><span>#</span></a></h2>
+<p>A few use cases of pub-sub are listed below:</p>
+<ul>
+<li>
+<p><strong>Improved performance</strong>: The pub-sub system enables push-based distribution, alleviating the need for message recipients to check for new information and changes regularly. It encourages faster response times and lowers the delivery latency.</p>
+</li>
+<li>
+<p><strong>Handling ingestion</strong>: The pub-sub helps in handling <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">log ingestion</span></span>. The user-interaction data can help us figure out useful analyses about the behavior of users. We can ingest a large amount of data to the pub-sub system, so much so that it can deliver the data to any analytical system to understand the behavior patterns of users. Moreover, we can also log the details of the event that’s happening while completing a request from the user. Large services like Meta use a pub-sub system called Scribe to know exactly who needs what data, and remove or archive processed or unwanted data. Doing this is necessary to manage an enormous amount of data.</p>
+</li>
+<li>
+<p><strong>Real-time monitoring</strong>: Raw or processed messages of an application or system can be provided to multiple applications to monitor a system in real time.</p>
+</li>
+<li>
+<p><strong>Replicating data</strong>: The pub-sub system can be used to distribute changes. For example, in a leader-follower protocol, the leader sends the changes to its followers via a pub-sub system. It allows followers to update their data asynchronously. The distributed caches can also refresh themselves by receiving the modifications asynchronously. Along the same lines, applications like WhatsApp that allow multiple views of the same conversation—for example, on a mobile phone and a computer’s browser—can elegantly work using a pub-sub, where multiple views can act either as a publisher or a subscriber.</p>
+</li>
+</ul>
+<!--* **Easy service discovery**: A publisher will post messages to a topic rather than keeping a list of peers to whom an application can send messages. After that, anyone interested will subscribe to their endpoint to the topic and begin receiving these messages. The system dynamically adjusts as subscribers alter, upgrade, multiply, or disappear
+
+* **Asynchronous communication**: The pub-sub system simplifies things by replacing all point-to-point connections with a single connection to a message topic, handling subscriptions, and deciding which messages should go to which endpoints. Fewer callbacks lead to looser coupling and are easier to maintain.
+
+-->
+
+<figure class="diagram"><img src="/images/18/2/img_0.svg" alt="Motivation and use cases of the pub-sub system" loading="lazy" /><figcaption>Motivation and use cases of the pub-sub system</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<p></p>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>We aim to design a pub-sub system that has the following requirements.</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>Let’s specify the functional requirements of a pub-sub system:</p>
+<ul>
+<li>
+<p><strong>Create a <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">topic</span></span></strong>: The producer should be able to create a topic.</p>
+</li>
+<li>
+<p><strong>Write messages</strong>: Producers should be able to write messages to the topic.</p>
+</li>
+<li>
+<p><strong>Subscription</strong>: Consumers should be able to subscribe to the topic to receive messages.</p>
+</li>
+<li>
+<p><strong>Read messages</strong>: The consumer should be able to read messages from the topic.</p>
+</li>
+<li>
+<p><strong>Specify retention time</strong>: The consumers should be able to specify the retention time after which the message should be deleted from the system.</p>
+</li>
+<li>
+<p><strong>Delete messages</strong>: A message should be deleted from the topic or system after a certain retention period as defined by the user of the system.</p>
+</li>
+</ul>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>We consider the following non-functional requirements when designing a pub-sub system:</p>
+<ul>
+<li>
+<p><strong>Scalable</strong>: The system should scale with an increasing number of topics and increasing writing (by producers) and reading (by consumers) load.</p>
+</li>
+<li>
+<p><strong>Available</strong>: The system should be highly available, so that producers can add their data and consumers can read data from it anytime.</p>
+</li>
+<li>
+<p><strong>Durability</strong>: The system should be durable. Messages accepted from producers must not be lost and should be delivered to the intended subscribers.</p>
+</li>
+<li>
+<p><strong>Fault tolerance</strong>: Our system should be able to operate in the event of failures.</p>
+</li>
+<li>
+<p><strong>Concurrent</strong>: The system should handle concurrency issues where reading and writing are performed simultaneously.</p>
+</li>
+</ul>
+
+<h2 id="API-Design">API Design<a href="#API-Design"><span>#</span></a></h2>
+<p>We’ll exclude some parameters from the functions below, such as the producer or consumer’s identifier. Let’s assume that this information is available from the underlying connection context. The API design for this problem is as follows:</p>
+<p><strong>Create a topic</strong></p>
+<p>The API call to create a topic should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">create(topic_ID, topic_name)</span></span><br/></code></pre>
+<p>This function returns an acknowledgment if it successfully creates a topic, or an error if it fails to do so.</p>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="413"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It uniquely identifies the topic.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_name</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It contains the name of the topic. </p></td></tr></tbody></table>
+<p><strong>Write a message</strong></p>
+<p>The API call to write into the pub-sub system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">write(topic_ID, message)</span></span><br/></code></pre>
+<p>The API call will write a <code>message</code> into a topic with an ID of <code>topic_ID</code>. Each message can have a maximum size of 1 MB. This function will return an acknowledgment if it successfully places the data in the systems, or an appropriate error if it fails.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="413"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>message</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The message to be written in the system.</p></td></tr></tbody></table>
+<p><strong>Read a message</strong></p>
+<p>The API call to read data from the system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">read(topic_ID)</span></span><br/></code></pre>
+<p>The topic is found using <code>topic_ID</code>, and the call will return an object containing the message to the caller.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="448"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It is the ID of the topic against which the message will be read.</p></td></tr></tbody></table>
+<p></p>
+<p><strong>Subscribe to a topic</strong></p>
+<p>The API call to subscribe to a topic from the system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">subscribe(topic_ID)</span></span><br/></code></pre>
+<p>The function adds the consumer as a subscriber to the topic that has the <code>topic_ID</code>.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="448"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the topic to which the consumer will be subscribed.</p></td></tr></tbody></table>
+<p></p><p></p>
+<p><strong>Unsubscribe from a topic</strong></p>
+<p>The API call to unsubscribe from a topic from the system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">unsubscribe(topic_ID)</span></span><br/></code></pre>
+<p>The function removes the consumer as a subscriber from the topic that has the <code>topic_ID</code>.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="448"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the topic against which the consumers will be unsubscribed.</p></td></tr></tbody></table>
+<p></p>
+<p><strong>Delete a topic</strong></p>
+<p>The API call to delete a topic from the system should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark vs-dark" data-lang="txt"><span><span class="mtk1">delete_topic(topic_ID)</span></span><br/></code></pre>
+<p>The function deletes the topic on the basis of the <code>topic_ID</code>.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="168"/><col width="448"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>topic_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the topic which is to be deleted.</p></td></tr></tbody></table>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>The design of pub-sub utilizes many building blocks that have been discussed in the initial chapters. We’ll consider the following lessons on building blocks.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/18/2/img_1.svg" alt="The building blocks we’ll use" loading="lazy" /><figcaption>The building blocks we’ll use</figcaption></figure>
+<p></p>
+<ul>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4901035478351872" target="_blank"><strong>Database</strong></a>: We’ll use databases to store information like subscription details.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5148400467312640" target="_blank"><strong>Distributed messaging queue</strong></a>: We’ll use use a messaging queue to store messages sent by the producer.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4747701493432320" target="_blank"><strong>Key-value</strong></a>: We’ll use a key-value store to hold information about consumers.</li>
+</ul>
+<p>In the next lesson, we’ll focus on designing a pub-sub system.</p>

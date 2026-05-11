@@ -1,0 +1,78 @@
+<h1>Spectrum of Consistency Models</h1>
+<h2 id="What-is-consistency?">What is consistency?<a href="#What-is-consistency?"><span>#</span></a></h2>
+<p>In distributed systems, consistency may mean many things. One is that each replica node has the same view of data at a given point in time. The other is that each read request gets the value of the recent write. These are not the only definitions of consistency, since there are many forms of consistency. Normally, <strong>consistency models</strong> provide us with abstractions to reason about the correctness of a distributed system doing concurrent data reads, writes, and mutations.</p>
+<p>If we have to design or build an application in which we need a third-party storage system like S3 or Cassandra, we can look into the consistency guarantees provided by S3 to decide whether to use it or not. Let’s explore different types of consistency.</p>
+<p>The two ends of the consistency spectrum are:</p>
+<ul>
+<li><em>Strongest consistency</em></li>
+<li><em>Weakest consistency</em></li>
+</ul>
+<p>There are consistency models that lie between these two ends, some of which are shown in the following illustration:</p>
+
+<figure class="diagram"><img src="/images/3/3/img_0.svg" alt="This is a spectrum of consistency models. Consistency guarantees get stronger as we move to the right" loading="lazy" /><figcaption>This is a spectrum of consistency models. Consistency guarantees get stronger as we move to the right</figcaption></figure>
+<p>There is a difference between consistency in <em><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">ACID</span></span></em> <em>properties</em> and consistency in the <a href="https://www.educative.io/answers/what-is-the-cap-theorem" target="_blank"><em>CAP theorem</em></a>.</p>
+<p>Database rules are at the heart of <strong>ACID consistency</strong>. If a schema specifies that a value must be unique, a consistent system will ensure that the value is unique throughout all actions. If a foreign key indicates that deleting one row will also delete associated rows, a consistent system ensures that the state can’t contain related rows once the base row has been destroyed.</p>
+<p><strong>CAP consistency</strong> guarantees that, in a distributed system, every replica of the same logical value has the same precise value at all times. It’s worth noting that this is a logical rather than a physical guarantee. Due to the speed of light, replicating numbers throughout a cluster may take some time. By preventing clients from accessing different values at separate nodes, the cluster can nevertheless give a logical picture.</p>
+
+<h2 id="Eventual-consistency">Eventual consistency<a href="#Eventual-consistency"><span>#</span></a></h2>
+<p><strong>Eventual consistency</strong> is the weakest consistency model. The applications that don’t have strict ordering requirements and don’t require reads to return the latest write choose this model. Eventual consistency ensures that all the replicas will eventually return the same value to the read request, but the returned value isn’t meant to be the latest value. However, the value will finally reach its latest state.</p>
+
+<figure class="diagram"><img src="/images/3/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_5.svg" alt="" loading="lazy" /></figure>
+<p></p>
+<p>Eventual consistency ensures <strong>high availability</strong>. <!-- But with eventual consistency, If the node that has the latest write fails, we can lose that write.--></p>
+<p><strong>Example</strong></p>
+<p>The <strong>domain name system</strong> is a highly available system that enables name lookups to a hundred million devices across the Internet. It uses an eventual consistency model and doesn’t necessarily reflect the latest values.</p>
+<blockquote>
+<p><strong>Note:</strong> Cassandra is a highly available NoSQL database that provides eventual consistency.</p>
+</blockquote>
+<!-- The *views* of a youtube video doesn't require immediate effect. -->
+<!-- https://cloud.google.com/datastore/docs/articles/balancing-strong-and-eventual-consistency-with-google-cloud-datastore
+
+https://www.youtube.com/watch?v=_Jv4H0GI1ls -->
+<h2 id="Causal-consistency">Causal consistency<a href="#Causal-consistency"><span>#</span></a></h2>
+<p><strong>Causal consistency</strong> works by categorizing operations into dependent and independent operations. <strong>Dependent operations</strong> are also called causally-related operations. Causal consistency preserves the order of the causally-related operations.</p>
+<p>In the following illustration, process P1 writes a value <em>a</em> at location <em>x</em>. For P2 to write the value <em>b</em> at location <em>y</em>, it first needs to calculate <em>b</em>. Since <em>b=x+5</em>, the read operation on <em>x</em> should be performed before writing <em>b</em> on location <em>y</em>. That’s why <em>read(x)a</em> and <em>write(y)b</em> are causally related.</p>
+
+<figure class="diagram"><img src="/images/3/3/img_6.svg" alt="Causal consistency" loading="lazy" /><figcaption>Causal consistency</figcaption></figure>
+<p>This model doesn’t ensure ordering for the operations that are not causally related. These operations can be seen in different possible orders.</p>
+<p>Causal consistency is weaker overall, but stronger than the eventual consistency model. It’s used to prevent non-intuitive behaviors.</p>
+
+<p><strong>Example</strong></p>
+<p>The causal consistency model is used in a commenting system. For example, for the replies to a comment on a Facebook post, we want to display comments after the comment it replies to. This is because there is a cause-and-effect relationship between a comment and its replies.</p>
+
+<blockquote>
+<p><strong>Note:</strong> There are many consistency models other than the four discussed in this lesson, and there is still room for new consistency models. Researchers have developed new consistency models. For example, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Wyatt Lloyd, et al.</span></span>, proposed the <strong>causal+consistency model</strong> to speed up some specific types of transactions.</p>
+</blockquote>
+
+<h2 id="Sequential-consistency">Sequential consistency<a href="#Sequential-consistency"><span>#</span></a></h2>
+<p><strong>Sequential consistency</strong> is stronger than the causal consistency model. It preserves the ordering specified by each client’s program. However, sequential consistency doesn’t ensure that the writes are visible instantaneously or in the same order as they occurred according to some global clock.</p>
+<p><strong>Example</strong></p>
+<p>In social networking applications, we usually don’t care about the order in which some of our friends’ posts appear. However, we still anticipate a single friend’s posts to appear in the correct order in which they were created). Similarly, we expect our friends’ comments in a post to display in the order that they were submitted. The sequential consistency model captures all of these qualities.</p>
+
+<h2 id="Strict-consistency-aka-linearizability">Strict consistency aka linearizability<a href="#Strict-consistency-aka-linearizability"><span>#</span></a></h2>
+<p>A <strong>strict consistency</strong> or <strong>linearizability</strong> is the strongest consistency model. This model ensures that a read request from any replicas will get the latest write value. Once the client receives the acknowledgment that the write operation has been performed, other clients can read that value.</p>
+<p>Linearizability is not obvious in a distributed system. This is shown in the following illustration:</p>
+
+<figure class="diagram"><img src="/images/3/3/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_10.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/3/3/img_11.svg" alt="" loading="lazy" /></figure>
+<p>Synchronous replication ensures linearizability, in which an acknowledgment is not sent to the client until the new value is written to all replicas.</p>
+<p>Linearizability affects the system’s availability, which is why it’s not always used. Applications with strong consistency requirements use techniques like <strong>quorum-based replication</strong> to increase the system’s availability.</p>
+<p><strong>Example</strong></p>
+<p>Updating an account’s password requires strict consistency. For example, if we suspect suspicious activity on our bank account, we immediately change our password so that no unauthorized users can access our account. If it were possible to access our account using an old password due to a lack of strict consistency, then changing passwords would be a useless security strategy.</p>
+<blockquote>
+<p><strong>Note:</strong> Amazon Aurora provides strong consistency.</p>
+</blockquote>
+
+<h2 id="Summary">Summary<a href="#Summary"><span>#</span></a></h2>
+<p>Linearizable services appear to carry out transactions/operations in sequential, real-time order. They make it easier to create suitable applications on top of them by limiting the number of values that services can return to application processes.</p>
+<p>Linearizable services have worse performance rates than services with weaker consistency in exchange for their strong assurances. Think about a read in a key-value store that returns the value written by a concurrent write. The read imposes no limits on future reads if the key-value store is weakly consistent.</p>
+<p>Application programmers have to compromise performance and availability if they use services with strong consistency models. The models may break the invariants of applications built on top of them in exchange for increased performance.</p>
+
+<p></p>

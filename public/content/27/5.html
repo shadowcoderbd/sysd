@@ -1,0 +1,66 @@
+<h1>Evaluation of Quora’s Design</h1>
+<h2 id="Fulfilling-requirements">Fulfilling requirements<a href="#Fulfilling-requirements"><span>#</span></a></h2>
+<p>We have used various techniques to fulfill our functional requirements. However, we need to determin if we have fulfilled the non-functional requirements. We’ll highlight some of the mechanisms we have utilized to address the non-functional requirements:</p>
+<ul>
+<li>
+<p><strong>Scalability:</strong> Our system is highly scalable for several reasons. The updated design uses <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">powerful and homogeneous service hosts</span></span>. Quora uses powerful machines because service hosts use an in-memory cache, some level of queueing, maintain manager, worker, and routing library. The horizontal scaling of these service hosts is convenient because they are homogeneous.</p>
+<p>On the database end, our design shards the MySQL databases vertically, which avoids issues in scalability because of overloaded MySQL servers. To reduce complex <code>join</code> queries, tables anticipating <code>join</code> operations are placed in the same shard or partition.</p>
+<blockquote>
+<p><strong>Note:</strong> As mentioned earlier, vertical sharding may not be enough because each shard can grow large horizontally. For large MySQL tables, writing becomes a bottleneck. Therefore, our design may have to adhere to horizontal sharding, a well-known practice in database scaling.</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Consistency:</strong> Due to the variety of functionalities offered by Quora, different consistency schemes may be selected for different types of data. For example, certain critical data like questions and answers should be stored synchronously. In this case, performance can take a hit because users don’t expect instantaneous responses to their questions. It means that a user may get a reply in five minutes, one hour, one day, or no response at all, depending on the user’s question and the availability of would-be respondents.</p>
+<p>Other data like view counts may not necessarily be stored synchronously because it is not a goal of the Quora service to ensure that all users see the same number of views as soon as the question is posted. For such cases, eventual consistency is favored for improved performance.</p>
+<blockquote>
+<p><strong>Note:</strong> In general, our design is equipped with strong techniques to reduce the user-perceived latency as a whole.</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Availability:</strong> Some of the main ideas to improve availability include isolation between different components, keeping redundant instances, using CDN, using configuration services like ZooKeeper, and load balancers to hide failures from users.</p>
+</li>
+</ul>
+
+<p>Why Isolate Services?</p>
+<p>Our design, however, lacks any disaster recovery management, which we’ll explore in the next section.</p>
+<ul>
+<li>
+<p><strong>Performance:</strong> This design has a strong performance because we have employed the right technology for the right feature. For example, we have used several datastores for different reasons. On top of that, we used different distributed caches depending upon the use case and access frequency. Also, we employed Kafka to queue similar tasks and assign them to cron jobs that otherwise take a long time if executed via API calls.</p>
+<blockquote>
+<p><strong>Note:</strong> Quora claims that using its custom queuing solution, it can handle roughly 15,000 tasks per second.</p>
+</blockquote>
+</li>
+</ul>
+
+<table class="table-fixed mx-px"><colgroup><col width="137"/><col width="690"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Requirements</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Techniques</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Scalability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Based on AWS, which supports automatic scaling.</li><li>Uses the same servers to reduce complexity in horizontal scalability</li><li>sharding of MySQL database.</li><li>Employs various data stores for different purposes.</li><li>Asynq can enable developers to code quickly by batching cache requests,</li><li>separate compute, and feature extraction modules. Therefore, a generic feature extraction facility allows scalability of different recommendation systems.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Consistency</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Uses MySQL and synchronous replication within a data center for critical data.</li><li>Offers eventual consistency for non-critical data like the view counter.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Availability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Use of different data stores prevents failure of multiple services at once by</li><li>using database sharding and replicas.</li><li>Uses CDN as a backup to serve static/dynamic data in case of failures.</li><li>ZooKeeper enables service hosts to get updates about MySQL shards.</li><li>Load balancers hide server failures from end users.</li><li>AWS supports an availability above 99 percent.</li><li>Thrift isolates services and therefore failures.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Performance</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>MyRocks has a much lower P99 latency.</li><li>Uses the right programming language to deliver tasks quickly, such as C++ for the routing library.</li><li>Uses `Multiget()`  to retrieve multiple entries from Memcached at once.</li><li>Eliminates network round trip time with Asynq.</li><li>Kafka improves the performance of service hosts.</li><li>Sharding improves QPS of MySQL.</li><li>Custom, in-memory caching system reduces the latency of frequently accessed data.</li></ul></td></tr></tbody></table>
+<h2 id="Disaster-recovery">Disaster recovery<a href="#Disaster-recovery"><span>#</span></a></h2>
+<p>Our proposed and detailed design does not cater to the situation of <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">natural disasters</span></span>. While we have met other non-functional requirements, durability, fault-tolerance, and availability are incomplete without a disaster recovery management plan. This section will explore some mechanisms that provide resilience against disasters.</p>
+<p>The first and foremost approach of handling a disaster is frequent backups. The frequency of backups depends on the size of the data. Daily backups are suitable for our design because we can backup individual data stores and shards without any hassle. Of course, backups will be stored at remote destinations because natural disasters can wipe out the entire facility at a location.</p>
+<blockquote>
+<p><strong>Note:</strong> Taking regular backup at remote locations is not enough. Quick restoration of backed-up data in a timely manner completes a disaster recovery plan.</p>
+</blockquote>
+<p>The following are important questions for designing a disaster recovery plan:</p>
+<ul>
+<li>What data and systems are considered critical to recover from disasters?</li>
+<li>How fast is the restoration from the backup facility?</li>
+<li>Can all systems be recovered through backups?</li>
+<li>How can we deal with potential loss of data that we couldn’t replicate before the disaster hit?</li>
+</ul>
+<p>The illustration below shows a simple architecture of how a disaster recovery scheme works:</p>
+
+<figure class="diagram"><img src="/images/27/5/img_0.svg" alt="Disaster recovery management" loading="lazy" /><figcaption>Disaster recovery management</figcaption></figure>
+<p>The approach is fairly straightforward. The data, application servers, and configurations are backed up in the Amazon S3 storage service in the same zone. Zonal replication between S3 storage facilitates transfer to another zone. Later, the application and database servers can be restored from the S3 storage in another zone.</p>
+<p>The restoration strategy is simple and effective but it has a couple of drawbacks:</p>
+<ul>
+<li>We might lose some data that is not backed up since we take backups on a daily basis. However, this issue can be mitigated if we do synchronous replication across regions.</li>
+<li>Restoration can take a long time (a few hours), and most databases do not serve queries while data is being recovered.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> In general, Amazon provides service with high reliability and availability. For instance, S3 service reports 99.999999999% durability and 99.9% availability over a year.</p>
+</blockquote>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>Throughout this design, we learned how Quora is able to scale its services as the number of users increases. One interesting aspect of the design includes the vertical sharding of the MySQL database. Apart from that, the Quora design discusses a variety of techniques to meet the functional and non-functional requirements. However, our scope did not include the usage of techniques like natural language processing (NLP) to remove spelling mistakes in user’s questions or typeahead services during the search.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>

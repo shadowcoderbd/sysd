@@ -1,0 +1,101 @@
+<h1>Design and Deployment of TinyURL</h1>
+<h2 id="System-APIs">System APIs<a href="#System-APIs"><span>#</span></a></h2>
+<p>To expose the functionality of our service, we can use REST APIs for the following features:</p>
+<ul>
+<li>Shortening a URL</li>
+<li>Redirecting a short URL</li>
+<li>Deleting a short URL</li>
+</ul>
+
+<figure class="diagram"><img src="/images/34/3/img_0.svg" alt="System API design overview" loading="lazy" /><figcaption>System API design overview</figcaption></figure>
+<h3 id="Shortening-a-URL">Shortening a URL<a href="#Shortening-a-URL"><span>#</span></a></h3>
+<p>We can create new short URLs with the following definition:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">shortURL</span><span class="mtk9">(</span><span class="mtk1">api_dev_key</span><span class="mtk9">,</span><span class="mtk1"> original_url</span><span class="mtk9">,</span><span class="mtk1"> custom_alias</span><span class="mtk9">=</span><span class="mtk22">None</span><span class="mtk9">,</span><span class="mtk1"> expiry_date</span><span class="mtk9">=</span><span class="mtk22">None</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>The API call above has the following parameters:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="149"/><col width="625"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>api_dev_key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>A registered user account’s unique identifier. This is useful in tracking a user’s activity and allows the system to control the associated services accordingly.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>original_url</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The original long URL that is needed to be shortened.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>custom_alias</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The optional key that the user defines as a customer short URL.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>expiry_date</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The optional expiration date for the shortened URL.</p></td></tr></tbody></table>
+<p>A successful insertion returns the user the shortened URL. Otherwise, the system returns an appropriate error code to the user.</p>
+<h3 id="Redirecting-a-short-URL">Redirecting a short URL<a href="#Redirecting-a-short-URL"><span>#</span></a></h3>
+<p>To redirect a short URL, the REST API’s definition will be:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">redirectURL</span><span class="mtk9">(</span><span class="mtk1">api_dev_key</span><span class="mtk9">,</span><span class="mtk1"> url_key</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>With the following parameters:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="149"/><col width="629"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>api_dev_key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The registered user account’s unique identifier.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>url_key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The shortened URL against which we need to fetch the long URL from the database.</p></td></tr></tbody></table>
+<p>A successful redirection lands the user to the original URL associated with the <code>url_key</code>.</p>
+<h3 id="Deleting-a-short-URL">Deleting a short URL<a href="#Deleting-a-short-URL"><span>#</span></a></h3>
+<p>Similarly, to delete a short URL, the REST API’s definition will be:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">deleteURL</span><span class="mtk9">(</span><span class="mtk1">api_dev_key</span><span class="mtk9">,</span><span class="mtk1"> url_key</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>and the associated parameters will be:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="149"/><col width="641"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>api_dev_key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The registered user account’s unique identifier.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>url_key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The shortened URL against which we need to fetch the long URL from the database.</p></td></tr></tbody></table>
+<p>A successful deletion returns a system message, <code>URL Removed</code>, conveying the successful URL removal from the system.</p>
+
+<h2 id="Design">Design<a href="#Design"><span>#</span></a></h2>
+<p>Let’s discuss the main design components required for our URL shortening service. Our design depends on each part’s functionality and progressively combines them to achieve different workflows mentioned in the functional requirements.</p>
+
+<h3 id="Components">Components<a href="#Components"><span>#</span></a></h3>
+<p>We’ll explain the inner mechanism of different components within our system, as well as their usage as a part of the whole system below. We’ll also highlight the design choices made for each component to achieve the overall functionality.</p>
+<p><strong>Database</strong>: For services like URL shortening, there isn’t a lot of data to store. However, the storage has to be horizontally scalable. The type of data we need to store includes:</p>
+<ul>
+<li>User details.</li>
+<li>Mappings of the URLs, that is, the long URLs that are mapped onto short URLs.</li>
+</ul>
+<p>Our service doesn’t require user registration for the generation of a short URL, so we can skip adding certain data to our database. Additionally, the stored records will have no relationships among themselves other than linking the URL-creating user’s details, so we don’t need structured storage for record-keeping. Considering the reasons above and the fact that our system will be read-heavy, NoSQL is a suitable choice for storing data. In particular, MongoDB is a good choice for the following reasons:</p>
+<ol>
+<li>It uses leader-follower protocol, making it possible to use replicas for heavy reading.</li>
+<li>MongoDB ensures atomicity in concurrent write operations and avoids collisions by returning duplicate-key errors for record-duplication issues.</li>
+</ol>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<p><strong>Short URL generator</strong>: Our short URL generator will comprise a building block and an additional component:</p>
+<ul>
+<li>A sequencer to generate unique IDs</li>
+<li>A Base-58 encoder to enhance the readability of the short URL</li>
+</ul>
+<p>We built a sequencer in our building blocks section to generate 64-bit unique <em>numeric</em> IDs. However, our proposed design requires 64-bit <em>alphanumeric</em> short URLs in base-58. To convert the numeric (base-10) IDs to alphanumeric (base-58), we’ll need a base-10 for the base-58 encoder. We’ll explore the rationale behind these decisions alongside the internal working of the base-58 encoder in the next lesson.</p>
+<p>Take a look at the diagram below to understand how the overall short URL generation unit will work.</p>
+
+<figure class="diagram"><img src="/images/34/3/img_1.svg" alt="Internal working of a short URL generator" loading="lazy" /><figcaption>Internal working of a short URL generator</figcaption></figure>
+<p><strong>Other building blocks</strong>: Beside the elements mentioned above, we’ll also incorporate other building blocks like load balancers, cache, and rate limiters.</p>
+<ul>
+<li><strong>Load balancing</strong>: We can employ Global Server Load Balancing (GSLB) apart from local load balancing to improve availability. Since we have plenty of time between a short URL being generated and subsequently accessed, we can safely assume that our DB is geographically consistent and that distributing requests globally won’t cause any issues.</li>
+<li><strong>Cache</strong>: For our specific read-intensive design problem, Memcached is the best choice for a cache solution. We require a simple, horizontally scalable cache system with minimal data structure requirements. Moreover, we’ll have a data-center-specific caching layer to handle native requests. Having a global caching layer will result in higher latency.</li>
+<li><strong>Rate limiter</strong>: Limiting each user’s quota is preferable for adding a security layer to our system. We can achieve this by uniquely identifying users through their unique <code>api_dev_key</code> and applying one of the discussed rate-limiting algorithms (see <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5447913559293952" target="_blank">Rate Limiter</a> from <em>Building Blocks</em>). Keeping in view the simplicity of our system and the requirements, the fixed window counter algorithm would serve the purpose, as we can assign a set number of shortening and redirection operations per <code>api_dev_key</code> for a specific timeframe.</li>
+</ul>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<p></p>
+<h3 id="Design-diagram">Design diagram<a href="#Design-diagram"><span>#</span></a></h3>
+<p>A simple design diagram of the URL shortening system is given below.</p>
+
+<figure class="diagram"><img src="/images/34/3/img_2.svg" alt="A design diagram of the URL shortening service" loading="lazy" /><figcaption>A design diagram of the URL shortening service</figcaption></figure>
+<h3 id="Workflow">Workflow<a href="#Workflow"><span>#</span></a></h3>
+<p>Let’s analyze the system in-depth and how the individual pieces fit together to provide the overall functionality.</p>
+<p>Keeping in view the functional requirements, the workflow of the abstract design above would be as follows.</p>
+<ol>
+<li><strong>Shortening</strong>: Each new request for short link computation gets forwarded to the short URL generator (SUG) by the application server. Upon successful generation of the short link, the system sends one copy back to the user and stores the record in the database for future use.</li>
+</ol>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<ol start="2">
+<li><strong>Redirection</strong>: Application servers, upon receiving the redirection requests, check the storage units (caching system and database) for the required record. If found, the application server redirects the user to the associated long URL.</li>
+</ol>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<p></p>
+<ol start="3">
+<li><strong>Deletion</strong>: A logged-in user can delete a record by requesting the application server which forwards the user details and the associated URL’s information to the database server for deletion. A system-initiated deletion can also be triggered upon an expiry time, as we’ll see ahead.</li>
+<li><strong>Custom short links</strong>: This task begins with checking the eligibility of the requested short URL. The maximum length allowed is 11 alphanumeric digits.  We can find the details on the allowed format and the specific digits in the next lesson. Once verified, the system checks its availability in the database. If the requested URL is available, the user receives a successful short URL generation message, or an error message in the opposite case.</li>
+</ol>
+<p>The illustration below depicts how URL shortening, redirection, and deletion work.</p>
+
+<figure class="diagram"><img src="/images/34/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/34/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/34/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/34/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/34/3/img_7.svg" alt="" loading="lazy" /></figure>
+<p>QuestionUpon successful allocation of a custom short URL, how does the system modify its records?Show Answer</p>

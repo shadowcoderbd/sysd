@@ -1,0 +1,78 @@
+<h1>Design of a Distributed Messaging Queue: Part 1</h1>
+<p>So far, we’ve discussed the requirements and design considerations of a distributed messaging queue. Now, let’s begin with learning about the high-level design of a distributed messaging queue.</p>
+<h2 id="Distributed-messaging-queue">Distributed messaging queue<a href="#Distributed-messaging-queue"><span>#</span></a></h2>
+<p>Unlike a single-server messaging queue, a distributed messaging queue resides on multiple servers. A distributed messaging queue has its own challenges. However, it resolves the drawbacks of a single-server messaging queue if designed properly.</p>
+<p>The following sections focus on the scalability, availability, and durability issues of designing a distributed messaging queue by introducing us to a more fault-tolerant architecture of a messaging queue.</p>
+<h3 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h3>
+<p>Before diving deep into the design, let’s assume the following points to make the discussion more simple and easy to understand. In the upcoming material, we discuss how the following assumptions enable us to eliminate the problems in a single-server solution to the messaging queue.</p>
+<ol>
+<li>
+<p>Queue data is replicated using either a primary-secondary or quorum-like system inside a cluster (read through the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5241733675220992" target="_blank">Data Replication</a> lesson for more details). Our service can use data partitioning if the queue gets too long to fit on a server. We can use a consistent hashing-like scheme for this purpose, or we may use a key-value store where the key might be the sequence numbers of the messages. In that case, each shard is appropriately replicated (refer to the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6254160546103296" target="_blank">Partition</a> lesson for more details on this).</p>
+</li>
+<li>
+<p>We also assume that our system can auto-expand and auto-shrink the resources as per the need to optimally utilize resources.</p>
+</li>
+</ol>
+<p>The following figure demonstrates a high-level design of a distributed messaging queue that’s composed of several components.</p>
+
+<figure class="diagram"><img src="/images/17/4/img_0.svg" alt="High-level architecture of distributed messaging queue" loading="lazy" /><figcaption>High-level architecture of distributed messaging queue</figcaption></figure>
+<p>The essential components of our design are described in detail below.</p>
+<h4 id="Load-balancer">Load balancer<a href="#Load-balancer"><span>#</span></a></h4>
+<p>The load balancer layer receives requests from producers and consumers, which are forwarded to one of the front-end servers. This layer consists of numerous load balancers. Therefore, requests are accepted with minimal latency and offer high availability.</p>
+<h4 id="Front-end-service">Front-end service<a href="#Front-end-service"><span>#</span></a></h4>
+<p>The front-end service comprises stateless machines distributed across data centers. The frontend provides the following services:</p>
+<ul>
+<li>
+<p><strong>Request validation:</strong> This ensures the validity of a request and checks if it contains all the necessary information.</p>
+</li>
+<li>
+<p><strong>Authentication and authorization:</strong> This service checks if the requester is a valid user and if these services are authorized for use to a requester.</p>
+</li>
+</ul>
+<!---
+* **Sequencing:** The front-end also utilizes the [sequencer](https://www.educative.io/collection/page/10370001/4941429335392256/5216880444309504) (discussed later) to assign a unique ID to each message to ensure the sequence of messages in a queue. This will not only maintain the causality of the messages but will also help in placing the messages in the queue that arrives concurrently.  --->
+<ul>
+<li>
+<p><strong>Caching:</strong> In the front-end cache, metadata information is stored related to the frequently used queues. Along with this, user-related data is also cached here to reduce request time to authentication and authorization services.</p>
+</li>
+<li>
+<p><strong>Request dispatching:</strong>  The frondend is also responsible for calling two other services, the backend and the metadata store. Differentiating calls to both of these services is one of the responsibilities of the frontend.</p>
+</li>
+<li>
+<p><strong>Request deduplication:</strong> The frontend also tracks information related to all the requests, therefore, it also prevents <span><span><span class="font-bold cursor-pointer">identical requests<svg class="sc-559b404a-0 ipLJtW" expanded="0" fill="none" height="13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewbox="0 0 24 24" width="13" xmlns="http://www.w3.org/2000/svg"><polyline points="10 15 15 20 20 15"></polyline><path d="M4 4h7a4 4 0 0 1 4 4v12"></path></svg></span></span></span> from being put in a queue. Deciding what to do about duplicates might be as easy as searching a hash key in a store. If something is found in the store, this implies a duplicate and the message can be rejected.</p>
+</li>
+<li>
+<p><strong>Usage data collection:</strong> This refers to the collection of real-time data that can be used for audit purposes.</p>
+</li>
+</ul>
+<h4 id="Metadata-service">Metadata service<a href="#Metadata-service"><span>#</span></a></h4>
+<p>This component is responsible for storing, retrieving, and updating the metadata of queues in the metadata <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">store</span></span>  and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cache</span></span>.  Whenever a queue is created or deleted, the metadata store and cache are updated accordingly. The metadata service acts as a middleware between the front-end servers and the data layer. Since the metadata of the queues is kept in the cache, the cache is checked first by the front-end servers for any relevant information related to the receipt of the request. If a cache miss occurs, the information is retrieved from the metadata store and the cache is updated accordingly.</p>
+<p>There are two different approaches to organizing the metadata cache clusters:</p>
+<ol>
+<li>If the metadata that needs to be stored is small and can reside on a single machine, then it’s replicated on each cluster server. Subsequently, the request can be served from any random server. In this approach, a load balancer can also be introduced between the front-end servers and metadata services.</li>
+</ol>
+
+<figure class="diagram"><img src="/images/17/4/img_1.svg" alt="A load balancer is introduced between the front-end servers and metadata services" loading="lazy" /><figcaption>A load balancer is introduced between the front-end servers and metadata services</figcaption></figure>
+<ol start="2">
+<li>If the metadata that needs to be stored is too large, then one of the following modes can be followed:</li>
+</ol>
+<ul>
+<li>The first strategy is to use the sharding approach to divide data into different shards. <strong>Sharding</strong> can be performed based on some partition key or hashing techniques, as was discussed in the lesson on <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6254160546103296" target="_blank">database partitioning</a>. Each shard is stored on a different host in the cluster. Moreover, each shard is also replicated on different hosts to enhance availability. In this cluster-organization approach, the front-end server has a mapping table between shards and the hosts. Therefore, the front-end server is responsible for redirecting requests to the host where the data is stored.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/17/4/img_2.svg" alt="Mapping table resides on the front-end servers" loading="lazy" /><figcaption>Mapping table resides on the front-end servers</figcaption></figure>
+<ul>
+<li>The second approach is similar to the first one. However, the mapping table in this approach is stored on each host instead of just on the front-end servers. Because of this, any random host can receive a request and forward it to the host where the data resides. This technique is suitable for read-intensive applications.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/17/4/img_3.svg" alt="Mapping table resides on each metadata server" loading="lazy" /><figcaption>Mapping table resides on each metadata server</figcaption></figure>
+<p>In our discussion on distributed messaging queues, we focused on the high-level design of this type of queue. Furthermore, we explored each component in the high-level design, including the following:</p>
+<ul>
+<li>Front-end servers and the services required of them for smooth operations.</li>
+<li>Load balancers.</li>
+<li>Metadata services.</li>
+<li>Metadata clusters and their organization.</li>
+</ul>
+<p>A vital part of the design is the organization of servers at the backend for queue creation, deletion, and other such operations. The next lesson focuses on the organization of back-end servers and the management of queues, along with other important operations related to message delivery and retrieval.</p>
+
+<p></p>

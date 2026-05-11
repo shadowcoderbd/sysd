@@ -1,0 +1,114 @@
+<h1>Requirements of Instagram’s Design</h1>
+<p></p>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>We’ll concentrate on some important features of Instagram to make this design simple. Let’s list down the requirements for our system:</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<ul>
+<li>
+<p><strong>Post photos and videos</strong>: The users can post photos and videos on Instagram.</p>
+</li>
+<li>
+<p><strong>Follow and unfollow users</strong>: The users can follow and unfollow other users on Instagram.</p>
+</li>
+<li>
+<p><strong>Like or dislike posts</strong>: The users can like or dislike posts of the accounts they follow.</p>
+</li>
+<li>
+<p><strong>Search photos and videos</strong>: The users can search photos and videos based on captions and location.</p>
+</li>
+<li>
+<p><strong>Generate news feed</strong>: The users can view the news feed consisting of the photos and videos (in chronological order) from all the users they follow. Users can also view suggested and promoted photos in their news feed.</p>
+</li>
+</ul>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<ul>
+<li>
+<p><strong>Scalability</strong>: The system should be scalable to handle millions of users in terms of computational resources and storage.</p>
+</li>
+<li>
+<p><strong>Latency</strong>: The latency to generate a news feed should be low.</p>
+</li>
+<li>
+<p><strong>Availability</strong>: The system should be highly available.</p>
+</li>
+<li>
+<p><strong>Durability</strong> Any uploaded content (photos and videos) should never get lost.</p>
+</li>
+<li>
+<p><strong>Consistency</strong>: We can compromise a little on consistency. It is acceptable if the content (photos or videos) takes time to show in followers’ feeds located in a distant region.</p>
+</li>
+<li>
+<p><strong>Reliability</strong>: The system must be able to tolerate hardware and software failures.</p>
+</li>
+</ul>
+
+<h2 id="Resource-estimation">Resource estimation<a href="#Resource-estimation"><span>#</span></a></h2>
+<p>Our system is read-heavy because service users spend substantially more time  browsing the feeds of others than creating and posting new content. Our focus will be to design a system that can fetch the photos and videos on time. There is no restriction on the number of photos or videos that users can upload, meaning efficient storage management should be a primary consideration in the design of this system. Instagram supports around a billion users globally who share 95 million photos and videos on Instagram per day. We’ll calculate the resources and design our system based on the requirements.</p>
+<p>Let’s assume the following:</p>
+<ul>
+<li>
+<p>We have 1 billion users, with 500 million as daily active users.</p>
+</li>
+<li>
+<p>Assume 60 million photos and 35 million videos are shared on Instagram per day.</p>
+</li>
+<li>
+<p>We can consider 3 MB as the maximum size of each photo and 150 MB as the maximum size of each video uploaded on Instagram.</p>
+</li>
+<li>
+<p>On average, each user sends 20 requests (of any type) per day to our service.</p>
+</li>
+</ul>
+<h3 id="Storage-estimation">Storage estimation<a href="#Storage-estimation"><span>#</span></a></h3>
+<p>We need to estimate the storage capacity, bandwidth, and the number of servers to support such an enormous number of users and content.</p>
+<p>The storage per day will be:</p>
+<p>60 million photos/day * 3 MB = 180 TeraBytes / day</p>
+<p>35 million videos/day * 150 MB = 5250 TB / day</p>
+<p>Total content size = 180 + 5250 = 5430 TB</p>
+<p>The total space required for a year:</p>
+<p>5430 TB/day * 365 (days a year) = 1981950 TB = 1981.95 PetaBytes</p>
+
+<figure class="diagram"><img src="/images/33/2/img_0.svg" alt="Total storage required by the Instagram storage system for a year" loading="lazy" /><figcaption>Total storage required by the Instagram storage system for a year</figcaption></figure>
+<p>Besides photos and videos, we have ignored comments, status sharing data, and so on. Moreover, we also have to store users’ information and post metadata, for example, userID, photo, and so on. So, to be precise, we need more than 5430 TB/day, but to keep our design simple, let’s stick to the 5430 TB/day.</p>
+
+<h3 id="Bandwidth-estimation">Bandwidth estimation<a href="#Bandwidth-estimation"><span>#</span></a></h3>
+<p>According to the estimate of our storage capacity, our service will get 5430 TB of data each day, which will give us:</p>
+<p>5430 TB/(24 * 60* 60) = 5430 TB/86400 sec ~= 62.84 GB/s ~= 502.8 Gbps</p>
+<p>Since each incoming photo and video needs to reach the users’ followers, let’s say the ratio of readers to writers is 100:1. As a result, we need 100 times more bandwidth than incoming bandwidth.
+Let’s assume the following:</p>
+<p>Incoming bandwidth ~= 502.8 Gbps</p>
+<p>Required outgoing bandwidth ~= 100 * 502.8 Gbps ~= 50.28 Tbps</p>
+
+<figure class="diagram"><img src="/images/33/2/img_1.svg" alt="Total bandwidth required" loading="lazy" /><figcaption>Total bandwidth required</figcaption></figure>
+<p>Outgoing bandwidth is fairly high. We can use compression to reduce the media size substantially. Moreover, we’ll place content close to the users via CDN and other caches in IXP and ISPs to serve the content at high speed and low latency.</p>
+
+<h3 id="Number-of-servers-estimation">Number of servers estimation<a href="#Number-of-servers-estimation"><span>#</span></a></h3>
+<p>We need to handle concurrent requests coming from 500 million daily active users. Let’s assume that a typical Instagram server handles 100 requests per second:</p>
+<p>Requests by each user per day = 20
+Queries handled by a server per second = 100</p>
+<p>Queries handled by a server per day = 100 * 60 * 60 * 24 = 8640000</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>N</mi><mi>u</mi><mi>m</mi><mi>b</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>o</mi><mi>f</mi><mtext> </mtext><mi>a</mi><mi>c</mi><mi>t</mi><mi>i</mi><mi>v</mi><mi>e</mi><mtext> </mtext><mi>u</mi><mi>s</mi><mi>e</mi><mi>r</mi><mi>s</mi><mo>∗</mo><mi>R</mi><mi>e</mi><mi>q</mi><mi>u</mi><mi>e</mi><mi>s</mi><mi>t</mi><mi>s</mi><mtext> </mtext><mi>b</mi><mi>y</mi><mtext> </mtext><mi>e</mi><mi>a</mi><mi>c</mi><mi>h</mi><mtext> </mtext><mi>u</mi><mi>s</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>p</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>d</mi><mi>a</mi><mi>y</mi></mrow><mrow><mi>Q</mi><mi>u</mi><mi>e</mi><mi>r</mi><mi>i</mi><mi>e</mi><mi>s</mi><mtext> </mtext><mi>h</mi><mi>a</mi><mi>n</mi><mi>d</mi><mi>l</mi><mi>e</mi><mi>d</mi><mtext> </mtext><mi>p</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>s</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>a</mi><mtext> </mtext><mi>d</mi><mi>a</mi><mi>y</mi></mrow></mfrac><mo>=</mo><mn>1157</mn><mtext> </mtext><mi>s</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>e</mi><mi>r</mi><mi>s</mi><mtext> </mtext><mi>a</mi><mi>p</mi><mi>p</mi><mi>r</mi><mi>o</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">\frac{Number\ of\ active\ users * 
+Requests\ by\ each\ user\ per\ day}{Queries\ handled\ per\ server\ a\ day} = 1157\ servers\ approx</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:2.2519em; vertical-align:-0.8804em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em"><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord mathnormal">Q</span><span class="mord mathnormal">u</span><span class="mord mathnormal">er</span><span class="mord mathnormal">i</span><span class="mord mathnormal">es</span><span class="mspace"> </span><span class="mord mathnormal">han</span><span class="mord mathnormal">d</span><span class="mord mathnormal">l</span><span class="mord mathnormal">e</span><span class="mord mathnormal">d</span><span class="mspace"> </span><span class="mord mathnormal">p</span><span class="mord mathnormal">er</span><span class="mspace"> </span><span class="mord mathnormal">ser</span><span class="mord mathnormal">v</span><span class="mord mathnormal">er</span><span class="mspace"> </span><span class="mord mathnormal">a</span><span class="mspace"> </span><span class="mord mathnormal">d</span><span class="mord mathnormal">a</span><span class="mord mathnormal">y</span></span></span><span><span class="pstrut" style="height:3em"></span><span class="frac-line"></span></span><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord mathnormal">N</span><span class="mord mathnormal">u</span><span class="mord mathnormal">mb</span><span class="mord mathnormal">er</span><span class="mspace"> </span><span class="mord mathnormal">o</span><span class="mord mathnormal">f</span><span class="mspace"> </span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">v</span><span class="mord mathnormal">e</span><span class="mspace"> </span><span class="mord mathnormal">u</span><span class="mord mathnormal">sers</span><span class="mspace"></span><span class="mbin">∗</span><span class="mspace"></span><span class="mord mathnormal">R</span><span class="mord mathnormal">e</span><span class="mord mathnormal">q</span><span class="mord mathnormal">u</span><span class="mord mathnormal">es</span><span class="mord mathnormal">t</span><span class="mord mathnormal">s</span><span class="mspace"> </span><span class="mord mathnormal">b</span><span class="mord mathnormal">y</span><span class="mspace"> </span><span class="mord mathnormal">e</span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span><span class="mord mathnormal">h</span><span class="mspace"> </span><span class="mord mathnormal">u</span><span class="mord mathnormal">ser</span><span class="mspace"> </span><span class="mord mathnormal">p</span><span class="mord mathnormal">er</span><span class="mspace"> </span><span class="mord mathnormal">d</span><span class="mord mathnormal">a</span><span class="mord mathnormal">y</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace"></span><span class="mrel">=</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:0.8389em; vertical-align:-0.1944em"></span><span class="mord">1157</span><span class="mspace"> </span><span class="mord mathnormal">ser</span><span class="mord mathnormal">v</span><span class="mord mathnormal">ers</span><span class="mspace"> </span><span class="mord mathnormal">a</span><span class="mord mathnormal">pp</span><span class="mord mathnormal">ro</span><span class="mord mathnormal">x</span></span></span></span></span></p>
+<p>This calculation shows that we need 1157 servers to handle queries in our Instagram system.</p>
+
+<figure class="diagram"><img src="/images/33/2/img_2.svg" alt="Number of servers required for the Instagram system" loading="lazy" /><figcaption>Number of servers required for the Instagram system</figcaption></figure>
+<h2 id="Try-it-yourself">Try it yourself<a href="#Try-it-yourself"><span>#</span></a></h2>
+<p>Let’s analyze how the number of photos per day affects the storage and bandwidth requirements. For this purpose, try to change values in the following table to compute the estimates. We have set 20 requests by each user per day in the following calculation:</p>
+
+<table class="data-grid"><tbody><tr><td class="cell read-only sc-5e8a0d8b-4 itNrWf"><span class="value-viewer">Requirements </span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Calculations</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of photos per day (in millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">60</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Size of each photo (in MB)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">3</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of videos per day (in millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">35</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Size of each video (in MB)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">150</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of daily active users (in millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">500</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of requests a server can handle per day</span></td><td class="cell read-only sc-5e8a0d8b-4 eQKLiE"><span class="value-viewer">8640000</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Storage estimation per day (in TB)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">5430</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Incoming bandwidth (Gb/s)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">502.8</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of servers needed</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">1157</span></td></tr></tbody></table>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>In the next lesson, we’ll focus on the high-level design of Instagram. The design will utilize many building blocks that have been discussed in the initial chapters also. We’ll use the following building blocks in our design:</p>
+
+<figure class="diagram"><img src="/images/33/2/img_3.svg" alt="Building blocks used in Instagram design" loading="lazy" /><figcaption>Building blocks used in Instagram design</figcaption></figure>
+<ul>
+<li>A <strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank">load balancer</a></strong> at various layers will ensure smooth requests distribution among available servers.</li>
+<li>A <strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4901035478351872" target="_blank">database</a></strong> is used to store the user and accounts metadata and relationship among them.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4862646238576640" target="_blank">Blob storage</a></strong> is needed to store the various types of content such as photos, videos, and so on.</li>
+<li>A <strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6152021643624448" target="_blank">task scheduler</a></strong> schedules the events on the database such as removing the entries whose time to live exceeds the limit.</li>
+<li>A <strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5053577315221504" target="_blank">cache</a></strong> stores the most frequent content related requests.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6624266925899776" target="_blank">CDN</a></strong> is used to effectively deliver content to end-users which reduces delay and burden on end-servers.</li>
+</ul>
+
+<p>In the next lesson, we’ll discuss  the high-level design of the Instagram system.</p>
+
+<p></p>

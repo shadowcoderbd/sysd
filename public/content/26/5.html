@@ -1,0 +1,112 @@
+<h1>The Reality Is More Complicated</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>Now that we’ve understood the design well, let’s see how YouTube can optimize the usage of storage and network demands while maintaining good <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">quality of experience (QoE)</span></span>  for the end user.</p>
+<p>When talking about providing effective service to end users, the following three steps are important:</p>
+<ul>
+<li><strong>Encode</strong>: The raw videos uploaded to YouTube have significant storage requirements. It’s possible to use various encoding schemes to reduce the size of these raw video files. Apart from compression, the choice of encoding scheme will also depend on the types of end devices used to stream the video content. Since multiple devices could be used to stream the same video, we may have to encode the same video using different encoding schemes resulting in one raw video file being converted into multiple files each encoded differently. This strategy will result in a good user-perceived experience because of two reasons: users will save bandwidth because the video file will be encoded and compressed to some limit, and the encoded video file will be appropriate for the client for a smooth playback experience.</li>
+<li><strong>Deploy</strong>: For low latency, content must be intelligently deployed so that it is closer to a large number of end users. Not only will this reduce latency, but it will also put less burden on the networks as well as YouTube’s core servers.</li>
+<li><strong>Deliver</strong>: Delivering to the client requires knowledge about the client or device used for playing the video. This knowledge will help in adapting to the client and network conditions. Therefore, we’ll enable ourselves to serve content efficiently.</li>
+</ul>
+<p>Let’s understand each phase in detail now.</p>
+<h2 id="Encode">Encode<a href="#Encode"><span>#</span></a></h2>
+<p>Until now, we’ve considered encoding one video with different encoding schemes. However, if we encode videos on a per-shot basis, we’ll divide the video into smaller time frames and encode them individually. We can divide videos into shorter time frames and refer to them as segments. Each segment will be encoded using multiple encoding schemes to generate different files called chunks. The choice of encoding scheme for a segment will be based on the detail within the segment to get optimized quality with lesser storage requirements. Eventually, each shot will be encoded into multiple chunk sizes depending on the segment’s content and encoding scheme used. As we divide the raw video into segments, we’ll see its advantages during the deployment and delivery phase.</p>
+<p>Let’s understand how the per-segment encoding will work. For any video with dynamic colors and high depth, we’ll encode it differently from a video with fewer colors. This means that a not-so-dynamic segment will be encoded such that it’s compressed more to save additional storage space. Eventually, we’ll have to transfer smaller file sizes and save bandwidth during the deployment and streaming phases.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_0.svg" alt="Higher quality requiring higher bitrate from left to right" loading="lazy" /><figcaption>Higher quality requiring higher bitrate from left to right</figcaption></figure>
+<p>Using the strategy above, we’ll have to encode individual shots of a video in various formats. However, the alternative to this would be storing an entire video (using no segmenting) after encoding it in various formats. If we encode on a per-shot basis, we would be able to optimally reduce the size of the entire video by doing the encoding on a granular level. We can also encode audio in various formats to optimally allow streaming for various clients like TVs, mobile phones, and desktop machines. Specifically, for services like Netflix, audio encoding is more useful because audios are offered in various languages.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_1.svg" alt="A raw video file being encoded into different formats including its audio and subtitles" loading="lazy" /><figcaption>A raw video file being encoded into different formats including its audio and subtitles</figcaption></figure>
+<h2 id="Deploy">Deploy<a href="#Deploy"><span>#</span></a></h2>
+<p>As discussed in our design and evaluation sections, we have to bring the content closer to the user. This has three main advantages:</p>
+<ol>
+<li>Users will be able to stream videos quickly.</li>
+<li>There will be a reduced burden on the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">origin servers</span></span>.</li>
+<li>Internet service providers (ISPs) will have spare bandwidth.</li>
+</ol>
+<p>So, instead of streaming from our data centers directly, we can deploy chunks of popular videos in CDNs and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">point of presence (PoPs)</span></span> of ISPs. In places where there is no collaboration possible with the ISPs, our content can be placed in internet exchange point (IXPs). We can put content in IXPs that will not only be closer to users, but can also be helpful in filling the cache of ISP PoPs.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_2.svg" alt="Streaming from data center to users through IXP and ISPs" loading="lazy" /><figcaption>Streaming from data center to users through IXP and ISPs</figcaption></figure>
+<p>We should keep in mind that the caching at the ISP or IXP is performed only for the popular content or moderately popular content because of limited storage capacity. Since our per-shot encoding scheme saves storage space, we’ll be able to serve out more content using the cache infrastructure closer to end users.</p>
+<p>Additionally, we can have two types of storage at the origin servers:</p>
+<ol>
+<li><strong>Flash servers</strong>: These servers hold popular and moderately popular content. They are optimized for low-latency delivery.</li>
+<li><strong>Storage servers</strong>: This type holds a large portion of videos that are not popular. These servers are optimized to hold large storage.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> When we transfer streaming content, it can result in the congestion of networks. That is why we have to transfer the content to ISPs in off-peak hours.</p>
+</blockquote>
+<h3 id="Recommendations">Recommendations<a href="#Recommendations"><span>#</span></a></h3>
+<p>YouTube recommends videos to users based on their profile, taking into account factors such as their interests, view and search history, subscribed channels, related topics to already viewed content, and activities on content such as comments and likes.</p>
+<p>An approximation of the recommendation engine of YouTube is provided below. YouTube filters videos in two phases:</p>
+<ol>
+<li><strong>Candidate generation</strong>: During this phase, millions of YouTube videos are filtered down to hundreds based on the user’s history and current context.</li>
+<li><strong>Ranking</strong>: The ranking phase rates videos based on their features and according to the user’s interests and history. Hundreds of videos are filtered and ranked down to a few dozen videos during this phase.</li>
+</ol>
+<p><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">YouTube employs machine learning</span></span> technology in both phases to provide recommendations to users.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_3.svg" alt="YouTube's recommendation engine using two neural networks to filter videos from millions to dozens" loading="lazy" /><figcaption>YouTube's recommendation engine using two neural networks to filter videos from millions to dozens</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
+</span></span></div>
+<h2 id="Deliver">Deliver<a href="#Deliver"><span>#</span></a></h2>
+<p>Let’s see how the end user gets the content on their device. Since we have the chunks of videos already deployed near users, we redirect users to the nearest available chunks. As shown below, whenever a user requests content that YouTube has recognized as popular, YouTube redirects the user to the nearest CDN.</p>
+<p>However, in the case of non-popular content, the user is served from colocation sites or YouTube’s data center where the content is stored initially. We have already learned how YouTube can reduce latency times by having distributed caches at different design layers.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/26/5/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/26/5/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/26/5/img_7.svg" alt="" loading="lazy" /></figure>
+<h3 id="Adaptive-streaming">Adaptive streaming<a href="#Adaptive-streaming"><span>#</span></a></h3>
+<p>While the content is being served, the bandwidth of the user is also being monitored at all times. Since the video is divided into chunks of different qualities, each of the same time frame, the chunks are provided to clients based on changing network conditions.</p>
+<p>As shown below, when the bandwidth is high, a higher quality chunk is sent to the client and vice versa.</p>
+
+<figure class="diagram"><img src="/images/26/5/img_8.svg" alt="Chunk size in each time frame provided to the client changes according to the bandwidth" loading="lazy" /><figcaption>Chunk size in each time frame provided to the client changes according to the bandwidth</figcaption></figure>
+<p>The adaptive bitrate algorithm depends on the following four parameters:</p>
+<ol>
+<li>End-to-end available bandwidth (from a CDN/servers to a specific client).</li>
+<li>The device capabilities of the user.</li>
+<li>Encoding techniques used.</li>
+<li>The buffer space at the client
+[<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">source</span></span>].</li>
+</ol>
+
+<figure class="diagram"><img src="/images/26/5/img_9.svg" alt="Parameters affecting adaptive bitrate algorithm" loading="lazy" /><figcaption>Parameters affecting adaptive bitrate algorithm</figcaption></figure>
+<h2 id="Potential-follow-up-questions">Potential follow-up questions<a href="#Potential-follow-up-questions"><span>#</span></a></h2>
+<p>There can be many different aspects of the system design of YouTube as there is more depth in the subject area. Therefore, many questions can arise. Some questions and directions toward their answers are as follows:</p>
+<ol>
+<li>
+<p><strong>Question</strong>: It is possible to quantify availability by adding numbers like 99.99% availability or 99.999% availability. In that case, what design changes will be required?</p>
+<p>This is a hard question. In reality, such numbers are part of a service’s SLA, and they are generated from models or long-term empirical studies. While it is good to know how the above numbers are obtained and how organizations use monitoring to keep availability high, it might be a better strategy to discuss the fault tolerance of the system—what will happen if there are software faults, server failures, full data center failures, and so on. If the system is resilient against faults, that implies the system will have good availability.</p>
+</li>
+<li>
+<p><strong>Question</strong>: We assumed some reasonable numbers to come up with broad resource requirements. For example, we said the average length of a video is five minutes.  In this case, are we designing for average behavior? What will happen to users who don’t follow the average profile?</p>
+<p>A possible answer could be that the above number will likely change over time. Our system design should be horizontally scalable so that with increasing users, the system keeps functioning adequately. Practically, systems might not scale when some aspect of the system increases by an order of magnitude. When some aspects of a system increase by an order of magnitude (for example, 10x), we usually need a new, different design. Cost points of designing 10x and 100x scales are very different.</p>
+</li>
+<li>
+<p><strong>Question</strong>: Why didn’t we discuss and estimate resources for video comments and likes?</p>
+<p>Concurrent users’ comments on videos are roughly at the same complexity as designing a messaging system. We’ll discuss that problem <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6538438514049024" target="_blank">elsewhere</a> in the course.</p>
+</li>
+<li>
+<p><strong>Question</strong>: How to manage unexpected spikes in system load?</p>
+<p>A possible answer is that because our design is horizontally scalable, we can shed some load on the public cloud due to its elasticity features. However, public clouds are not infinitely scalable. They often need a priori business contracts that might put a limit on maximum, concurrently allowed resource use at different data centers.</p>
+</li>
+<li>
+<p><strong>Question</strong>: How will we deploy a global network to connect data centers and CDN sites?</p>
+<p>In practice, YouTube uses Google’s network, which is built for that purpose and peers with many ISPs of the world. It is a fascinating field of study that we have left outside this course for further review.</p>
+</li>
+<li>
+<p><strong>Question</strong>: Why isn’t there more detail on audio/video encoding?</p>
+<p>There are many audio/video encoding choices, many publicly known and some proprietary. Due to excessive redundancy in multimedia content, encoding is often able to reduce a huge raw format content to a much smaller size (for example, from 600 MB to 30 MB). We have left the details of such encoding algorithms to you if you’re interested in further exploration.</p>
+</li>
+<li>
+<p><strong>Question</strong>: Cant we use specialized hardware (or accelerators like GPUs) to speed up some aspects of the YouTube computation?</p>
+<p>When we estimated the number of servers, we assumed that any server could fulfill any required functionality. In reality, with the slowing of <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Moore’s law</span></span>, we have special-purpose hardware available (for example, hardware encoders/decoders, machine-learning accelerators like Tensor Processing Units, and many more). All such platforms need their own courses to do justice to the content. So, we avoided that discussion in this design problem.</p>
+</li>
+<li>
+<p><strong>Question</strong>: Should compression be performed at the client-side or the server-side during the content uploading stage?</p>
+<p>We might use some lossless but fast compression (for example, Google Snappy) on the client end to reduce data that needs to be uploaded. This might mean that we’ll need a rich client, or we would have to fall back to plain data if the compressor was unavailable. Both of those options add complexity to the system.</p>
+</li>
+<li>
+<p><strong>Question</strong>: Are there any other benefits to making file chunks other than in adaptive bitrates?</p>
+<p>We discussed video file chunks in the context of adaptive bit rates only. Such chunks also help to parallelize any preprocessing, which is important to meet real-time requirements, especially for live streams. Parallel processing is again a full-fledged topic in itself, and we’ve left it to you for further exploration.</p>
+</li>
+</ol>

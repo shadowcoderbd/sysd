@@ -1,0 +1,55 @@
+<h1>System Design: The Distributed Messaging Queue</h1>
+<h2 id="What-is-a-messaging-queue?">What is a messaging queue?<a href="#What-is-a-messaging-queue?"><span>#</span></a></h2>
+<p>A <strong>messaging queue</strong> is an intermediate component between the interacting entities known as <em>producers</em> and <em>consumers</em>. The <strong>producer</strong> produces messages and places them in the queue, while the <strong>consumer</strong> retrieves the messages from the queue and processes them. There might be multiple producers and consumers interacting with the queue at the same time.</p>
+<p>Here is an illustration of two applications interacting via a single messaging queue:</p>
+
+<figure class="diagram"><img src="/images/17/1/img_0.svg" alt="An example of two applications interacting via a single messaging queue" loading="lazy" /><figcaption>An example of two applications interacting via a single messaging queue</figcaption></figure>
+<h3 id="Motivation">Motivation<a href="#Motivation"><span>#</span></a></h3>
+<p>A messaging queue has several advantages and use cases.</p>
+<ul>
+<li>
+<p><strong>Improved performance:</strong> Improved performance: A messaging queue enables asynchronous communication between the two interacting entities, producers and consumers, and eliminates their relative speed difference. A producer puts messages in the queue without waiting for the consumers. Similarly, a consumer processes the messages when they become available. Moreover, queues are often used to separate out slower operations from the critical path and, therefore, help reduce client-perceived latency. For example, instead of waiting for a specific task that’s taking a long time to complete, the producer process sends a message, which is kept in a queue if there are multiple requests, for the required task and continues its operations. The consumer can notify us about the fate of the processing, whether a success or failure, by using another queue.</p>
+</li>
+<li>
+<p><strong>Better reliability:</strong> The separation of interacting entities via a messaging queue makes the system more fault tolerant. For example, a producer or consumer can fail independently without affecting the others and restart later. Moreover, replicating the messaging queue on multiple servers ensures the system’s availability if one or more servers are down.</p>
+</li>
+<li>
+<p><strong>Granular scalability:</strong> Asynchronous communication makes the system more scalable. For example, many processes can communicate via a messaging queue. In addition, when the number of requests increases, we distribute the workload across several consumers. So, an application is in full control to tweak the number of producer or consumer processes according to its current need.</p>
+</li>
+<li>
+<p><strong>Easy decoupling:</strong> A messaging queue decouples dependencies among different entities in a system. The interacting entities communicate via messages and are kept unaware of each other’s internal working mechanisms.</p>
+</li>
+<li>
+<p><strong>Rate limiting:</strong> Messaging queues also help absorb any load spikes and prevent services from becoming overloaded, acting as a rudimentary form of rate limiting when there is a need to avoid dropping any incoming request.</p>
+</li>
+<li>
+<p><strong>Priority queue:</strong> Multiple queues can be used to implement different priorities—for example, one queue for each priority—and give more service time to a higher priority queue.</p>
+</li>
+</ul>
+
+<h3 id="Messaging-queue-use-cases">Messaging queue use cases<a href="#Messaging-queue-use-cases"><span>#</span></a></h3>
+<p>A messaging queue has many use cases, both in single-server and distributed environments. For example, it can be used for interprocess communication within one operating system. It also enables communication between processes in a distributed environment. Some of the use cases of a messaging queue are discussed below.</p>
+<ol>
+<li>
+<p><strong>Sending many emails:</strong> Emails are used for numerous purposes, such as sharing information, account verification, resetting passwords, marketing campaigns, and more. All of these emails written for different purposes don’t need immediate processing and, therefore, they don’t disturb the system’s <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">core functionality</span></span>. A messaging queue can help coordinate a large number of emails between different senders and receivers in such cases.</p>
+</li>
+<li>
+<p><strong>Data post-processing:</strong> Many multimedia applications need to process content for different viewer needs, such as for consumption on a mobile phone and a smart television. Oftentimes, applications upload the content into a store and use a messaging queue for post-processing of content offline. Doing this substantially reduces client-perceived latency and enables the service to schedule the offline work at some appropriate time—probably late at night when the compute capacity is less busy.</p>
+</li>
+<li>
+<p><strong>Recommender systems:</strong>  Some platforms use recommender systems to provide preferred content or information to a user. The recommender system takes the user’s historical data, processes it, and predicts relevant content or information. Since this is a time-consuming task, a messaging queue can be incorporated between the recommender system and requesting processes to increase and quicken performance.</p>
+</li>
+</ol>
+
+<h2 id="How-do-we-design-a-distributed-messaging-queue?">How do we design a distributed messaging queue?<a href="#How-do-we-design-a-distributed-messaging-queue?"><span>#</span></a></h2>
+<p>We divide the design of a distributed messaging queue into the following five lessons:</p>
+<ol>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5806944861814784" target="_blank">Requirements:</a></strong> Here, we focus on the functional and non-functional requirements of designing a distributed messaging queue. We also discuss a single server messaging queue and its drawbacks in this lesson.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6191662786674688" target="_blank">Design consideration:</a></strong> In this lesson, we discuss some important factors that may affect the design of a distributed messaging queue—for example, the order of placing messages in a queue, their extraction, their visibility in the queue, and the concurrency of incoming messages.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6330012742975488" target="_blank">Design:</a></strong>  In this lesson, we discuss the design of a distributed messaging queue in detail. We also describe the process of replication of queues and the interaction between various building blocks involved in the design.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4654974423793664" target="_blank">Evaluation:</a></strong> In this lesson, we evaluate the design of a distributed messaging queue based on its functional and non-functional requirements.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5261732032806912" target="_blank">Quiz:</a></strong> At the end of the chapter, we evaluate understanding of the design of a distributed messages queue via a quiz.</li>
+</ol>
+<p>Let’s start by understanding the requirements of designing a distributed messaging queue.</p>
+
+<p></p>

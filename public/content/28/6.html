@@ -1,0 +1,49 @@
+<h1>Evaluation of Google Maps' Design</h1>
+<p>Let’s see how the system we designed will handle millions of queries per second, ensuring a fast response time.</p>
+<h2 id="Availability">Availability<a href="#Availability"><span>#</span></a></h2>
+<p>With a large road network graph hosted on a single server, we ran into these issues:</p>
+<ul>
+<li>We couldn’t process user queries, since it was impossible to load such a large graph into the memory, making the system unavailable to the users.</li>
+<li>It wasn’t possible to make a persistent two-way connection (for navigation) between the server and millions of users per second.</li>
+<li>It was also a single point of failure.</li>
+</ul>
+<p>We solved the above problems by dividing the world into small segments. Each small segment consists of a graph that can be easily loaded into a server’s memory. With segments, we completed these objectives:</p>
+<ul>
+<li>We hosted each segment on a separate server, mitigating the issue of loading a large, global graph.</li>
+<li>The load balancer divides the request load across different segment servers depending on the user’s area of search. It mitigates the issue of putting the burden on a single server, which was affecting the system’s availability.</li>
+<li>We didn’t discuss replication, but we can replicate each segment, which will help deal with a segment server as a single point of failure and distribute the request load for a segment to replicas.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> Google Maps uses <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">lazy loading</span></span> of data, putting less burden on the system, which improves availability.</p>
+</blockquote>
+<p>Lazy loading reduces initial load time by reducing the amount of content to load, saves bandwidth by delivering content to users when needed, and preserves server and client resources by rendering only some of the content.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/28/6/img_0.svg" alt="Non-functional requirements fulfilled by our maps system" loading="lazy" /><figcaption>Non-functional requirements fulfilled by our maps system</figcaption></figure>
+<p></p>
+<h2 id="Scalability">Scalability<a href="#Scalability"><span>#</span></a></h2>
+<p>We scaled our system for large road networks. Scalability can be seen in two ways:</p>
+<ul>
+<li>The ability of the system to handle an increasing amount of user requests.</li>
+<li>The ability of the system to work with more data (segments).</li>
+</ul>
+<p>We divided the world into small segments. Each segment is hosted on a different server in the distributed system. The user requests for different routes are served from the different segment servers. In this way, we can serve millions of user requests.</p>
+<blockquote>
+<p><strong>Note:</strong> It wouldn’t have been possible to serve millions of user requests if we had a single large graph spanning the whole road network. There would have been memory issues loading and processing a huge graph.</p>
+</blockquote>
+<p>We can also add more segments easily because we don’t have to change the complete graph. We can further improve scalability by non-uniformly selecting the size of a segment—selecting smaller segment
+sizes in densely connected areas and bigger segments for the outskirts.</p>
+<h2 id="Smaller-response-times">Smaller response times<a href="#Smaller-response-times"><span>#</span></a></h2>
+<p>We’re running the user requests on small subgraphs. Processing a small subgraph of hundreds of vertices is far faster than a graph of millions of vertices. We can cache the processed small subgraph in the main memory and quickly respond to user requests. This is how our system responds to the user in less time.</p>
+<p>There’s another aspect that helps our system to respond quickly, and that is keeping the segment information in the key-value store. The key-value store helps different services to get the required information quickly.</p>
+<ul>
+<li>The graph processing service checks for the relevant segments in which the source and the destination latitude/longitude lie by querying the key-value store for the <code>segmentID</code> values.</li>
+<li>For load-balancing user requests among different segment servers, the key-value store is queried for the <code>serverID</code> against the segment on which the graph processing should run for a specific request.</li>
+</ul>
+<h2 id="Accuracy">Accuracy<a href="#Accuracy"><span>#</span></a></h2>
+<p>Besides the road data we had initially, we also captured the live location data of users, on which we performed analytics using data science techniques. Our system improves the accuracy of the results (path, ETA) using these analytics. Based on the analytics of the traffic patterns, the maps are updated, and the routes and ETA estimations are improved.</p>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="541"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Requirements</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Techniques</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Availability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Process user queries on small graphs (segments).</li><li>Load balance requests across different segment servers.</li><li>Replicate segment servers.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Scalability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Partition the large graphs into small graphs to ease segment addition.</li><li>Host the segments on different servers to enable serving more queries per second.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Less response time</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Cache the processed graphs.</li><li>Use a key-value store to quickly get the required information.</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Accuracy</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Collect live data.</li><li>Perform data analytics.</li></ul></td></tr></tbody></table>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>Google Maps is one of the most widely used applications in the world, where users find the shortest route between two locations. A map system models the road network with a graph data structure. To find the route, the shortest path algorithm runs over the graph. We’ve seen scalability issues with a large graph of the road network. We solved the problem by splitting the world into small segments. Each segment consists of a small graph that can be loaded into the memory to find the paths quickly. We’ve also seen that the estimated time of arrival can be improved by analyzing the live location data.</p>

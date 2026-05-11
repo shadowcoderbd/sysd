@@ -1,0 +1,50 @@
+<h1>Evaluation of WhatsApp’s Design</h1>
+<h2 id="Fulfill-the-requirements">Fulfill the requirements<a href="#Fulfill-the-requirements"><span>#</span></a></h2>
+<p>Our non-functional requirements for the proposed WhatsApp design are low latency, consistency, availability, and security. Let’s discuss how we have achieved these requirements in our system:</p>
+<ul>
+<li>
+<p><strong>Low latency</strong>: We can minimize the latency of the system at various levels:</p>
+<ul>
+<li>
+<p>We can do this through geographically distributed WebSocket servers and the cache associated with them.</p>
+</li>
+<li>
+<p>We can use Redis cache clusters on top of MySQL database clusters.</p>
+</li>
+<li>
+<p>We can use CDNs for frequently sharing documents and media content.</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>Consistency</strong>: The system also provides high consistency in messages with the help of a FIFO messaging queue with strict ordering. However, the ordering of messages would require the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6499939719053312" target="_blank">Sequencer</a> to provide ID with appropriate causality inference mechanisms to each message. For offline users, the Mnesia database stores messages in a queue. The messages are sent later in a sequence after the user goes online.</p>
+</li>
+<li>
+<p><strong>Availability</strong>: The system can be made highly available if we have enough WebSocket servers and replicate data across multiple servers. When a user gets disconnected due to some fault in the WebSocket server, the session is re-created via a load balancer with a different server. Moreover, the messages are stored on the Mnesia cluster following the primary-secondary replication model, which provides high availability and durability.</p>
+</li>
+<li>
+<p><strong>Security</strong>: The system also provides an end-to-end encryption mechanism that secures the chat between users.</p>
+</li>
+</ul>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<table class="table-fixed mx-px"><colgroup><col width="195"/><col width="558"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Non-functional Requirements</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Approaches</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Minimizing latency</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Geographically distributed cache management systems and servers</li><li>CDNs</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Consistency</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Provide unique IDs to messages using Sequencer or other mechanisms</li><li>Use FIFO messaging queue with strict ordering</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Availability</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Provide multiple WebSocket servers and managers to establish connections between users</li><li>Replication of messages and data associated with users and groups on different servers</li><li>Follow disaster recovery protocols</li></ul></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Security</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><ul><li>Via end-to-end encryption</li></ul></td></tr></tbody></table>
+<h2 id="Trade-offs">Trade-offs<a href="#Trade-offs"><span>#</span></a></h2>
+<p>We’ve seen that our proposed WhatsApp system fulfills the functional and non-functional requirements. However, two major trade-offs exist in the proposed WhatsApp design:</p>
+<ul>
+<li>There’s a trade-off between consistency and availability.</li>
+<li>There’s a trade-off between latency and security.</li>
+</ul>
+<h3 id="The-trade-off-between-consistency-and-availability">The trade-off between consistency and availability<a href="#The-trade-off-between-consistency-and-availability"><span>#</span></a></h3>
+<p>According to the CAP theorem, in the event of a network failure or partition, the system can provide either consistency or availability. So, in the case of our WhatsApp design, we have to choose either consistency or availability. In WhatsApp, the order of messages sent or received by a user is essential. Therefore, we should prioritize consistency rather than availability.</p>
+<h3 id="The-trade-off-between-latency-and-security">The trade-off between latency and security<a href="#The-trade-off-between-latency-and-security"><span>#</span></a></h3>
+<p>Low latency is an essential factor in system design that provides a real-time experience to users. However, on the other side, sharing information or data over WhatsApp might be insecure without encryption. The absence of a proper security mechanism makes the data vulnerable to unauthorized access. So, we can accept a trade-off prioritizing the secure transmission of messages over low latency.</p>
+<p>We might wonder where the trade-off is. Often, communication involves multimedia. Encrypting them in near real-time on the sender device and decrypting on the receiver side can be taxing for the devices, causing latency. The process is illustrated in the following figure:</p>
+
+<figure class="diagram"><img src="/images/36/5/img_0.svg" alt="End-to-end encryption causes a delay in processing, which has an impact on latency" loading="lazy" /><figcaption>End-to-end encryption causes a delay in processing, which has an impact on latency</figcaption></figure>
+<h2 id="Summary">Summary<a href="#Summary"><span>#</span></a></h2>
+<p>In this chapter, we designed a WhatsApp messenger. First, we identified the functional and non-functional requirements along with the resources estimation crucial for the design. Second, we focused on the high-level and detailed design of the WhatsApp system, where we described various components responsible for different services. Finally, we evaluated the non-functional requirements and highlighted some trade-offs in the design.</p>
+<p>This design problem highlighted that we can optimize general-purpose computational resources for specific use cases. WhatsApp optimized its software stack to handle a substantially large number of connections on the commodity servers.</p>
+
+<p></p>

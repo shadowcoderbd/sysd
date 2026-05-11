@@ -1,0 +1,94 @@
+<h1>Scaling Search and Indexing</h1>
+<h2 id="Problems-with-the-proposed-design">Problems with the proposed design<a href="#Problems-with-the-proposed-design"><span>#</span></a></h2>
+<p>Although the proposed design in the previous lesson seems reasonable, still, there are a couple of serious drawbacks. We’ll discuss these drawbacks below:</p>
+<ol>
+<li><strong>Colocated indexing and searching</strong>: We’ve created a system that colocates indexing and searching on the same node. Although it seems like efficient usage of resources, it has its downsides as well. Searching and indexing are both resource-intensive operations. Both operations impact the performance of each other. Also, this colocated design doesn’t scale efficiently with varying indexing and search operations over time. Colocating both these operations on the same machine can lead to an imbalance, and it results in scalability issues.</li>
+<li><strong>Index recomputation</strong>: We assume that each replica will compute the index individually, which leads to inefficient usage of resources. Furthermore, index computation is a resource-intensive task with possibly hundreds of stages of pipelined operations. Thus, recomputing the same index over different replicas requires powerful machines. Instead, the logical approach is to compute the index once and replicate it across availability zones.</li>
+</ol>
+<p>Because of these key reasons, we’ll look at an alternative approach for distributed indexing and searching.</p>
+<h2 id="Solution">Solution<a href="#Solution"><span>#</span></a></h2>
+<p>Rather than recomputing the index on each replica, we compute the inverted index on the primary node only. Next, we communicate the inverted index (binary blob/file) to the replicas. The key benefit of this approach is that it avoids using the duplicated amount of CPU and memory for indexing on replicas.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p>
+<h2 id="Separate-the-indexing-and-search">Separate the indexing and search<a href="#Separate-the-indexing-and-search"><span>#</span></a></h2>
+<p>With the advent of networking and virtualization technologies, cloud computing has emerged as a successful technology. We have access to massive amounts of bandwidth (up to 100 Gbps) and scalable distributed storage in such a technology. These advancements allow for a strong separation between indexing and search without the negative consequence of indexing latency. Because of this isolation, indexing wouldn’t affect search scalability and vice versa. Also, instead of recomputing the index on the replica nodes, which wastes resources, we can just replicate the index files.</p>
+<!--more efficient and dynamic.-->
+<p>We’ll use these technologies to redesign our distributed indexing and searching system. There are three components involved in this search system design:</p>
+<ol>
+<li><strong>Indexer</strong>: It consists of a group of nodes to compute the index.</li>
+<li><strong>Distributed storage</strong>: This system is used to store partitions and the computed index.</li>
+<li><strong>Searcher</strong>: It consists of a number of nodes to perform searching.</li>
+</ol>
+<p>The illustration below depicts the generation and transfer of an inverted index between an indexer and a searcher node:</p>
+
+<figure class="diagram"><img src="/images/21/5/img_0.svg" alt="The indices produced by the indexing nodes are stored on the distributed storage, and the nodes involved in the search reads indices from the distributed storage to produce a result for the user's query" loading="lazy" /><figcaption>The indices produced by the indexing nodes are stored on the distributed storage, and the nodes involved in the search reads indices from the distributed storage to produce a result for the user's query</figcaption></figure>
+<p>In the above illustration, a single node is shown for each indexing and searching operation. But, in reality, there would be an <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.6833em"></span><span class="mord mathnormal">N</span></span></span></span> number of nodes in the indexing phase, one node per partition (set of documents), that produces inverted indices. The inverted index is stored in the form of binary files on the nodes’ local storage. Caching these blob files will result in performance improvement. These binary files are also pushed to a distributed storage. In the case of a hardware failure, a new searcher or indexer machine is added, and a copy of the data is retrieved from the distributed storage.</p>
+<!--
+Binary files are uploaded to the distributed storage using a multipart upload. Every large file is split into N small segments and then pushed in parallel to the distributed storage. -->
+<p>When the upload is complete, the searcher nodes download the index files. Depending upon user search patterns, the searching nodes will maintain a cache of frequently asked queries and serve data from RAM. A user search query will be extended to all searcher nodes, which will generate responses according to their respective indices. A merger node in the front-end servers will combine all search results and present them to the user.</p>
+<p>The indexing process indexes the new documents as soon as they are available. At the same time, the searcher nodes fetch the updated indices to provide improved search results.</p>
+
+<h2 id="Indexing-explained">Indexing explained<a href="#Indexing-explained"><span>#</span></a></h2>
+<p>Until now, we have explained the development of a highly scalable and performant design using low-cost nodes. However, we are unaware of the internals of the indexing nodes. In this section, we’ll learn how indexing is performed with a MapReduce distributed model and parallel processing framework.</p>
+<p>The <strong>MapReduce framework</strong> is implemented with the help of a cluster manager and a set of worker nodes categorized as Mappers and Reducers. As indicated by its name, MapReduce is composed of two phases:</p>
+<ol>
+<li>The Map phase</li>
+<li>The Reduction phase</li>
+</ol>
+<p>Furthermore, the input to MapReduce is a number of partitions, or set of documents, whereas its output is an aggregated inverted index.</p>
+<p>Let’s understand the purpose of  the above  components:</p>
+<ul>
+<li><strong>Cluster manager</strong>: The manager initiates the process by assigning a set of partitions to Mappers. Once the Mappers are done, the cluster manager assigns the output of Mappers to Reducers.</li>
+<li><strong>Mappers</strong>: This component extracts and filters terms from the partitions assigned to it by the cluster manager. These machines output inverted indexes in parallel, which serve as input to the Reducers.</li>
+<li><strong>Reducers</strong>: The reducer combines mappings for various terms to generate a summarized index.</li>
+</ul>
+<p>The cluster manager ensures that all worker nodes are efficiently utilized in the cluster. The MapReduce is built to work under partial failures. If one node fails, it reschedules the work on another node.</p>
+<p>Note that the Reducers cannot start as long as the Mappers are working. This means that the cluster manager can use the same node as a Mapper as well as a Reducer.</p>
+<p>The slides below depict a simplified setup of how MapReduce can be used to generate an inverted index:</p>
+<!-- MapReduce is a programming model that makes computations easy, fast, and scalable for large datasets. It does so by:
+* Working on partitions of the data
+* Parallelizing computation for each partition on a large number of commodity computers or nodes
+* Aggregating results produced against each partition in parallel 
+
+
+
+The master node in the cluster of nodes initiates the MapReduce program and specifies the available nodes in the cluster for MapReduce.
+
+There are two phases in MapReduce.
+
+
+The nodes that are used in the map phase are called mappers. Mappers run the map function. The nodes that are used in the reduce phase are called reducers. Reducers run the reduce function.
+
+Mappers and reducers are not separate sets of nodes. The master identifies the idle nodes. The same node can be a mapper in the map phase and a reducer in the reduce phase. And there are often other jobs that run in parallel with index construction, so a node might do some crawling or another unrelated task between being a mapper and a reducer.-->
+<figure class="diagram"><img src="/images/21/5/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/21/5/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/21/5/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/21/5/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/21/5/img_5.svg" alt="" loading="lazy" /></figure>
+<p>To keep it simple, we have just shown two indicators for each term in the above illustration: the list of documents in which the term appears and the list of the frequency of the term in each document (refer to <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6595902341120000" target="_blank">Indexing</a> for details).</p>
+<!--
+The `map` function takes documents as input and emits a sequence of (term, mapping) pairs for the docs it has. Mappers save the output temporarily on their local storage.
+
+The `reduce` function accepts all pairs for a given term from all the mappers and emits a list of (term, mapping) pairs. -->
+<blockquote>
+<p><strong>Note:</strong> The above MapReduce setup is a simplified version of what happens in practice. A complex pipeline of the MapReduce framework is required to manage the complexities of a real-world search engine. However, the fundamental principles are the same as we presented here.</p>
+</blockquote>
+<!-- There are two strategies to process a search query. One is that we have N inverted indices produced by Mappers, and we run reducers upon receiving a search request that merges the query result from N inverted indices, and the merged result is returned to the user. The other is that we merge the inverted indices before we receive a search request. 
+
+With data partitioning, MapReduce programming model, and cluster nodes, our system can scale with increasing data (documents). We can add or remove nodes in the cluster. MapReduce itself manages to distribute the workload to the available nodes. -->
+<!-- ## Indices partitioning
+Earlier, we did partitioning on the input data to make index construction scalable and fast. We also have to partition the resultant index to make search queries fast.
+
+The index is stored on a distributed storage that splits data across multiple storage servers in its storage cluster or datacenter. When storing the index entries for terms on a distributed storage, we can partition the index based on the alphabetical range. For example, the index entries for the terms between a-f are stored on storage server 1, g-q on server 2, and q-z on server 3. When a user searches for a key, the server hosting that range of terms can process the request quickly.
+<!--The choice of partitioning technique depends on many factors like If we are building a search service that any organization can use, there could be two choices for us:
+1. Run a separate cluster instance for each tenant(organization)
+2. A single cluster instance is shared by all the tenants
+
+If we go with choice 1, we don't -->
+<!-- Note that alphabetic range partitioning is one example. The terms and their mapping can be partitioned based on the relation between the terms. If two terms always appear together, we can put them in the same partition. If we provide saas services to multiple organizations, we can partition data based on the organizational data. -->
+<h2 id="Summary">Summary<a href="#Summary"><span>#</span></a></h2>
+<p>In this lesson, we have resolved two key problems of scalability (due to colocated indexing and searching) and resource wastage (due to index recomputation) by using dedicated nodes for indexing and searching. Both operations rely on distributed storage. Furthermore, we presented a simplified description of the MapReduce framework to parallelize the indexing process.</p>
+
+<p></p>

@@ -1,0 +1,69 @@
+<h1>Introduction to Distributed Logging</h1>
+<h2 id="Logging-in-a-distributed-system">Logging in a distributed system<a href="#Logging-in-a-distributed-system"><span>#</span></a></h2>
+<p>In today’s world, an increasing number of designs are moving to microservice architecture instead of monolithic architecture. In microservice architecture, logs of each microservice are accumulated in the respective machine. If we want to know about a certain event that was processed by several microservices, it is difficult to go into every node, figure out the flow, and view error messages. But, it becomes handy if we can trace the log for any particular flow from end to end.</p><span>
+</span><!-- so say first it was handled by micro-service1, then micro-service2 and micro-service3. It isn't easy. 
+-->
+<p>Moreover, it is also not necessary that a microservice is deployed on only one node. It can be deployed on thousands of nodes. Consider the following example, where hundreds of microservices are interdependent, and failure of one service can result in failures of other services. And if we do not have logs, we might not determine the root cause of failure. This emphasizes the need for logging.</p>
+<!--
+![](/api/collection/10370001/4941429335392256/page/5621964999229440/image/5241077547663360?page_type=collection_lesson)
+
+![](/api/collection/10370001/4941429335392256/page/5621964999229440/image/4673303406444544?page_type=collection_lesson)
+
+and figuring out which micro-service responded is helpful in debugging. -->
+<figure class="diagram"><img src="/images/22/2/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/2/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/2/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/2/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/2/img_4.svg" alt="" loading="lazy" /></figure>
+<h2 id="Restrain-the-log-size">Restrain the log size<a href="#Restrain-the-log-size"><span>#</span></a></h2>
+<p>The number of logs increases over time. At a time, perhaps hundreds of concurrent messages need to be logged. But the question is, are they all important enough to be logged? To solve this, logs have to be structured. We need to decide what to log into the system on the application or logging level.</p>
+<h3 id="Use-sampling">Use sampling<a href="#Use-sampling"><span>#</span></a></h3>
+<p>We’ll determine which messages we should log into the system in this approach. Consider a situation where we have lots of messages from the same set of events. For example, there are people commenting on a post, where Person X commented on Person Y’s post, then Person Z commented on Person Y’s post, and so on. Instead of logging all the information, we can use a <strong>sampler service</strong> that only logs a smaller set of messages from a larger chunk. This way, we can decide on the most important messages to be logged.</p>
+<blockquote>
+<p><strong>Note:</strong> For large systems like Facebook, where billions of events happen per second, it is not viable to log them all. An appropriate sampling threshold and strategy are necessary to selectively pick a representative data set.</p>
+</blockquote>
+<p>We can also categorize the types of messages and apply a filter that identifies the important messages and only logs them to the system.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h3 id="Use-categorization">Use categorization<a href="#Use-categorization"><span>#</span></a></h3>
+<p>Let’s look into the logging support provided by various programming languages. For example, there’s log4j and logging in Python. The following severity levels are commonly used in logging:</p>
+<ul>
+<li><code>DEBUG</code></li>
+<li><code>INFO</code></li>
+<li><code>WARNING</code></li>
+<li><code>ERROR</code></li>
+<li><code>FATAL/CRITICAL</code></li>
+</ul>
+<p>Usually, the production logs are set to print messages with the severity of <code>WARNING</code> and above. But for more detailed flow, the severity levels can be set to <code>DEBUG</code> and <code>INFO</code> levels too.</p>
+<p>Click on the “Run” button to see the execution of an example that uses Python’s logging library to print logs.</p>
+
+<p>1234567891011121314151617importloggingaslog# set the logging level to DEBUGlog.basicConfig(level=log.DEBUG)foriinrange(6):ifi ==0:log.debug("Debug level")elifi ==1:log.info("Info level")elifi ==2:log.warning("Warning level")elifi ==3:log.error("Error level")elifi ==4:log.critical("Critical level")elifi ==5:print("Uncomment the following to view a system generated error:")#print(3/0)iimport logging as log
+# set the logging level to DEBUG
+log.basicConfig(level=log.DEBUG)
+for i in range(6):
+    if </p>
+<blockquote>
+<p>The output will be similar to:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark" data-lang="txt"><span><span class="mtk1">DEBUG:root:Debug level</span></span><br/><span><span class="mtk1">INFO:root:Info level</span></span><br/><span><span class="mtk1">WARNING:root:Warning level</span></span><br/><span><span class="mtk1">ERROR:root:Error level</span></span><br/><span><span class="mtk1">CRITICAL:root:Critical level</span></span><br/></code></pre>
+</blockquote>
+<p>Let’s uncomment <strong>line 17</strong> to view a system-generated error over the division of an integer by zero. Python itself logs the error to the console:</p>
+
+<h2 id="Structure-the-logs">Structure the logs<a href="#Structure-the-logs"><span>#</span></a></h2>
+<p>Applications have the liberty to choose the structure of their log data. For example, an application is free to write to log as binary or text data, but it is often helpful to enforce some structure on the logs. The first benefit of structured logs is better interoperability between log writers and readers. Second, the structure can make the job of a log processing system easier.</p>
+<blockquote>
+<p><strong>Note:</strong> The structuring of logs is a dense topic in itself. We refer the interested learners to the PhD thesis by Ryan Braud titled "<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Query-based debugging of distributed systems</span></span>.”</p>
+</blockquote>
+
+<h2 id="Points-to-consider-while-logging">Points to consider while logging<a href="#Points-to-consider-while-logging"><span>#</span></a></h2>
+<p>We should be careful while logging. The logging information should only contain the relevant information and not breach security concerns. For secure data, we should log encrypted data. We should consider the following few points while logging:</p>
+<ul>
+<li>Avoid logging personally identifiable information (PII), such as names, addresses, emails, and so on.</li>
+<li>Avoid logging sensitive information like credit card numbers, passwords, and so on.</li>
+<li>Avoid excessive information. Logging all information is unnecessary. It only takes up more space and affects performance. Logging, being an I/O-heavy operation, has its performance penalties.</li>
+<li>The logging mechanism should be secure and not vulnerable because logs contain the application’s flow, and an insecure logging mechanism is vulnerable to hackers.</li>
+</ul>
+<h3 id="Vulnerability-in-logging-infrastructure">Vulnerability in logging infrastructure<a href="#Vulnerability-in-logging-infrastructure"><span>#</span></a></h3>
+<p>A <strong>zero-day vulnerability</strong> in Log4j, a famous logging framework for Java, has been identified recently. Log4j has contained the hidden vulnerability, Log4Shell (CVE-2021-44228), since 2013. Apache gave the highest available score, a CVSS severity rating of 10, to Log4Shell. The exploit is simple to execute and affects hundreds of millions of devices. Security experts are convinced that this vulnerability can allow devastating cyberattacks internationally because it can enable attackers to run malicious code and take control of the machine.</p>
+
+<p></p>

@@ -1,0 +1,108 @@
+<h1>Background of Distributed Cache</h1>
+<p>The main goal of this chapter is to design a distributed cache. To achieve this goal, we should have substantial background knowledge, mainly on different reading and writing techniques. This lesson will help us build that background knowledge. Let’s look at the structure of this lesson in the table below</p>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="156"/><col width="564"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Section</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Motivation</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Writing policies</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Data is written to cache and databases. The order in which data writing happens has performance implications. We’ll discuss various writing policies to help decide which writing policy would be suitable for the distributed cache we want to design.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Eviction policies</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Since the cache is built on limited storage (RAM), we ideally want to keep the most frequently accessed data in the cache. Therefore, we’ll discuss different eviction policies to replace less frequently accessed data with most frequently accessed data.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Cache invalidation</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Certain cached data may get outdated. We’ll discuss different invalidation methods to remove stale or outdated entries from the cache in this section.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Storage mechanism</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>A distributed storage has many servers. We’ll discuss important design considerations, such as which cache entry should be stored in which server and what data structure to use for storage.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Cache client</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>A cache server stores cache entries, but a cache client calls the cache server to request data. We’ll discuss the details of a cache client library in this section.</p></td></tr></tbody></table>
+<h2 id="Writing-policies">Writing policies<a href="#Writing-policies"><span>#</span></a></h2>
+<p>Often, cache stores a copy (or part) of data, which is persistently stored in a data store. When we store data to the data store, some important questions arise:</p>
+<blockquote>
+<ul>
+<li>Where do we store the data first? Database or cache?</li>
+<li>What will be the implication of each strategy for consistency models?</li>
+</ul>
+</blockquote>
+<p>The short answer is, it depends on the application requirements. Let’s look at the details of different writing policies to understand the concept better:</p>
+<ul>
+<li><strong>Write-through cache</strong>: The write-through mechanism writes on the cache as well as on the database. Writing on both storages can happen concurrently or one after the other. This increases the write latency but ensures strong consistency between the database and the cache.</li>
+<li><strong>Write-back cache</strong>: In the write-back cache mechanism, the data is first written to the cache and asynchronously written to the database. Although the cache has updated data, inconsistency is inevitable in scenarios where a client reads stale data from the database. However, systems using this strategy will have small writing latency.</li>
+<li><strong>Write-around cache</strong>: This strategy involves writing data to the database only. Later, when a read is triggered for the data, it’s written to cache after a cache miss. The database will have updated data, but such a strategy isn’t favorable for reading recently updated data.</li>
+</ul>
+
+<p>Quiz1A system wants to write data and promptly read it back. At the same time, we want consistency between the cache and database. Which writing policy is the optimal choice?A)Write-through cacheB)Write-around cacheC)Write-back cacheReset QuizQuestion 1 of 30 attemptedSubmit Answer</p>
+<h2 id="Eviction-policies">Eviction policies<a href="#Eviction-policies"><span>#</span></a></h2>
+<p>One of the main reasons caches perform fast is that they’re small. Small caches mean limited storage capacity. Therefore, we need an eviction mechanism to remove less frequently accessed data from the cache.</p>
+<p>Several well-known strategies are used to evict data from the cache. The most well-known strategies include the following:</p>
+<ul>
+<li>Least recently used (LRU)</li>
+<li>Most recently used (MRU)</li>
+<li>Least frequently used (LFU)</li>
+<li>Most frequently used (MFU)</li>
+</ul>
+<p>Other strategies like first in, first out (FIFO) also exist. The choice of each of these algorithms depends on the system the cache is being developed for.</p>
+
+<p>Data Temperatures</p>
+<h2 id="Cache-invalidation">Cache invalidation<a href="#Cache-invalidation"><span>#</span></a></h2>
+<p>Apart from the eviction of less frequently accessed data, some data residing in the cache may become stale or outdated over time. Such cache entries are invalid and must be marked for deletion.</p>
+<p>The situation demands a question: How do we identify stale entries?</p>
+<p>Resolution of the problem requires storing metadata corresponding to each cache entry. Specifically, maintaining a <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">time-to-live (TTL)</span></span> value to deal with outdated cache items.</p>
+<p>We can use two different approaches to deal with outdated items using TTL:</p>
+<ul>
+<li><strong>Active expiration</strong>: This method actively checks the TTL of cache entries through a daemon process or thread.</li>
+<li><strong>Passive expiration</strong>: This method checks the TTL of a cache entry at the time of access.</li>
+</ul>
+<p>Each expired item is removed from the cache upon discovery.</p>
+
+<h2 id="Storage-mechanism">Storage mechanism<a href="#Storage-mechanism"><span>#</span></a></h2>
+<p>Storing data in the cache isn’t as trivial as it seems because the distributed cache has multiple cache servers. When we use multiple cache servers, the following design questions need to be answered:</p>
+<ul>
+<li>Which data should we store in which cache servers?</li>
+<li>What data structure should we use to store the data?</li>
+</ul>
+<p>The above two questions are important design issues because they’ll decide the performance of our distributed cache, which is the most important requirement for us. We’ll use the following techniques to answer the questions above.</p>
+<h3 id="Hash-function">Hash function<a href="#Hash-function"><span>#</span></a></h3>
+<p>It’s possible to use hashing in two different scenarios:</p>
+<ul>
+<li>Identify the cache server in a distributed cache to store and retrieve data.</li>
+<li>Locate cache entries inside each cache server.</li>
+</ul>
+<p>For the first scenario, we can use different hashing algorithms. However, consistent hashing or its flavors usually perform well in distributed systems because simple hashing won’t be ideal in case of crashes or scaling.</p>
+<p>In the second scenario, we can use typical hash functions to locate a cache entry to read or write inside a cache server. However, a hash function alone can only locate a cache entry. It doesn’t say anything about managing data within the cache server. That is, it doesn’t say anything about how to implement a strategy to evict less frequently accessed data from the cache server. It also doesn’t say anything about what data structures are used to store the data within the cache servers. This is exactly the second design question of the storage mechanism. Let’s take a look at the data structure next.</p>
+<h3 id="Linked-list">Linked list<a href="#Linked-list"><span>#</span></a></h3>
+<p>We’ll use a doubly linked list. The main reason is its widespread usage and simplicity. Furthermore, adding and removing data from the doubly linked list in our case will be a constant time operation. This is because we either evict a specific entry from the tail of the linked list or relocate an entry to the head of the doubly linked list. Therefore, no iterations are required.</p>
+<blockquote>
+<p><strong>Note:</strong> <a href="https://www.educative.io/edpresso/what-is-a-bloom-filter" target="_blank">Bloom filters</a> are an interesting choice for quickly finding if a cache entry doesn’t exist in the cache servers. We can use bloom filters to determine that a cache entry is definitely not present in the cache server, but the possibility of its presence is probabilistic. Bloom filters are quite useful in large caching or database systems.</p>
+</blockquote>
+<h3 id="Sharding-in-cache-clusters">Sharding in cache clusters<a href="#Sharding-in-cache-clusters"><span>#</span></a></h3>
+<p>To avoid SPOF and high load on a single cache instance, we introduce sharding. Sharding involves splitting up cache data among multiple cache servers. It can be performed in the following two ways.</p>
+<h4 id="Dedicated-cache-servers">Dedicated cache servers<a href="#Dedicated-cache-servers"><span>#</span></a></h4>
+<p>In the <strong>dedicated cache servers</strong> method, we separate the application and web servers from the cache servers.</p>
+<p>The advantages of using dedicated cache servers are the following:</p>
+<ul>
+<li>There’s flexibility in terms of hardware choices for each functionality.</li>
+<li>It’s possible to scale web/application servers and cache servers separately.</li>
+</ul>
+<p>Apart from the advantages above, working as a standalone caching service enables other microservices to benefit from them—for example, Cache as a Service. In that case, the caching system will have to be aware of different applications so that their data doesn’t collide.</p>
+
+<figure class="diagram"><img src="/images/16/2/img_0.svg" alt="A depiction of service hosts coordinating with dedicated cache servers" loading="lazy" /><figcaption>A depiction of service hosts coordinating with dedicated cache servers</figcaption></figure>
+<h4 id="Co-located-cache">Co-located cache<a href="#Co-located-cache"><span>#</span></a></h4>
+<p>The co-located cache embeds cache and service functionality within the same host.</p>
+<p>The main advantage of this strategy is the reduction in
+<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">CAPEX</span></span> and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">OPEX</span></span> of extra hardware. Furthermore, with the scaling of one service, automatic scaling of the other service is obtained. However, the failure of one machine will result in the loss of both services simultaneously.</p>
+
+<figure class="diagram"><img src="/images/16/2/img_1.svg" alt="Hosting cache and application logic in the same machine" loading="lazy" /><figcaption>Hosting cache and application logic in the same machine</figcaption></figure>
+<h2 id="Cache-client">Cache client<a href="#Cache-client"><span>#</span></a></h2>
+<p>We discussed that the hash functions should be used for the selection of cache servers. But what entity performs these hash calculations?</p>
+<p>A cache client is a piece of code residing in hosting servers that do (hash) computations to store and retrieve data in the cache servers. Also, cache clients may coordinate with other system components like monitoring and configuration services. All cache clients are programmed in the same way so that the same <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">PUT</span></span>, and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">GET</span></span> operations from different clients return the same results. Some of the characteristics of cache clients are the following:</p>
+<ul>
+<li>Each cache client will know about all the cache servers.</li>
+<li>All clients can use well-known transport protocols like TCP or UDP to talk to the cache servers.</li>
+</ul>
+<!--
+## Eviction Policies
+One of the main reasons caches perform fast is that they are small. Small caches mean limited storage capacity. Therefore, we need an eviction mechanism to remove less frequently accessed data from the cache. 
+
+Several well-known strategies are used to evict data from the cache. The most well-known strategies include:
+
+- Least Recently Used (LRU)
+- Most Recently Used (MRU)
+- Least Frequently Used (LFU)
+- Most Frequently Used (MFU)
+
+Other strategies like First In First Out (FIFO) also exist. The choice of each of these algorithms depends on the system the cache is being developed for.
+-->
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<p>In this lesson, we learned what distributed caches are and highlighted their significance in distributed systems. We also discussed different storage and eviction mechanisms for caches. Caches are vital for any distributed system and are located at different points within the design of a system. It’s important to understand how distributed caches can be designed as part of a large system.</p>
+
+<p></p>

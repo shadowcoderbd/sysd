@@ -1,0 +1,80 @@
+<h1>High-level Design of a Distributed Cache</h1>
+<p>In this lesson, we’ll learn to design a distributed cache. We’ll also discuss the trade-offs and design choices that can occur while we progress in our journey towards developing a solution.</p>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let us start by understanding the requirements of our solution.</p>
+<h3 id="Functional">Functional<a href="#Functional"><span>#</span></a></h3>
+<p>The following are the functional requirements:</p>
+<ul>
+<li><strong>Insert data:</strong> The user of a distributed cache system must be able to insert an entry to the cache.</li>
+<li><strong>Retrieve data:</strong> The user should be able to retrieve data corresponding to a specific key.</li>
+</ul>
+
+<p></p>
+<figure class="diagram"><img src="/images/16/3/img_0.svg" alt="Functional and non-functional requirements of a distributed cache" loading="lazy" /><figcaption>Functional and non-functional requirements of a distributed cache</figcaption></figure>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>We’ll consider the following non-functional requirements:</p>
+<ul>
+<li>
+<p><strong>High performance</strong>: The primary reason for the cache is to enable fast retrieval of data. Therefore, both the <code>insert</code> and <code>retrieve</code> operations must be fast.</p>
+</li>
+<li>
+<p><strong>Scalability:</strong> The cache system should scale horizontally with no bottlenecks on an increasing number of requests.</p>
+</li>
+<li>
+<p><strong>High availability</strong>: The unavailability of the cache will put an extra burden on the database servers, which can also go down at peak load intervals. We also require our system to survive occasional failures of components and network, as well as power outages.</p>
+</li>
+<li>
+<p><strong>Consistency:</strong> Data stored on the cache servers should be consistent. For example, different cache clients retrieving the same data from different cache servers (primary or secondary) should be up to date.</p>
+</li>
+<li>
+<p><strong>Affordability:</strong> Ideally, the caching system should be designed from commodity hardware instead of an expensive supporting component within the design of a system.</p>
+</li>
+</ul>
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>The API design for this problem is sufficiently easy since there are only two basic operations.</p>
+<h3 id="Insertion">Insertion<a href="#Insertion"><span>#</span></a></h3>
+<p>The API call to perform insertion should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-whiteText vs-dark" data-lang="whitetext"><span><span class="mtk1">insert(key, value)</span></span><br/></code></pre>
+
+<p></p>
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="449"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is a unique identifier.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>value</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This is the data stored against a unique <code>key</code>. </p></td></tr></tbody></table>
+<span>This function returns an acknowledgment or an error depicting the problem at the server end.
+</span><h3 id="Retrieval">Retrieval<a href="#Retrieval"><span>#</span></a></h3>
+<p>The API call to retrieve data from the cache should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-whiteText vs-dark" data-lang="whitetext"><span><span class="mtk1">retrieve(key)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="449"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>key</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This returns the data stored against the <code>key.</code></p></td></tr></tbody></table>
+<span>This call returns an object to the caller.</span>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Design-considerations">Design considerations<a href="#Design-considerations"><span>#</span></a></h2>
+<p>Before designing the distributed cache system, it’s important to consider some design choices. Each of these choices will be purely based on our application requirements. However, we can highlight some key differences here:</p>
+<h3 id="Storage-hardware">Storage hardware<a href="#Storage-hardware"><span>#</span></a></h3>
+<p>If our data is large, we may require sharding and therefore use shard servers for cache partitions. Should these shard servers be specialized or commodity hardware? Specialized hardware will have good performance and storage capacity, but it will cost more. We can <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">build a large cache from commodity servers</span></span>. In general, the number of shard servers will depend on the cache’s size and access frequency.</p>
+<p>Furthermore, we can consider storing our data on the secondary storage of these servers for persistence while we still serve data from RAM. Secondary storage may be used in cases where a reboot happens, and cache rebuilding takes a long time. Persistence, however, may not be a requirement in a cache system if there’s a dedicated persistence layer, such as a database.</p>
+<h3 id="Data-structures">Data structures<a href="#Data-structures"><span>#</span></a></h3>
+<p>A vital part of the design has to be the speed of accessing data. Hash tables are data structures that take a constant time on average to store and retrieve data. Furthermore, we need another data structure to enforce an eviction algorithm on the cached data. In particular, linked lists are a good option (as discussed in the previous lesson).</p>
+<p>Also, we need to understand what kind of data structures a cache can store. Even though we discussed in the API design section that we’ll use strings for simplicity, it’s possible to store different data structures or formats, like hash maps, arrays, sets, and so on, within the cache. In the next lesson, we’ll see a practical example of such a cache.</p>
+<h3 id="Cache-client">Cache client<a href="#Cache-client"><span>#</span></a></h3>
+<p>It’s the client process or library that places the <code>insert</code> and <code>retrieve</code> calls. The location of the client process is a design issue. For example, it’s possible to place the client process within a serving host if the cache is for internal use only. Otherwise, in the case where the caching system is provided as a service for external use, a dedicated cache client can send users’ requests to the cache servers.</p>
+<h3 id="Writing-policy">Writing policy<a href="#Writing-policy"><span>#</span></a></h3>
+<p>The writing strategy over the cache and database has consistency implications. In general, there’s no optimal choice, but depending on our application, the preference of writing policy is significantly important.</p>
+<h3 id="Eviction-policy">Eviction policy<a href="#Eviction-policy"><span>#</span></a></h3>
+<p>By design, the cache provides low-latency reads and writes. To achieve this, data is often served from RAM memory. Usually, we can’t put all the data in the cache due to the limited size of the cache as compared to the full dataset. So, we need to carefully decide what stays in the cache and how to make room for new entries.</p>
+<p>With the addition of new data, some of the existing data may have to be evicted from the cache. However, choosing a victim entry depends on the eviction policy. Numerous eviction policies exist, but the choice again depends on the application using it. For instance, least recently used (LRU) can be a good choice for social media services where recently uploaded content will likely get the most views.</p>
+<p>Apart from the details in the sections above, optimizing the time-to-live (TTL) value can play an essential role in reducing the number of cache misses.</p>
+<h2 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h2>
+<p>The following figure depicts our high-level design:</p>
+
+<figure class="diagram"><img src="/images/16/3/img_1.svg" alt="High-level design of distributed cache" loading="lazy" /><figcaption>High-level design of distributed cache</figcaption></figure>
+<p>The main components in this high-level design are the following:</p>
+<ul>
+<li>
+<p><strong>Cache client</strong>: This library resides in the service application servers. It holds all the information regarding cache servers. The cache client will choose one of the cache servers using a hash and search algorithm for each incoming <code>insert</code> and <code>retrieve</code> request. All the cache clients should have a consistent view of all the cache servers. Also, the resolution technique to move data to and from the cache servers should be the same. Otherwise, different clients will request different servers for the same data.</p>
+</li>
+<li>
+<p><strong>Cache servers</strong>: These servers maintain the cache of the data. Each cache server is accessible by all the cache clients. Each server is connected to the database to store or retrieve data. Cache clients use TCP or UDP protocol to perform data transfer to or from the cache servers. However, if any cache server is down, requests to those servers are resolved as a missed cache by the cache clients.</p>
+</li>
+</ul>
+
+<p></p>

@@ -1,0 +1,37 @@
+<h1>System Design: Web Crawler</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>A <strong>web crawler</strong> is an Internet bot that systematically <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">scours</span></span> the world wide web (WWW) for content, starting its operation from a pool of <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">seed URLs</span></span>. This process of acquiring content from the WWW is called <strong>crawling</strong>. It further saves the crawled content in the data stores. The process of efficiently saving data for subsequent use is called <strong>storing</strong>.</p>
+<p>This is the first step that’s performed by search engines; the stored data is used for indexing and ranking purposes. This specific design problem is limited to web crawlers and doesn’t include explanations of the later stages of indexing and ranking in the search engines.</p>
+
+<figure class="diagram"><img src="/images/35/1/img_0.svg" alt="An overview of the web crawler system" loading="lazy" /><figcaption>An overview of the web crawler system</figcaption></figure>
+<h3 id="Additional-benefits">Additional benefits<a href="#Additional-benefits"><span>#</span></a></h3>
+<p>The additional utilities of a web crawler are as follows:</p>
+<ul>
+<li>
+<p><strong>Web pages testing</strong>: We use web crawlers to check the validity of the links and structures of web pages.</p>
+</li>
+<li>
+<p><strong>Web page monitoring</strong>: We use web crawlers to monitor the content or structure updates on web pages.</p>
+</li>
+<li>
+<p><strong>Site mirroring</strong>: Web crawlers are an effective way to <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">mirror</span></span> popular websites.</p>
+</li>
+<li>
+<p><strong>Copyright infringement check</strong>: Web crawlers fetch content and check for copyright infringement issues.</p>
+</li>
+</ul>
+<p>In this chapter, we’ll design a web crawler and evaluate how it fulfills the functional and non-functional requirements.</p>
+<p>The output of the crawling process is the data that’s the input for the subsequent processing phases—data cleaning, indexing, page relevance using algorithms like page ranks, and analytics. To learn about some of these subsequent stages, refer to our chapter on <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5400897294696448" target="_blank">distributed search</a>.</p>
+
+<p></p>
+<h2 id="How-will-we-design-a-Web-crawler?">How will we design a Web crawler?<a href="#How-will-we-design-a-Web-crawler?"><span>#</span></a></h2>
+<p>This chapter consists of four lessons that encompass the overall design of the web crawler system:</p>
+<ol>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6454882160082944" target="_blank"><strong>Requirements</strong>:</a> This lesson enlists the functional and non-functional requirements of the system and estimates calculations for various system parameters.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6632099624255488" target="_blank"><strong>Design</strong>:</a> This lesson analyzes a bottom-up approach for a web-crawling service. We get a detailed overview of all the individual components leading to a combined operational mechanism to meet the requirements.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5983505204379648" target="_blank"><strong>Improvements</strong>:</a> This lesson provides all the design improvements required to counter shortcomings, especially the crawler traps. These crawler traps include links with query parameters, internal links redirection, links holding infinite calendar pages, links for dynamic content generation, and links containing cyclic directories.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6142975511363584" target="_blank"><strong>Evaluation</strong>:</a> This lesson provides an in-depth evaluation of our design choices to check if they meet all the standards and requirements we expect from our design.</li>
+</ol>
+<p>Let’s begin with defining the requirements of a web crawler.</p>
+
+<p></p>

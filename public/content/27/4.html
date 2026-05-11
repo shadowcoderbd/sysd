@@ -1,0 +1,71 @@
+<h1>Final Design of Quora</h1>
+<h2 id="Limitations-of-the-proposed-design">Limitations of the proposed design<a href="#Limitations-of-the-proposed-design"><span>#</span></a></h2>
+<p>The proposed design serves all the functional requirements. However, it has a number of serious drawbacks that emerge as we scale. This means that we are unable to fulfill the non-functional requirements. Let’s explore the main shortcomings below:</p>
+<ul>
+<li>
+<p><strong>Limitations of web and application servers</strong>: To entertain the user’s request, payloads are transferred between web and application servers, which increases latency because of network I/O between these two types of servers. Even if we achieve parallel computation by separating the web from application servers (that is, the manager and worker processes), the added latency due to an additional network link erodes a user’s experience. Apart from data transfer, control communication between the router library with manager and worker processes also imposes additional performance penalties.</p>
+</li>
+<li>
+<p><strong>In-memory queue failure</strong>: The internal architecture of application servers log tasks and forward them to the in-memory queues, which serve them to the workers. These in-memory queues of different priorities can be subject to failures. For instance, if a queue gets lost, all the tasks in that queue are lost as well, and manual engineering is required to recover those tasks. This greatly reduces the performance of the system. On the other hand, replicating these queues requires increasing RAM size. Also, with the number of features (functional requirements) that our system offers, many tasks can get assembled, which results in insufficient memory. At the same time, it is not desirable to choke application servers with not-so-urgent tasks. For example, application servers should not be burdened with tasks like storing view counts for answers, adding statistics to the database for later analysis, and so on.</p>
+</li>
+<li>
+<p><strong>Increasing QPS on MySQL</strong>: Because we have a higher number of features offered by our system, few MySQL tables receive a lot of user queries. This results in a higher number of QPS on certain MySQL servers, which can result in higher latency. Furthermore, there is no scheme defined for disaster recovery management in our design.</p>
+</li>
+<li>
+<p><strong>Latency of HBase:</strong> Even though HBase allows high real-time throughput, its <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">P99</span></span> latency is not among the best. A number of Quora features require the ML engine that has a latency of its own. Due to the addition of the higher latency of HBase, the overall performance of the system degrades over time.</p>
+</li>
+</ul>
+<p>The issues highlighted above require changes to the earlier proposed design. Therefore, we’ll make the following adjustments and update our design:</p>
+
+<figure class="diagram"><img src="/images/27/4/img_0.svg" alt="Detailed design of Quora" loading="lazy" /><figcaption>Detailed design of Quora</figcaption></figure>
+<h2 id="Detailed-design-of-Quora">Detailed design of Quora<a href="#Detailed-design-of-Quora"><span>#</span></a></h2>
+<p>Let’s understand the improvements in our design:</p>
+<h3 id="Service-hosts">Service hosts<a href="#Service-hosts"><span>#</span></a></h3>
+<p>We combine the web and application servers within a single powerful machine that can handle all the processes at once. This technique eliminates the network I/O and the latency introduced due to the network hops required between the manager, worker, and routing library processes. The illustration below provides an abstract view of the updated web server architecture:</p>
+
+<figure class="diagram"><img src="/images/27/4/img_1.svg" alt="The updated design, where web and application servers are combined in the service host" loading="lazy" /><figcaption>The updated design, where web and application servers are combined in the service host</figcaption></figure>
+<h3 id="Vertical-sharding-of-MySQL">Vertical sharding of MySQL<a href="#Vertical-sharding-of-MySQL"><span>#</span></a></h3>
+<p>Tables in the MySQL server are converted to separate shards that we refer to as <strong>partitions</strong>. A partition has a single primary server and multiple replica servers.</p>
+<p>The goal is to improve performance and reduce the load due to an increasing number of queries on a single database table. To achieve that, we do vertical sharding in two ways:</p>
+<ol>
+<li>We split tables of a single database into multiple partitions. The concept is depicted in Partitions 2 and 3, which embed Tables 4 and 3, respectively.</li>
+<li>We combine multiple tables into a single partition, where <code>join</code> operations are anticipated. The concept is depicted in Partition 1, which embeds Tables 1 and 2.</li>
+</ol>
+<p>Therefore, we are able to co-locate related data and reduce traffic on hot data. The illustration below depicts vertical sharding at Quora.</p>
+
+<figure class="diagram"><img src="/images/27/4/img_2.svg" alt="The architecture of vertical sharding at Quora" loading="lazy" /><figcaption>The architecture of vertical sharding at Quora</figcaption></figure>
+<p>After we complete the partitioning, we require two types of mappings or metadata to complete our scaling process:</p>
+<ol>
+<li>Which partitions contain which tables and columns?</li>
+<li>Which hosts are primary and replicas of a particular partition?</li>
+</ol>
+<p>Both of these mappings are maintained by a service like ZooKeeper.</p>
+<p>The sharded design above ensures scalability because we are able to locate related data in a single partition, and therefore it eliminates the need for querying data from multiple shards. Also, the number of read-replicas can be increased for hot shards, or further sharding may be performed. For edge cases where joining may be needed, we can perform it at the application level.</p>
+<blockquote>
+<p><strong>Note:</strong> Vertical sharding is of particular interest in Quora’s design because horizontal sharding is more common in the database community. The main idea behind vertical sharding is to achieve scalability by carefully dividing or re-locating tables and eliminating join operations across different shards. Nevertheless, a vertically sharded partition or table can grow horizontally to an extent where horizontal sharding will be necessary to retain acceptable performance.</p>
+</blockquote>
+<h3 id="MyRocks">MyRocks<a href="#MyRocks"><span>#</span></a></h3>
+<p>The new design embeds MyRocks as the key-value store instead of HBase. We use the MyRocks version of RocksDB for two main reasons:</p>
+<ol>
+<li>MyRocks has a lower p99 latency instead of HBase. Quora claims to have reduced P99 latency from 80 ms to 4 ms using MyRocks.</li>
+<li>There are operational tools that can transfer data between MyRocks and MySQL.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Quora serves the ML compute engine by extracting features from questions and answers stored in MySQL. In this case, the operational tools come in handy to transfer data between MyRocks and MySQL.</p>
+</blockquote>
+<h3 id="Kafka">Kafka<a href="#Kafka"><span>#</span></a></h3>
+<p>Our updated design reduces the request load on service hosts by separating not-so-urgent tasks from the regular API calls. For this purpose, we use Kafka, which can disseminate jobs among various queues for tasks such as the view counter (see <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6071347163955200" target="_blank">Sharded Counters</a>), notification system, analytics, and highlight topics to the user. Each of these jobs is executed through <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cron jobs</span></span>.</p>
+<h3 id="Technology-usage">Technology usage<a href="#Technology-usage"><span>#</span></a></h3>
+<p>Services that scale quickly have little time to develop new features and handle an increasing number of requests from users. Such services employ cloud infrastructure to handle spikes in traffic. Also, the choice of programming language is important. Just like we mentioned that YouTube chose Python for faster programming, we can apply the same logic to Quora. In fact, Quora uses the Python Paste web framework.</p>
+<p>It is desirable to use a faster programming language like C++ to develop the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">feature extraction service</span></span>. For online recommendation services through a ML engine, feature extraction service should be quick, to enable the ML engine to accomplish accurate recommendations. Not only that, but reducing the latency burden on the ML engine allows it to provide a larger set of services. We can employ the Thrift service to support interoperability between programming languages within different components.</p>
+<p>Features like comments, upvotes, and downvotes require frequent page updates from the client side. <strong>Polling</strong> is a technique where the client (browser) frequently requests the server for new updates. The server may or may not have any updates but still responds to the client. Therefore, the server may get uselessly overburdened. To resolve this issue, Quora uses a technique called <strong>long polling</strong>, where if a client requests for an update, the server may not respond for as long as 60 seconds if there are no updates. However, if there is an update, the server will reply immediately and allow the client to make new requests.</p>
+
+<figure class="diagram"><img src="/images/27/4/img_3.svg" alt="Polling vs. long polling" loading="lazy" /><figcaption>Polling vs. long polling</figcaption></figure>
+<p>Lastly, Memcached can employ <code>multiget()</code> to obtain multiple keys from the cache shards to reduce the retrieval latency of multiple keys.</p>
+<blockquote>
+<p><strong>Note:</strong> Quora has employed AWS to set up a good number of its infrastructure elements, including S3 (see the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4862646238576640" target="_blank">Blob Storage chapter</a>) and <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">Redshift</span></span> storage.</p>
+</blockquote>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<p></p>

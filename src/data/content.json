@@ -1,0 +1,1332 @@
+[
+  {
+    "chapterIndex": 1,
+    "chapterTitle": "System Design Interviews",
+    "chapterSlug": "system-design-interviews",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "What Is a System Design Interview?",
+        "slug": "what-is-a-system-design-interview_",
+        "htmlFile": "content/1/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "How to Prepare for Success",
+        "slug": "how-to-prepare-for-success",
+        "htmlFile": "content/1/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "How to Perform Well",
+        "slug": "how-to-perform-well",
+        "htmlFile": "content/1/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 2,
+    "chapterTitle": "Introduction",
+    "chapterSlug": "introduction",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Modern System Design",
+        "slug": "introduction-to-modern-system-design",
+        "htmlFile": "content/2/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Course Structure for Modern System Design",
+        "slug": "course-structure-for-modern-system-design",
+        "htmlFile": "content/2/2.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 3,
+    "chapterTitle": "Abstractions",
+    "chapterSlug": "abstractions",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Why Are Abstractions Important?",
+        "slug": "why-are-abstractions-important_",
+        "htmlFile": "content/3/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Network Abstractions: Remote Procedure Calls",
+        "slug": "network-abstractions_-remote-procedure-calls",
+        "htmlFile": "content/3/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Spectrum of Consistency Models",
+        "slug": "spectrum-of-consistency-models",
+        "htmlFile": "content/3/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "The Spectrum of Failure Models",
+        "slug": "the-spectrum-of-failure-models",
+        "htmlFile": "content/3/4.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 4,
+    "chapterTitle": "Non-functional System Characteristics",
+    "chapterSlug": "non-functional-system-characteristics",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Availability",
+        "slug": "availability",
+        "htmlFile": "content/4/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Reliability",
+        "slug": "reliability",
+        "htmlFile": "content/4/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Scalability",
+        "slug": "scalability",
+        "htmlFile": "content/4/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Maintainability",
+        "slug": "maintainability",
+        "htmlFile": "content/4/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Fault Tolerance",
+        "slug": "fault-tolerance",
+        "htmlFile": "content/4/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 5,
+    "chapterTitle": "Back-of-the-envelope Calculations",
+    "chapterSlug": "back-of-the-envelope-calculations",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Put Back-of-the-envelope Numbers in Perspective",
+        "slug": "put-back-of-the-envelope-numbers-in-perspective",
+        "htmlFile": "content/5/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Examples of Resource Estimation",
+        "slug": "examples-of-resource-estimation",
+        "htmlFile": "content/5/2.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 6,
+    "chapterTitle": "Building Blocks",
+    "chapterSlug": "building-blocks",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Building Blocks for Modern System Design",
+        "slug": "introduction-to-building-blocks-for-modern-system-design",
+        "htmlFile": "content/6/1.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 7,
+    "chapterTitle": "Domain Name System",
+    "chapterSlug": "domain-name-system",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Domain Name System (DNS)",
+        "slug": "introduction-to-domain-name-system-dns",
+        "htmlFile": "content/7/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "How the Domain Name System Works",
+        "slug": "how-the-domain-name-system-works",
+        "htmlFile": "content/7/2.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 8,
+    "chapterTitle": "Load Balancers",
+    "chapterSlug": "load-balancers",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Load Balancers",
+        "slug": "introduction-to-load-balancers",
+        "htmlFile": "content/8/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Global and Local Load Balancing",
+        "slug": "global-and-local-load-balancing",
+        "htmlFile": "content/8/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Advanced Details of Load Balancers",
+        "slug": "advanced-details-of-load-balancers",
+        "htmlFile": "content/8/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 9,
+    "chapterTitle": "Databases",
+    "chapterSlug": "databases",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Databases",
+        "slug": "introduction-to-databases",
+        "htmlFile": "content/9/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Types of Databases",
+        "slug": "types-of-databases",
+        "htmlFile": "content/9/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Data Replication",
+        "slug": "data-replication",
+        "htmlFile": "content/9/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Data Partitioning",
+        "slug": "data-partitioning",
+        "htmlFile": "content/9/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Trade-offs in Databases",
+        "slug": "trade-offs-in-databases",
+        "htmlFile": "content/9/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 10,
+    "chapterTitle": "Key-value Store",
+    "chapterSlug": "key-value-store",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Key-value Store",
+        "slug": "system-design_-the-key-value-store",
+        "htmlFile": "content/10/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Design of a Key-value Store",
+        "slug": "design-of-a-key-value-store",
+        "htmlFile": "content/10/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Ensure Scalability and Replication",
+        "slug": "ensure-scalability-and-replication",
+        "htmlFile": "content/10/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Versioning Data and Achieving Configurability",
+        "slug": "versioning-data-and-achieving-configurability",
+        "htmlFile": "content/10/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Enable Fault Tolerance and Failure Detection",
+        "slug": "enable-fault-tolerance-and-failure-detection",
+        "htmlFile": "content/10/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 11,
+    "chapterTitle": "Content Delivery Network  (CDN)",
+    "chapterSlug": "content-delivery-network-cdn",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Content Delivery Network (CDN)",
+        "slug": "system-design_-the-content-delivery-network-cdn",
+        "htmlFile": "content/11/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Introduction to a CDN",
+        "slug": "introduction-to-a-cdn",
+        "htmlFile": "content/11/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a CDN",
+        "slug": "design-of-a-cdn",
+        "htmlFile": "content/11/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "In-depth Investigation of CDN: Part 1",
+        "slug": "in-depth-investigation-of-cdn_-part-1",
+        "htmlFile": "content/11/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "In-depth Investigation of CDN: Part 2",
+        "slug": "in-depth-investigation-of-cdn_-part-2",
+        "htmlFile": "content/11/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of CDN's Design",
+        "slug": "evaluation-of-cdns-design",
+        "htmlFile": "content/11/6.html"
+      },
+      {
+        "lessonIndex": 7,
+        "title": "Quiz on CDN's Design",
+        "slug": "quiz-on-cdns-design",
+        "htmlFile": "content/11/7.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 12,
+    "chapterTitle": "Sequencer",
+    "chapterSlug": "sequencer",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Sequencer",
+        "slug": "system-design_-sequencer",
+        "htmlFile": "content/12/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Design of a Unique ID Generator",
+        "slug": "design-of-a-unique-id-generator",
+        "htmlFile": "content/12/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Unique IDs with Causality",
+        "slug": "unique-ids-with-causality",
+        "htmlFile": "content/12/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 13,
+    "chapterTitle": "Distributed  Monitoring",
+    "chapterSlug": "distributed-monitoring",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Distributed Monitoring",
+        "slug": "system-design_-distributed-monitoring",
+        "htmlFile": "content/13/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Introduction to Distributed Monitoring",
+        "slug": "introduction-to-distributed-monitoring",
+        "htmlFile": "content/13/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Prerequisites of a Monitoring System",
+        "slug": "prerequisites-of-a-monitoring-system",
+        "htmlFile": "content/13/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 14,
+    "chapterTitle": "Monitor Server-side Errors",
+    "chapterSlug": "monitor-server-side-errors",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Design of a Monitoring System",
+        "slug": "design-of-a-monitoring-system",
+        "htmlFile": "content/14/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Detailed Design of a Monitoring System",
+        "slug": "detailed-design-of-a-monitoring-system",
+        "htmlFile": "content/14/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Visualize Data in a Monitoring System",
+        "slug": "visualize-data-in-a-monitoring-system",
+        "htmlFile": "content/14/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 15,
+    "chapterTitle": "Monitor Client-side Errors",
+    "chapterSlug": "monitor-client-side-errors",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Focus on Client-side Errors in a Monitoring System",
+        "slug": "focus-on-client-side-errors-in-a-monitoring-system",
+        "htmlFile": "content/15/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Design of a Client-side Monitoring System",
+        "slug": "design-of-a-client-side-monitoring-system",
+        "htmlFile": "content/15/2.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 16,
+    "chapterTitle": "Distributed Cache",
+    "chapterSlug": "distributed-cache",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Distributed Cache",
+        "slug": "system-design_-the-distributed-cache",
+        "htmlFile": "content/16/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Background of Distributed Cache",
+        "slug": "background-of-distributed-cache",
+        "htmlFile": "content/16/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "High-level Design of a Distributed Cache",
+        "slug": "high-level-design-of-a-distributed-cache",
+        "htmlFile": "content/16/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Detailed Design of a Distributed Cache",
+        "slug": "detailed-design-of-a-distributed-cache",
+        "htmlFile": "content/16/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of a Distributed Cache's Design",
+        "slug": "evaluation-of-a-distributed-caches-design",
+        "htmlFile": "content/16/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Memcached versus Redis",
+        "slug": "memcached-versus-redis",
+        "htmlFile": "content/16/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 17,
+    "chapterTitle": "Distributed Messaging Queue",
+    "chapterSlug": "distributed-messaging-queue",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Distributed Messaging Queue",
+        "slug": "system-design_-the-distributed-messaging-queue",
+        "htmlFile": "content/17/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Distributed Messaging Queue’s Design",
+        "slug": "requirements-of-a-distributed-messaging-queues-design",
+        "htmlFile": "content/17/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Considerations of a Distributed Messaging Queue’s Design",
+        "slug": "considerations-of-a-distributed-messaging-queues-design",
+        "htmlFile": "content/17/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design of a Distributed Messaging Queue: Part 1",
+        "slug": "design-of-a-distributed-messaging-queue_-part-1",
+        "htmlFile": "content/17/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Design of a Distributed Messaging Queue: Part 2",
+        "slug": "design-of-a-distributed-messaging-queue_-part-2",
+        "htmlFile": "content/17/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of a Distributed Messaging Queue’s Design",
+        "slug": "evaluation-of-a-distributed-messaging-queues-design",
+        "htmlFile": "content/17/6.html"
+      },
+      {
+        "lessonIndex": 7,
+        "title": "Quiz on the Distributed Messaging Queue’s Design",
+        "slug": "quiz-on-the-distributed-messaging-queues-design",
+        "htmlFile": "content/17/7.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 18,
+    "chapterTitle": "Pub-sub",
+    "chapterSlug": "pub-sub",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Pub-sub Abstraction",
+        "slug": "system-design_-the-pub-sub-abstraction",
+        "htmlFile": "content/18/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Introduction to Pub-sub",
+        "slug": "introduction-to-pub-sub",
+        "htmlFile": "content/18/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Pub-sub System",
+        "slug": "design-of-a-pub-sub-system",
+        "htmlFile": "content/18/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 19,
+    "chapterTitle": "Rate Limiter",
+    "chapterSlug": "rate-limiter",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Rate Limiter",
+        "slug": "system-design_-the-rate-limiter",
+        "htmlFile": "content/19/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Rate Limiter’s Design",
+        "slug": "requirements-of-a-rate-limiters-design",
+        "htmlFile": "content/19/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Rate Limiter",
+        "slug": "design-of-a-rate-limiter",
+        "htmlFile": "content/19/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Rate Limiter Algorithms",
+        "slug": "rate-limiter-algorithms",
+        "htmlFile": "content/19/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Quiz on the Rate Limiter’s Design",
+        "slug": "quiz-on-the-rate-limiters-design",
+        "htmlFile": "content/19/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 20,
+    "chapterTitle": "Blob Store",
+    "chapterSlug": "blob-store",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: A Blob Store",
+        "slug": "system-design_-a-blob-store",
+        "htmlFile": "content/20/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Blob Store's Design",
+        "slug": "requirements-of-a-blob-stores-design",
+        "htmlFile": "content/20/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Blob Store",
+        "slug": "design-of-a-blob-store",
+        "htmlFile": "content/20/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design Considerations of a Blob Store",
+        "slug": "design-considerations-of-a-blob-store",
+        "htmlFile": "content/20/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of a Blob Store's Design",
+        "slug": "evaluation-of-a-blob-stores-design",
+        "htmlFile": "content/20/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Quiz on the Blob Store's Design",
+        "slug": "quiz-on-the-blob-stores-design",
+        "htmlFile": "content/20/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 21,
+    "chapterTitle": "Distributed Search",
+    "chapterSlug": "distributed-search",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Distributed Search",
+        "slug": "system-design_-the-distributed-search",
+        "htmlFile": "content/21/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Distributed Search System's Design",
+        "slug": "requirements-of-a-distributed-search-systems-design",
+        "htmlFile": "content/21/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Indexing in a Distributed Search",
+        "slug": "indexing-in-a-distributed-search",
+        "htmlFile": "content/21/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design of a Distributed Search",
+        "slug": "design-of-a-distributed-search",
+        "htmlFile": "content/21/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Scaling Search and Indexing",
+        "slug": "scaling-search-and-indexing",
+        "htmlFile": "content/21/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of a Distributed Search's Design",
+        "slug": "evaluation-of-a-distributed-searchs-design",
+        "htmlFile": "content/21/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 22,
+    "chapterTitle": "Distributed Logging",
+    "chapterSlug": "distributed-logging",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Distributed Logging",
+        "slug": "system-design_-distributed-logging",
+        "htmlFile": "content/22/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Introduction to Distributed Logging",
+        "slug": "introduction-to-distributed-logging",
+        "htmlFile": "content/22/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Distributed Logging Service",
+        "slug": "design-of-a-distributed-logging-service",
+        "htmlFile": "content/22/3.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 23,
+    "chapterTitle": "Distributed Task Scheduler",
+    "chapterSlug": "distributed-task-scheduler",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Distributed Task Scheduler",
+        "slug": "system-design_-the-distributed-task-scheduler",
+        "htmlFile": "content/23/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Distributed Task Scheduler's Design",
+        "slug": "requirements-of-a-distributed-task-schedulers-design",
+        "htmlFile": "content/23/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Distributed Task Scheduler",
+        "slug": "design-of-a-distributed-task-scheduler",
+        "htmlFile": "content/23/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design Considerations of a Distributed Task Scheduler",
+        "slug": "design-considerations-of-a-distributed-task-scheduler",
+        "htmlFile": "content/23/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of a Distributed Task Scheduler's Design",
+        "slug": "evaluation-of-a-distributed-task-schedulers-design",
+        "htmlFile": "content/23/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 24,
+    "chapterTitle": "Sharded Counters",
+    "chapterSlug": "sharded-counters",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Sharded Counters",
+        "slug": "system-design_-the-sharded-counters",
+        "htmlFile": "content/24/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "High-level Design of Sharded Counters",
+        "slug": "high-level-design-of-sharded-counters",
+        "htmlFile": "content/24/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Detailed Design of Sharded Counters",
+        "slug": "detailed-design-of-sharded-counters",
+        "htmlFile": "content/24/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Quiz on the Sharded Counters' Design",
+        "slug": "quiz-on-the-sharded-counters-design",
+        "htmlFile": "content/24/4.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 25,
+    "chapterTitle": "Concluding the Building Blocks Discussion",
+    "chapterSlug": "concluding-the-building-blocks-discussion",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Wrapping Up the Building Blocks Discussion",
+        "slug": "wrapping-up-the-building-blocks-discussion",
+        "htmlFile": "content/25/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "The RESHADED Approach for System Design",
+        "slug": "the-reshaded-approach-for-system-design",
+        "htmlFile": "content/25/2.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 26,
+    "chapterTitle": "Design YouTube",
+    "chapterSlug": "design-youtube",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: YouTube",
+        "slug": "system-design_-youtube",
+        "htmlFile": "content/26/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of YouTube's Design",
+        "slug": "requirements-of-youtubes-design",
+        "htmlFile": "content/26/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of YouTube",
+        "slug": "design-of-youtube",
+        "htmlFile": "content/26/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Evaluation of YouTube's Design",
+        "slug": "evaluation-of-youtubes-design",
+        "htmlFile": "content/26/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "The Reality Is More Complicated",
+        "slug": "the-reality-is-more-complicated",
+        "htmlFile": "content/26/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Quiz on YouTube's Design",
+        "slug": "quiz-on-youtubes-design",
+        "htmlFile": "content/26/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 27,
+    "chapterTitle": "Design Quora",
+    "chapterSlug": "design-quora",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Quora",
+        "slug": "system-design_-quora",
+        "htmlFile": "content/27/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Quora's Design",
+        "slug": "requirements-of-quoras-design",
+        "htmlFile": "content/27/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Initial Design of Quora",
+        "slug": "initial-design-of-quora",
+        "htmlFile": "content/27/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Final Design of Quora",
+        "slug": "final-design-of-quora",
+        "htmlFile": "content/27/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of Quora’s Design",
+        "slug": "evaluation-of-quoras-design",
+        "htmlFile": "content/27/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 28,
+    "chapterTitle": "Design Google Maps",
+    "chapterSlug": "design-google-maps",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Google Maps",
+        "slug": "system-design_-google-maps",
+        "htmlFile": "content/28/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Google Maps' Design",
+        "slug": "requirements-of-google-maps-design",
+        "htmlFile": "content/28/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of Google Maps",
+        "slug": "design-of-google-maps",
+        "htmlFile": "content/28/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Challenges of Google Maps' Design",
+        "slug": "challenges-of-google-maps-design",
+        "htmlFile": "content/28/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Detailed Design of Google Maps",
+        "slug": "detailed-design-of-google-maps",
+        "htmlFile": "content/28/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of Google Maps' Design",
+        "slug": "evaluation-of-google-maps-design",
+        "htmlFile": "content/28/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 29,
+    "chapterTitle": "Design a Proximity Service - Yelp",
+    "chapterSlug": "design-a-proximity-service-yelp",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Yelp",
+        "slug": "system-design_-yelp",
+        "htmlFile": "content/29/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Yelp’s Design",
+        "slug": "requirements-of-yelps-design",
+        "htmlFile": "content/29/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of Yelp",
+        "slug": "design-of-yelp",
+        "htmlFile": "content/29/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design Considerations of Yelp",
+        "slug": "design-considerations-of-yelp",
+        "htmlFile": "content/29/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Quiz on Yelp's Design",
+        "slug": "quiz-on-yelps-design",
+        "htmlFile": "content/29/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 30,
+    "chapterTitle": "Design Uber",
+    "chapterSlug": "design-uber",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Uber",
+        "slug": "system-design_-uber",
+        "htmlFile": "content/30/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Uber’s Design",
+        "slug": "requirements-of-ubers-design",
+        "htmlFile": "content/30/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "High-level Design of Uber",
+        "slug": "high-level-design-of-uber",
+        "htmlFile": "content/30/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Detailed Design of Uber",
+        "slug": "detailed-design-of-uber",
+        "htmlFile": "content/30/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Payment Service and Fraud Detection in Uber Design",
+        "slug": "payment-service-and-fraud-detection-in-uber-design",
+        "htmlFile": "content/30/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of Uber’s Design",
+        "slug": "evaluation-of-ubers-design",
+        "htmlFile": "content/30/6.html"
+      },
+      {
+        "lessonIndex": 7,
+        "title": "Quiz on Uber's Design",
+        "slug": "quiz-on-ubers-design",
+        "htmlFile": "content/30/7.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 31,
+    "chapterTitle": "Design Twitter",
+    "chapterSlug": "design-twitter",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Twitter",
+        "slug": "system-design_-twitter",
+        "htmlFile": "content/31/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Twitter’s Design",
+        "slug": "requirements-of-twitters-design",
+        "htmlFile": "content/31/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "High-level Design of Twitter",
+        "slug": "high-level-design-of-twitter",
+        "htmlFile": "content/31/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Detailed Design of Twitter",
+        "slug": "detailed-design-of-twitter",
+        "htmlFile": "content/31/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Client-side Load Balancer for Twitter",
+        "slug": "client-side-load-balancer-for-twitter",
+        "htmlFile": "content/31/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Quiz on Twitter's Design",
+        "slug": "quiz-on-twitters-design",
+        "htmlFile": "content/31/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 32,
+    "chapterTitle": "Design Newsfeed System",
+    "chapterSlug": "design-newsfeed-system",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Newsfeed System",
+        "slug": "system-design_-newsfeed-system",
+        "htmlFile": "content/32/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Newsfeed System’s Design",
+        "slug": "requirements-of-a-newsfeed-systems-design",
+        "htmlFile": "content/32/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Newsfeed System",
+        "slug": "design-of-a-newsfeed-system",
+        "htmlFile": "content/32/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Evaluation of a Newsfeed System’s Design",
+        "slug": "evaluation-of-a-newsfeed-systems-design",
+        "htmlFile": "content/32/4.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 33,
+    "chapterTitle": "Design Instagram",
+    "chapterSlug": "design-instagram",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Instagram",
+        "slug": "system-design_-instagram",
+        "htmlFile": "content/33/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Instagram’s Design",
+        "slug": "requirements-of-instagrams-design",
+        "htmlFile": "content/33/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of Instagram",
+        "slug": "design-of-instagram",
+        "htmlFile": "content/33/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Detailed Design of Instagram",
+        "slug": "detailed-design-of-instagram",
+        "htmlFile": "content/33/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Quiz on Instagram’s Design",
+        "slug": "quiz-on-instagrams-design",
+        "htmlFile": "content/33/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 34,
+    "chapterTitle": "Design a URL Shortening Service - TinyURL",
+    "chapterSlug": "design-a-url-shortening-service-tinyurl",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: TinyURL",
+        "slug": "system-design_-tinyurl",
+        "htmlFile": "content/34/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of TinyURL's Design",
+        "slug": "requirements-of-tinyurls-design",
+        "htmlFile": "content/34/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design and Deployment of TinyURL",
+        "slug": "design-and-deployment-of-tinyurl",
+        "htmlFile": "content/34/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Encoder for TinyURL",
+        "slug": "encoder-for-tinyurl",
+        "htmlFile": "content/34/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of TinyURL's Design",
+        "slug": "evaluation-of-tinyurls-design",
+        "htmlFile": "content/34/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Quiz on TinyURL's Design",
+        "slug": "quiz-on-tinyurls-design",
+        "htmlFile": "content/34/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 35,
+    "chapterTitle": "Design a Web Crawler",
+    "chapterSlug": "design-a-web-crawler",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Web Crawler",
+        "slug": "system-design_-web-crawler",
+        "htmlFile": "content/35/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of a Web Crawler's Design",
+        "slug": "requirements-of-a-web-crawlers-design",
+        "htmlFile": "content/35/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of a Web Crawler",
+        "slug": "design-of-a-web-crawler",
+        "htmlFile": "content/35/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Design Improvements of a Web Crawler",
+        "slug": "design-improvements-of-a-web-crawler",
+        "htmlFile": "content/35/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of  Web Crawler's Design",
+        "slug": "evaluation-of-web-crawlers-design",
+        "htmlFile": "content/35/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 36,
+    "chapterTitle": "Design WhatsApp",
+    "chapterSlug": "design-whatsapp",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: WhatsApp",
+        "slug": "system-design_-whatsapp",
+        "htmlFile": "content/36/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of WhatsApp’s Design",
+        "slug": "requirements-of-whatsapps-design",
+        "htmlFile": "content/36/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "High-level Design of WhatsApp",
+        "slug": "high-level-design-of-whatsapp",
+        "htmlFile": "content/36/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Detailed Design of WhatsApp",
+        "slug": "detailed-design-of-whatsapp",
+        "htmlFile": "content/36/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of WhatsApp’s Design",
+        "slug": "evaluation-of-whatsapps-design",
+        "htmlFile": "content/36/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Quiz on WhatsApp’s Design",
+        "slug": "quiz-on-whatsapps-design",
+        "htmlFile": "content/36/6.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 37,
+    "chapterTitle": "Design Typeahead Suggestion",
+    "chapterSlug": "design-typeahead-suggestion",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: The Typeahead Suggestion System",
+        "slug": "system-design_-the-typeahead-suggestion-system",
+        "htmlFile": "content/37/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of the Typeahead Suggestion System’s Design",
+        "slug": "requirements-of-the-typeahead-suggestion-systems-design",
+        "htmlFile": "content/37/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "High-level Design of the Typeahead Suggestion System",
+        "slug": "high-level-design-of-the-typeahead-suggestion-system",
+        "htmlFile": "content/37/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Data Structure for Storing Prefixes",
+        "slug": "data-structure-for-storing-prefixes",
+        "htmlFile": "content/37/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Detailed Design of the Typeahead Suggestion System",
+        "slug": "detailed-design-of-the-typeahead-suggestion-system",
+        "htmlFile": "content/37/5.html"
+      },
+      {
+        "lessonIndex": 6,
+        "title": "Evaluation of the Typeahead Suggestion System’s Design",
+        "slug": "evaluation-of-the-typeahead-suggestion-systems-design",
+        "htmlFile": "content/37/6.html"
+      },
+      {
+        "lessonIndex": 7,
+        "title": "Quiz on the Typeahead Suggestion System’s Design",
+        "slug": "quiz-on-the-typeahead-suggestion-systems-design",
+        "htmlFile": "content/37/7.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 38,
+    "chapterTitle": "Design a Collaborative Document Editing Service - Google Docs",
+    "chapterSlug": "design-a-collaborative-document-editing-service-google-docs",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "System Design: Google Docs",
+        "slug": "system-design_-google-docs",
+        "htmlFile": "content/38/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Requirements of Google Docs’ Design",
+        "slug": "requirements-of-google-docs-design",
+        "htmlFile": "content/38/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "Design of Google Docs",
+        "slug": "design-of-google-docs",
+        "htmlFile": "content/38/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "Concurrency in Collaborative Editing",
+        "slug": "concurrency-in-collaborative-editing",
+        "htmlFile": "content/38/4.html"
+      },
+      {
+        "lessonIndex": 5,
+        "title": "Evaluation of Google Docs’ Design",
+        "slug": "evaluation-of-google-docs-design",
+        "htmlFile": "content/38/5.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 39,
+    "chapterTitle": "Spectacular Failures",
+    "chapterSlug": "spectacular-failures",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Introduction to Distributed System Failures",
+        "slug": "introduction-to-distributed-system-failures",
+        "htmlFile": "content/39/1.html"
+      },
+      {
+        "lessonIndex": 2,
+        "title": "Facebook, WhatsApp, Instagram, Oculus Outage",
+        "slug": "facebook-whatsapp-instagram-oculus-outage",
+        "htmlFile": "content/39/2.html"
+      },
+      {
+        "lessonIndex": 3,
+        "title": "AWS Kinesis Outage Affecting Many Organizations",
+        "slug": "aws-kinesis-outage-affecting-many-organizations",
+        "htmlFile": "content/39/3.html"
+      },
+      {
+        "lessonIndex": 4,
+        "title": "AWS Wide Spread Outage",
+        "slug": "aws-wide-spread-outage",
+        "htmlFile": "content/39/4.html"
+      }
+    ]
+  },
+  {
+    "chapterIndex": 40,
+    "chapterTitle": "Concluding Remarks",
+    "chapterSlug": "concluding-remarks",
+    "lessons": [
+      {
+        "lessonIndex": 1,
+        "title": "Conclusions",
+        "slug": "conclusions",
+        "htmlFile": "content/40/1.html"
+      }
+    ]
+  }
+]

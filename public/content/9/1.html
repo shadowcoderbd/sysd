@@ -1,0 +1,58 @@
+<h1>Introduction to Databases</h1>
+<p></p>
+<h2 id="Problem-statement">Problem statement<a href="#Problem-statement"><span>#</span></a></h2>
+<p>Let’s start with a simple question. Can we make a software application without using databases? Let’s suppose we have an application like WhatsApp. People use our application to communicate with their friends. Now, where and how we can store information (a list of people’s names and their respective messages) permanently and retrieve it?</p>
+<p>We can use a simple file to store all the records on separate lines and retrieve them from the same file. But using a file for storage has some limitations.</p>
+<h3 id="Limitations-of-file-storage">Limitations of file storage<a href="#Limitations-of-file-storage"><span>#</span></a></h3>
+<ul>
+<li>We can’t offer concurrent management to separate users accessing the storage files from different locations.</li>
+<li>We can’t grant different access rights to different users.</li>
+<li>How will the system scale and be available when adding thousands of entries?</li>
+<li>How will we search content for different users in a short time?</li>
+</ul>
+
+<p></p>
+<figure class="diagram"><img src="/images/9/1/img_0.svg" alt="The limitations of file storage" loading="lazy" /><figcaption>The limitations of file storage</figcaption></figure>
+<h3 id="Solution">Solution<a href="#Solution"><span>#</span></a></h3>
+<p>The above limitations can be addressed using databases.</p>
+
+<p>A <strong>database</strong> is an organized collection of data that can be managed and accessed easily. Databases are created to make it easier to store, retrieve, modify, and delete data in connection with different data-processing procedures.</p>
+
+<p>Some of the applications where we use database management are the banking systems, online shopping stores, and so on. Different organizations have different sizes of databases according to their needs.</p>
+<blockquote>
+<p><strong>Note</strong>: According to a <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">source</span></span>, the World Data Center for Climate (WDCC) is the largest database in the world. It contains around 220 terabytes of web data and 6 petabytes of additional data.</p>
+</blockquote>
+<p>There are two basic types of databases:</p>
+<ul>
+<li>SQL (relational databases)</li>
+<li>NoSQL (non-relational databases)</li>
+</ul>
+<p>They differ in terms of their intended use case, the type of information they hold, and the storage method they employ.</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/9/1/img_1.svg" alt="SQL versus. NoSQL" loading="lazy" /><figcaption>SQL versus. NoSQL</figcaption></figure>
+<p>Relational databases, like phone books that record contact numbers and addresses, are organized and have predetermined schemas. Non-relational databases, like file directories that store anything from a person’s constant information to shopping preferences, are unstructured, scattered, and feature a dynamic schema. We’ll discuss their differences and their types in detail in the next lesson.</p>
+<!--
+> When NoSQL databases first came into being, they were drastically different to program and use as compared to traditional databases. Though due to extensive research in academia and industry over the last many years, the programmer-facing differences between NoSQL and traditional stores are blurring. One might be using the same SQL constructs to talk to a NoSQL store and get a similar level of performance and consistency as a traditional store. <keyword><word>Google's Cloud Spanner</word><meaning>Spanner: Google’s Globally-Distributed Database, Google, Inc.</meaning></keyword> is one such database that is geo-replicated with automatic horizontal sharding ability and high-speed global snapshots of data. 
+-->
+<h2 id="Advantages">Advantages<a href="#Advantages"><span>#</span></a></h2>
+<p>A proper database is essential for every business or organization. This is because the database stores all essential information about the organization, such as personnel records, transactions, salary information, and so on. Following are some of the reasons why the database is important:</p>
+<ul>
+<li><strong>Managing large data</strong>: A large amount of data can be easily handled with a database, which wouldn’t be possible using other tools.</li>
+<li><strong>Retrieving accurate data (data consistency)</strong>: Due to different constraints in databases, we can retrieve accurate data whenever we want.</li>
+<li><strong>Easy updation</strong>: It is quite easy to update data in databases using data manipulation language (DML).</li>
+<li><strong>Security</strong>: Databases ensure the security of the data. A database only allows authorized users to access data.</li>
+<li><strong>Data integrity</strong>: Databases ensure data integrity by using different constraints for data.</li>
+<li><strong>Availability</strong>: Databases can be replicated (using <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5241733675220992" target="_blank">data replication</a>) on different servers, which can be concurrently updated. These replicas ensure availability.</li>
+<li><strong>Scalability</strong>: Databases are divided (using <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6254160546103296" target="_blank">data partitioning</a>) to manage the load on a single node. This increases scalability.</li>
+</ul>
+
+<h2 id="How-will-we-explain-databases?">How will we explain databases?<a href="#How-will-we-explain-databases?"><span>#</span></a></h2>
+<p>We have divided the database chapter into four lessons:</p>
+<ol>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6521598450597888" target="_blank">Types of Databases</a></strong>: We’ll discuss the different types of databases, their advantages, and their disadvantages.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5241733675220992" target="_blank">Data Replication</a></strong>: We’ll discuss what data replication is and its different models with their pros and cons.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6254160546103296" target="_blank">Data Partitioning</a></strong>: We’ll discuss what data partitioning is and its different models with their pros and cons.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5531655174881280" target="_blank">Cost-benefit analysis</a></strong>: We’ll discuss which database sharding approach is best for different kinds of databases.</li>
+</ol>
+<p>Let’s get started by understanding different types of databases and their preferred use cases.</p>

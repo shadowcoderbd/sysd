@@ -1,0 +1,62 @@
+<h1>Requirements of a Distributed Messaging Queue’s Design</h1>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>In a <strong>distributed messaging queue</strong>, data resides on several machines. Our aim is to design a distributed messaging queue that has the following functional and non-functional requirements.</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>Listed below are the actions that a client should be able to perform:</p>
+<ul>
+<li>
+<p><strong>Queue creation:</strong> The client should be able to create a queue and set some parameters—for example, queue name, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">queue size</span></span>, and
+<span><span><span class="font-bold cursor-pointer">maximum message size.<svg class="sc-559b404a-0 ipLJtW" expanded="0" fill="none" height="13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewbox="0 0 24 24" width="13" xmlns="http://www.w3.org/2000/svg"><polyline points="10 15 15 20 20 15"></polyline><path d="M4 4h7a4 4 0 0 1 4 4v12"></path></svg></span></span></span></p>
+</li>
+<li>
+<p><strong>Send message:</strong> Producer entities should be able to send messages to a queue that’s intended for them.</p>
+</li>
+<li>
+<p><strong>Receive message:</strong> Consumer entities should be able to receive messages from their respective queues.</p>
+</li>
+<li>
+<p><strong>Delete message:</strong> The consumer processes should be able to delete a message from the queue after a successful processing of the message.</p>
+</li>
+<li>
+<p><strong>Queue deletion:</strong> Clients should be able to delete a specific queue.</p>
+</li>
+</ul>
+
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>Our design of a distributed messaging queue should adhere to the following non-functional requirements:</p>
+<ul>
+<li>
+<p><strong>Durability</strong>: The data received by the system should be durable and shouldn’t be lost. Producers and consumers can fail independently, and a queue with data durability is critical to make the whole system work, because other entities are relying on the queue.</p>
+</li>
+<li>
+<p><strong>Scalability</strong>: The system needs to be scalable and capable of handling the increased load, queues, producers, consumers, and the number of messages. Similarly, when the load reduces, the system should be able to shrink the resources accordingly.</p>
+</li>
+<li>
+<p><strong>Availability</strong>: The system should be highly available for receiving and sending messages. It should continue operating uninterrupted, even after the failure of one or more of its components.</p>
+</li>
+<li>
+<p><strong>Performance:</strong> The system should provide high throughput and low latency.</p>
+</li>
+</ul>
+
+<h2 id="Single-server-messaging-queue">Single-server messaging queue<a href="#Single-server-messaging-queue"><span>#</span></a></h2>
+<p>Before we embark on our journey to map out the design of a distributed messaging queue, we should recall how <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">queues</span></span> are used within a single server where the producer and consumer processes are also on the same node. A producer or consumer can access a single-server queue by acquiring the locking mechanism to avoid data inconsistency. The queue is considered a critical section where only one entity, either the producer or consumer, can access the data at a time.</p>
+<p>However, several aspects restrain us from using the single-server messaging queue in today’s distributed systems paradigm. For example, it becomes unavailable to cooperating processes, producers and consumers, in the event of hardware or network failures. Moreover, performance takes a major hit as contention on the lock increases. Furthermore, it is neither scalable nor durable.</p>
+
+<figure class="diagram"><img src="/images/17/2/img_0.svg" alt="Multiple producers and consumers interact via a single messaging queue" loading="lazy" /><figcaption>Multiple producers and consumers interact via a single messaging queue</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>The design of a distributed messaging queue utilizes the following building blocks:</p>
+
+<figure class="diagram"><img src="/images/17/2/img_1.svg" alt="The building blocks used to design a distributed messaging queue" loading="lazy" /><figcaption>The building blocks used to design a distributed messaging queue</figcaption></figure>
+<ul>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4901035478351872" target="_blank">Database(s)</a></strong> will be required to store the metadata of queues and users.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5053577315221504" target="_blank">Caches</a></strong> are important to keep frequently accessed data, whether it be data pertaining to users or queues metadata.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank">Load balancers</a></strong> are used to direct incoming requests to servers where the metadata is stored.</li>
+</ul>
+
+<p></p>
+<p>In our discussion on messaging queues, we focused on their functional and non-functional requirements. Before moving on to the process of designing a distributed messaging queue, it’s essential for us to discuss some key considerations and challenges that may affect the design.</p>
+
+<p></p>

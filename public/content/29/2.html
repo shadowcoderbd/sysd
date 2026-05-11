@@ -1,0 +1,150 @@
+<h1>Requirements of Yelp’s Design</h1>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let’s identify the requirements of our system.</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>The functional requirements of our systems are below:</p>
+<ul>
+<li>
+<p><strong>User accounts</strong>: Users will have accounts where they’re able to perform different functionalities like log in, log out, add, delete, and update places’ information.</p>
+<blockquote>
+<p><strong>Note:</strong> There can be two types of users: business owners who can add their places on the platform and other users who can search, view, and give a rating to a place.</p>
+</blockquote>
+</li>
+<li>
+<p><strong>Search</strong>: The users should be able to search for nearby places or places of interest based on their GPS location (longitude, latitude) and/or the name of a place.</p>
+</li>
+<li>
+<p><strong>Feedback</strong>: The users should be able to add a review about a place. The review can consist of images, text, and a rating.</p>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/29/2/img_0.svg" alt="Functional requirements" loading="lazy" /><figcaption>Functional requirements</figcaption></figure>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>The non-functional requirements of our systems are:</p>
+<ul>
+<li>
+<p><strong>High availability</strong>: The system should be highly available to the users.</p>
+</li>
+<li>
+<p><strong>Scalability</strong>: The system should be able to scale up and down, depending on the number of requests. The number of requests can vary depending on the time and number of days. For example, there are usually more searches made at lunchtime than at midnight. Similarly, during tourist season, our system will receive more requests as compared to in other months of the year.</p>
+</li>
+<li>
+<p><strong>Consistency</strong>: The system should be consistent for the users. All the users should have a consistent view of the data regarding places, reviews, and images.</p>
+</li>
+<li>
+<p><strong>Performance</strong>: Upon searching, the system should respond with suggestions with minimal latency.</p>
+</li>
+</ul>
+<h2 id="Resource-estimation">Resource estimation<a href="#Resource-estimation"><span>#</span></a></h2>
+<p>Let’s assume that we have:</p>
+<ul>
+<li>A total of 178 million unique users.</li>
+<li>60 million daily active users.</li>
+<li>500 million places.</li>
+</ul>
+<!-- 
+* 100K queries per second (QPS) 
+* 20 percent growth in the number of places and QPS each year (as we need to keep in mind the future growth of our system)
+<!-- Let’s also assume a 20% growth in the number of places and QPS each year.
+--><span>
+</span><h3 id="Number-of-servers-estimation">Number of servers estimation<a href="#Number-of-servers-estimation"><span>#</span></a></h3>
+<p>We need to handle concurrent requests coming from 60 million daily active users. As we did in our discussion in the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5711642666467328" target="_blank">back-of-the-envelope</a> lessons, we assume an RPS of 8,000.</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mrow><mi>N</mi><mi>u</mi><mi>m</mi><mi>b</mi><mi>e</mi><mi>r</mi><mtext> </mtext><mi>o</mi><mi>f</mi><mtext> </mtext><mi>d</mi><mi>a</mi><mi>i</mi><mi>l</mi><mi>y</mi><mtext> </mtext><mi>a</mi><mi>c</mi><mi>t</mi><mi>i</mi><mi>v</mi><mi>e</mi><mtext> </mtext><mi>u</mi><mi>s</mi><mi>e</mi><mi>r</mi><mi>s</mi></mrow><mrow><mi>R</mi><mi>P</mi><mi>S</mi><mtext> </mtext><mi>o</mi><mi>f</mi><mtext> </mtext><mi>a</mi><mtext> </mtext><mi>s</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>e</mi><mi>r</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>60</mn><mtext> </mtext><mi>m</mi><mi>i</mi><mi>l</mi><mi>l</mi><mi>i</mi><mi>o</mi><mi>n</mi></mrow><mn>8000</mn></mfrac><mo>=</mo><mn>7500</mn><mtext> </mtext><mi>s</mi><mi>e</mi><mi>r</mi><mi>v</mi><mi>e</mi><mi>r</mi><mi>s</mi><mtext> </mtext></mrow><annotation encoding="application/x-tex">\frac{Number\ of\ daily\ active\ users}{RPS\ of\ a\ server} = \frac{60\  million}{8000} = 7500\ servers\
+</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:2.2519em; vertical-align:-0.8804em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em"><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord mathnormal">RPS</span><span class="mspace"> </span><span class="mord mathnormal">o</span><span class="mord mathnormal">f</span><span class="mspace"> </span><span class="mord mathnormal">a</span><span class="mspace"> </span><span class="mord mathnormal">ser</span><span class="mord mathnormal">v</span><span class="mord mathnormal">er</span></span></span><span><span class="pstrut" style="height:3em"></span><span class="frac-line"></span></span><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord mathnormal">N</span><span class="mord mathnormal">u</span><span class="mord mathnormal">mb</span><span class="mord mathnormal">er</span><span class="mspace"> </span><span class="mord mathnormal">o</span><span class="mord mathnormal">f</span><span class="mspace"> </span><span class="mord mathnormal">d</span><span class="mord mathnormal">ai</span><span class="mord mathnormal">l</span><span class="mord mathnormal">y</span><span class="mspace"> </span><span class="mord mathnormal">a</span><span class="mord mathnormal">c</span><span class="mord mathnormal">t</span><span class="mord mathnormal">i</span><span class="mord mathnormal">v</span><span class="mord mathnormal">e</span><span class="mspace"> </span><span class="mord mathnormal">u</span><span class="mord mathnormal">sers</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8804em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace"></span><span class="mrel">=</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:2.0574em; vertical-align:-0.686em"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em"><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">8000</span></span></span><span><span class="pstrut" style="height:3em"></span><span class="frac-line"></span></span><span><span class="pstrut" style="height:3em"></span><span class="mord"><span class="mord">60</span><span class="mspace"> </span><span class="mord mathnormal">mi</span><span class="mord mathnormal">ll</span><span class="mord mathnormal">i</span><span class="mord mathnormal">o</span><span class="mord mathnormal">n</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace"></span><span class="mrel">=</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">7500</span><span class="mspace"> </span><span class="mord mathnormal">ser</span><span class="mord mathnormal">v</span><span class="mord mathnormal">ers</span><span class="mspace"> </span></span></span></span></span></p>
+<!--
+We have assumed that QPS is 100000 queries. 
+
+Queries handled by a server per second = 800
+
+Queries handled by a server per day = 100 * 24 * 60 * 60 = 691200000 
+
+
+$$\frac{Number\ of\ estimated\ requests}{Queries\ handled\ per\ server\ a\ day} = 10,000\ servers\ approx$$
+-->
+<table class="data-grid"><tbody><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Number of Daily Active Users (in Millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">60</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">RPS of a Server</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">8000</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Number of Servers Required</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">7500</span></td></tr></tbody></table>
+<p></p>
+<figure class="diagram"><img src="/images/29/2/img_1.svg" alt="The number of servers required for Yelp" loading="lazy" /><figcaption>The number of servers required for Yelp</figcaption></figure>
+<h3 id="Storage-estimation">Storage estimation<a href="#Storage-estimation"><span>#</span></a></h3>
+<p>Let’s calculate the storage we need for our data. Let’s make the following assumptions:</p>
+<ul>
+<li>
+<p>We have a total of 500 million places.</p>
+</li>
+<li>
+<p>For each place, we need 1,296 Bytes of storage.</p>
+</li>
+<li>
+<p>We have one photo attached to each place, so we have 500 million photos.</p>
+</li>
+<li>
+<p>For each photo, we need 280 Bytes of storage. Here, we consider the row size of the photo entity in the table, which contains a link to the actual photo in the blob store.</p>
+</li>
+<li>
+<p>At least 1 million reviews of different places are added daily.</p>
+</li>
+<li>
+<p>For each review, we need 537 Bytes of storage.</p>
+</li>
+<li>
+<p>We have a total of 178 million users.</p>
+</li>
+<li>
+<p>For each user, we need 264 Bytes of storage.</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> The Bytes used for each place, photo, review, and user are based on the database schema that we’ll discuss in the next lesson.</p>
+</blockquote>
+<!--* 
+   * Total space for places: $500\times10^{6}\times1296 = 644.5 GBs$
+  * Total space for photos: $500\times10^{6}\times280 = 140 GBs$
+  * Total space for reviews: $1\times10^{6}\times537 = 0.537 GBs$
+  * Total space for users: $20\times10^{6}\times264 = 5.28 GBs$
+
+
+To improve the availability and reliability of the data, we assume a replication factor of 3.-->
+<p>The following calculater computes the total storage we need:</p>
+
+<table class="data-grid"><tbody><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Type of information</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Size Required by an Entity (in Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Count (in Millions)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Total Size (in GBs)</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Place</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">1296</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">500</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">648</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Photo</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">280</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">500</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">140</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Review</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">537</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">1</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">0.54</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">User</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">264</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">178</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">46.99</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Total Storage Required</span></td><td class="cell read-only sc-5e8a0d8b-4 hzcfLG"><span class="value-viewer"></span></td><td class="cell read-only sc-5e8a0d8b-4 hzcfLG"><span class="value-viewer"></span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">835.53</span></td></tr></tbody></table>
+<figure class="diagram"><img src="/images/29/2/img_2.svg" alt="The total amount of storage required by Yelp" loading="lazy" /><figcaption>The total amount of storage required by Yelp</figcaption></figure>
+<h3 id="Bandwidth-estimation">Bandwidth estimation<a href="#Bandwidth-estimation"><span>#</span></a></h3>
+<p>To estimate the bandwidth requirements for Yelp, we categorize the bandwidth calculation of incoming and outgoing traffic.</p>
+<p>For incoming traffic, let’s assume the following:</p>
+<ul>
+<li>On average, five places are added every day.</li>
+<li>For each place, we take up 1,296 Bytes.</li>
+<li>A photo of size 3 MB is also attached with each place. This is the size of the photo that we save in the blob store.</li>
+<li>One million reviews of different places are added every day.</li>
+<li>Each review, takes up 537 Bytes.</li>
+</ul>
+<!--We required 650 GBs of storage. Therefore, the incoming traffic should support the following bandwidth per second:
+
+$$\frac{650 \times 10^{9}}{86400} \times 8 \approx 60.18 Mbps$$-->
+<p>We divide the total size of information per day by 86,400 to convert it into per second bandwidth.</p>
+
+<table class="data-grid"><tbody><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Average Number of Places Added Daily</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">5</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Storage Needed for Each Place (Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">1296</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Size of Photo (in MBs)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">3</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Total Size of Place Information (Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 eJikiE"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">15006480</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Average Number of Reviews Added Daily (in Millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">1</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Storage Needed for Each Review (Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">537</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Total Size of Reviews (Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">537000000</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer">Total Incoming Bandwidth (KBps)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">6.39</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Total Incoming Bandwidth (Kbps)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">51.12</span></td></tr></tbody></table>
+<p>For outgoing traffic, let’s assume the following:</p>
+<ul>
+<li>A single search returns 20 places on average.</li>
+<li>Each place has a single photo attached to it that has an average size of 3 MB.</li>
+<li>Every returned entry contains the place and photo information.</li>
+</ul>
+<p>Considering that there are 60 million active daily users, we come to the following estimations:</p>
+
+<table class="data-grid"><tbody><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Average Number of Places Returned on Each Search Request</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">20</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Size of Place (in Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 eQKLiE"><span class="value-viewer">1296</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Size of Photo (in MB)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">3</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Total Size of Place Information (Bytes)</span></td><td class="cell read-only sc-5e8a0d8b-4 eJikiE"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">60025920</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Outgoing Bandwidth Required for a Single Request (Kbps)</span></td><td class="cell read-only sc-5e8a0d8b-4 eJikiE"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">0.69</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Outgoing Bandwidth Required for a Single Request (KBps)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">5.52</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Daily Active Users (in Millions)</span></td><td class="cell sc-5e8a0d8b-4 jxqleG"><span class="value-viewer">60</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 eJikiE"><span class="value-viewer">Total Outgoing Bandwidth Required (Kbps)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">331200000</span></td></tr><tr><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="value-viewer"> Total Outgoing Bandwidth Required (Gbps)</span></td><td class="cell read-only sc-5e8a0d8b-4 krxqpj"><span class="absolute italic top-0 text-primary dark:text-primary-light">f</span><span class="value-viewer">331.2</span></td></tr></tbody></table>
+<p>We need a total of approximately <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>51</mn><mtext> </mtext><mi>K</mi><mi>b</mi><mi>p</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">51\ Kbps</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord">51</span><span class="mspace"> </span><span class="mord mathnormal">K</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">s</span></span></span></span> of incoming traffic and approximately <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>331</mn><mtext> </mtext><mi>G</mi><mi>b</mi><mi>p</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">331\ Gbps</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord">331</span><span class="mspace"> </span><span class="mord mathnormal">G</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">s</span></span></span></span> of outgoing, assuming that the uploaded content is not compressed.</p>
+<p>Total bandwidth requirements = <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>51</mn><mtext> </mtext><mi>K</mi><mi>b</mi><mi>p</mi><mi>s</mi><mo>+</mo><mn>331</mn><mtext> </mtext><mi>G</mi><mi>b</mi><mi>p</mi><mi>s</mi><mo>≈</mo><mn>331</mn><mtext> </mtext><mi>G</mi><mi>b</mi><mi>p</mi><mi>s</mi></mrow><annotation encoding="application/x-tex">51\ Kbps + 331\ Gbps \approx 331\ Gbps</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord">51</span><span class="mspace"> </span><span class="mord mathnormal">K</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">s</span><span class="mspace"></span><span class="mbin">+</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord">331</span><span class="mspace"> </span><span class="mord mathnormal">G</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">s</span><span class="mspace"></span><span class="mrel">≈</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:0.8889em; vertical-align:-0.1944em"></span><span class="mord">331</span><span class="mspace"> </span><span class="mord mathnormal">G</span><span class="mord mathnormal">b</span><span class="mord mathnormal">p</span><span class="mord mathnormal">s</span></span></span></span>.</p>
+
+<figure class="diagram"><img src="/images/29/2/img_3.svg" alt="The total bandwidth required by Yelp" loading="lazy" /><figcaption>The total bandwidth required by Yelp</figcaption></figure>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>The design process of Yelp utilizes many building blocks that have already been discussed in the initial chapters of the course. We’ll consider the following concepts while designing Yelp:</p>
+
+<p></p>
+<figure class="diagram"><img src="/images/29/2/img_4.svg" alt="Building blocks in the high-level design of Yelp" loading="lazy" /><figcaption>Building blocks in the high-level design of Yelp</figcaption></figure>
+<ul>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5053577315221504" target="_blank"><strong>Caching</strong></a>: We’ll use the cache to store information about popular places.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4521972679049216" target="_blank"><strong>Load balancer</strong></a>: We’ll use the load balancer to manage the large amount of requests.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4862646238576640" target="_blank"><strong>Blob storage</strong></a>: We’ll store images in the blob storage.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4901035478351872" target="_blank"><strong>Database</strong></a>: We’ll store information about places and users in the database.</li>
+</ul>
+<p>We’ll also rely on <a href="https://www.educative.io/collection/page/10370001/4941429335392256/5138720050642944" target="_blank"><strong>Google Maps</strong></a> to understand the feature of searching for places within a particular radius.</p>

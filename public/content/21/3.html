@@ -1,0 +1,100 @@
+<h1>Indexing in a Distributed Search</h1>
+<p>We’ll first describe what indexing is, and then we’ll make our way toward distributing indexes over many nodes.</p>
+<!--ing after looking into the problems of centralized indexing.-->
+<h2 id="Indexing">Indexing<a href="#Indexing"><span>#</span></a></h2>
+<p><strong>Indexing</strong> is the organization and manipulation of data that’s done to facilitate fast and accurate information retrieval.</p>
+<h3 id="Build-a-searchable-index">Build a searchable index<a href="#Build-a-searchable-index"><span>#</span></a></h3>
+<p>The simplest way to build a searchable index is to assign a unique ID to each document and store it in a database table, as shown in the following table. The first column in the table is the ID of the text and the second column contains the text from each document.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="250"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>ID</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Document Content</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">1</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Elasticsearch is the distributed and analytics engine that is based on REST APIs. </p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">2</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Elasticsearch is a Lucene library-based search engine. </p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">3</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Elasticsearch is a distributed search and analytics engine built on Apache Lucene.</p></td></tr></tbody></table>
+<p>The size of the table given above would vary,  depending on the number of documents we have and the size of those documents. The table above is just an example, and the content from each document only consists of one or two sentences. With an actual, real-world example, the content of every document in the table could be pages long. This would make our table quite large. Running a search query on the document-level index given above isn’t a fast process. On each search request, we have to traverse all the documents and count the occurrence of the search string in each document.</p>
+<blockquote>
+<p><strong>Note:</strong> For a <strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">fuzzy search</span></span></strong>, we also have to perform different pattern-matching queries. Many strings in the documents would somehow match the searched string. First, we must find the unique candidate strings by traversing all of the documents. Then, we must single out the most approximate matched string out of these strings. We also have to find the occurrence of the most matched string in each document. This means that each search query takes a long time.</p>
+</blockquote>
+<p>The response time to a search query depends on a few factors:</p>
+<ul>
+<li>The data organization strategy in the database.</li>
+<li>The size of the data.</li>
+<li>The processing speed and the RAM of the machine that’s used to build the index and process the search query.</li>
+</ul>
+<p>Running search queries on billions of documents that are document-level indexed will be a slowprocess, which may take many minutes, or even hours. Let’s look at another data organization and processing technique that helps reduce the search time.</p>
+
+<h4 id="Inverted-index">Inverted index<a href="#Inverted-index"><span>#</span></a></h4>
+<p>An <strong>inverted index</strong> is a HashMap-like data structure that employs a document-term matrix. Instead of storing the complete document as it is, it splits the documents into individual words. After this, the <strong><span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">document-term matrix</span></span></strong> identifies unique words and discards frequently occurring words like “to,” “they,” “the,” “is,” and so on. Frequently occurring words like those are called <strong>terms</strong>. The document-term matrix maintains a <strong>term-level index</strong> through this identification of unique words and deletion of unnecessary terms.</p>
+<p>For each term, the index computes the following information:</p>
+<ul>
+<li>The list of documents in which the term appeared.</li>
+<li>The frequency with which the term appears in each document.</li>
+<li>The position of the term in each document.</li>
+</ul>
+
+<table class="table-fixed mx-px"><colgroup><col width="132"/><col width="367"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Term</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Mapping</strong></p><p class="ql-align-center"><strong>( [doc], [freq], [[loc])</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">elasticsearch</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 2, 3], [1, 1, 1], [[1], [1], [1]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">distributed</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 3], [1, 1], [[4], [4]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">restful</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1], [1], [[5]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">search</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 2, 3], [1, 1, 1], [[6], [4], [5]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">analytics</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 3], [1, 1], [[8], [7]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">engine</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 2, 3], [1, 1, 1], [[9], [5], [8]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">heart</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1], [1], [[12]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">elastic</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1], [1], [[15]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">stack</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1], [1], [[16]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">lucene</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [2, 3], [1, 1], [[9], [12]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">library</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [2], [1], [[10]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Apache</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [3], [1], [[11]] )</p></td></tr></tbody></table>
+<p>In the table above, the “Term” column contains all the unique terms that are extracted from all of the documents. Each entry in the “Mapping” column consists of three lists:</p>
+<ul>
+<li>A list of documents in which the term appeared.</li>
+<li>A list that counts the frequency with which the term appears in each document.</li>
+<li>A two-dimensional list that pinpoints the position of the term in each document. A term can appear multiple times in a single document, which is why a two-dimensional list is used.</li>
+</ul>
+<blockquote>
+<p><strong>Note:</strong> Instead of lists, the mappings could also be in the form of tuples— such as doc, freq, and loc.</p>
+</blockquote>
+<p><strong>Inverted index</strong> is one of the most popular index mechanisms used in document retrieval. It enables efficient implementation of <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">boolean</span></span>, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">extended boolean</span></span>, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">proximity</span></span>, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">relevance</span></span>, and many other types of search algorithms.</p>
+
+<p><strong>Advantages of using an inverted index</strong></p>
+<ul>
+<li>An inverted index facilitates <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">full-text searches</span></span>.</li>
+<li>An inverted index reduces the time of counting the occurrence of a word in each document at the run time because we have mappings against each term.</li>
+</ul>
+<p><strong>Disadvantages of using an inverted index</strong></p>
+<ul>
+<li>There is storage overhead for maintaining the inverted index along with the actual documents. However, we reduce the search time.</li>
+<li>Maintenance costs (processing) on adding, updating, or deleting a document. To add a document, we extract terms from the document. Then, for each extracted term, we either add a new row in the inverted index or update an existing one if that term already has an entry in the inverted index. Similarly, for deleting a document, we conduct processing to find the entries in the inverted index for the deleted document’s terms and update the inverted index accordingly.</li>
+</ul>
+
+<h4 id="Searching-from-an-inverted-index">Searching from an inverted index<a href="#Searching-from-an-inverted-index"><span>#</span></a></h4>
+<p>Consider a system that has the following mappings when we search for the word “search engine:”</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="250"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Term</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Mapping</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">search</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 2, 3], [1, 1, 1], [[6], [4], [5]] )</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">engine</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">( [1, 2, 3], [1, 1, 1], [[9], [5], [8]] )</p></td></tr></tbody></table>
+<p>Both of these words are found in documents 1, 2, and 3. Both words appear once in each document.</p>
+<p>The word “search” is located at position 6 in document 1, at position 4 in document 2, and position 5 in document 3.</p>
+<p>The word “engine” is located at position 9 in document 1, position 5 in document 2, and position 8 in document 3.</p>
+<p>A single term can appear in millions of documents. Thus, the list of documents returned against a search query could be very long.</p>
+
+<p>QuestionWould this technique work when too many documents are found against a single term?Show Answer</p>
+<h3 id="Factors-of-index-design">Factors of index design<a href="#Factors-of-index-design"><span>#</span></a></h3>
+<p>Here are some of the factors that we should keep in mind while designing an index:</p>
+<ul>
+<li><strong>Size of the index</strong>: How much computer memory, and RAM, is required to keep the index. We keep the index in the RAM to support the low latency of the search.</li>
+<li><strong>Search speed</strong>: How quickly we can find a word from an inverted index.</li>
+<li><strong>Maintenance of the index</strong>: How efficiently the index can be updated if we add or remove a document.</li>
+<li><strong>Fault tolerance</strong>: How critical it is for the service to remain reliable. Coping with index corruption, supporting whether <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">invalid data</span></span> can be treated in isolation, dealing with defective hardware, partitioning, and replication are all issues to consider here.</li>
+<li><strong>Resilience</strong>: How resilient the system is against someone trying to game the system and guard against search engine optimization (SEO) schemes, since we return only a handful of relevant results against a search.</li>
+</ul>
+<p>In light of the design factors listed above, let’s look at some problems with building an index on a centralized system.</p>
+<h2 id="Indexing-on-a-centralized-system">Indexing on a centralized system<a href="#Indexing-on-a-centralized-system"><span>#</span></a></h2>
+<p>In a <strong>centralized search system</strong>, all the search system components run on a single node, which is computationally quite capable. The architecture of a centralized search system is shown in the following illustration:</p>
+
+<figure class="diagram"><img src="/images/21/3/img_0.svg" alt="The architecture of a centralized search system" loading="lazy" /><figcaption>The architecture of a centralized search system</figcaption></figure>
+<ul>
+<li>The <strong>indexing process</strong> takes the documents as input and converts them into an inverted index, which is stored in the form of a binary file.</li>
+<li>The <strong>query processing</strong> or <strong>search process</strong> interprets the binary file that contains the inverted index. It also computes the intersection of the inverted lists for a given query to return the search results against the query.</li>
+</ul>
+<p>These are the problems that come with the architecture of a centralized search system:</p>
+<ul>
+<li>SPOF (single point of failure)</li>
+<li>Server overload</li>
+<li>Large size of the index</li>
+</ul>
+<p><strong>SPOF</strong>: A centralized system is a single point of failure. If it’s dead, no search operation can be performed.</p>
+<p><strong>Server overload</strong>: If numerous users perform queries and the queries are complicated, it stresses the server (node).</p>
+<p><strong>Large size of the index</strong>: The size of the inverted index increases with the number of documents, placing resource demands on a single server. The bigger the computer system, the higher the cost and complexity of managing it.</p>
+<blockquote>
+<p><strong>Note:</strong> With a distributed system, low-cost computer systems are utilized, which is cost effective overall.</p>
+</blockquote>
+<p>An inverted index needs to be loaded into the main memory when adding a document or running a search query. A large portion of the inverted index must fit into the RAM of the machine for efficiency.</p>
+<p>According to <a href="https://www.google.com/search/howsearchworks/crawling-indexing/" target="_blank">Google analytics</a> in 2022, there are hundreds of billions of web pages, the total size of which is around 100 petabytes. If we make a search system for the worldwide web, the inverted index size will also be in petabytes. This means we have to load petabytes of data into the RAM. It’s impractical and inefficient to increase the resources of a single machine for indexing a billion pages instead of shifting to a distributed system and utilizing the power of parallelization. Running a search query on a single, large inverted index results in a slow response time.</p>
+<blockquote>
+<p><strong>Note:</strong> Searching a book from a shelf that holds a hundred books is easier than searching a book from a shelf holding a million books. The search time increases with the volume of data we search from.</p>
+</blockquote>
+<p>Attacks on centralized indexing can have a higher impact than attacks on a distributed indexing system. Furthermore, the odds of bottlenecks (which can arise in server bandwidth or  RAM) are also lower in a distributed index.</p>
+<p>In this lesson, we learned about indexing, and we looked into the problems of indexing on a centralized system. The next lesson presents a distribution solution for indexing.</p>

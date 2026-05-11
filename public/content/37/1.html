@@ -1,0 +1,19 @@
+<h1>System Design: The Typeahead Suggestion System</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p><strong>Typeahead suggestion</strong>, also referred to as the <strong>autocomplete feature</strong>, enables users to search for a known and frequently searched query. This feature comes into play when a user types a query in the search box. The typeahead system provides a list of suggestions to complete a query based on the user’s search history, the current context of the search, and trending content across different users and regions. Frequently searched queries always appear at the top of the suggestion list. The typeahead system doesn’t make the search faster. However, it helps the user form a sentence more quickly. It’s an essential part of all search engines that enhances the user experience.</p>
+
+<p class="caption"><em>The typeahead suggestion system in action</em></p>
+<p></p>
+<h2 id="How-will-we-design-a-typeahead-suggestion-system?">How will we design a typeahead suggestion system?<a href="#How-will-we-design-a-typeahead-suggestion-system?"><span>#</span></a></h2>
+<p>We’ve divided the chapter on the design of the typeahead suggestion system into six lessons:</p>
+<ol>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6369391511339008" target="_blank">Requirements</a>:</strong> In this lesson, we focus on the functional and non-functional requirements for designing a typeahead suggestion system. We also discuss resource estimations for the smooth operation of the system.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6376843531255808" target="_blank">High-level design</a>:</strong>  In this lesson, we discuss the high-level design of our version of the typeahead suggestion system. We also discuss some essential APIs used in the design.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6110217372172288" target="_blank">Data Structure for Storing Prefixes</a>:</strong> In this lesson, we cover an efficient tree data structure called trie that’s used to store search prefixes. We also discuss how it can be further optimized to reduce the tree traversal time.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5464491722801152" target="_blank">Detailed design</a>:</strong> In this lesson, we explain the two main components, the <em>suggestions</em> service and the <em>assembler</em>, which make up the detailed design of the typeahead suggestion system.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6626894497185792" target="_blank">Evaluation</a>:</strong> This lesson evaluates the proposed design of the typeahead suggestion system based on the non-functional requirements of the system. It also presents some client-side optimization and personalization that could significantly affect the system’s design.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5201949791617024" target="_blank">Quiz</a>:</strong> In this lesson, we assess our understanding of the design via a quiz.</li>
+</ol>
+<p>Let’s start by identifying the requirements for designing a typeahead suggestion system.</p>
+
+<p></p>

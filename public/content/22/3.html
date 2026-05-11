@@ -1,0 +1,160 @@
+<h1>Design of a Distributed Logging Service</h1>
+<p>We’ll design the distributed logging system now. Our logging system should log all activities or messages (we’ll not incorporate sampling ability into our design).</p>
+<h2 id="Requirements">Requirements<a href="#Requirements"><span>#</span></a></h2>
+<p>Let’s list the requirements for designing a distributed logging system:</p>
+<h3 id="Functional-requirements">Functional requirements<a href="#Functional-requirements"><span>#</span></a></h3>
+<p>The functional requirements of our system are as follows:</p>
+<ul>
+<li>
+<p><strong>Writing logs</strong>: The services of the distributed system must be able to write into the logging system.</p>
+</li>
+<li>
+<p><strong>Searchable logs</strong>: It should be effortless for a system to find logs. Similarly,  the application’s flow from end-to-end should also be effortless.</p>
+</li>
+<li>
+<p><strong>Storing logging</strong>: The logs should reside in distributed storage for easy access.</p>
+</li>
+<li>
+<p><strong>Centralized logging visualizer</strong>: The system should provide a unified view of globally separated services.</p>
+</li>
+</ul>
+<h3 id="Non-functional-requirements">Non-functional requirements<a href="#Non-functional-requirements"><span>#</span></a></h3>
+<p>The non-functional requirements of our system are as follows:</p>
+<ul>
+<li>
+<p><strong>Low latency</strong>:  Logging is an I/O-intensive operation that is often much slower than CPU operations. We need to design the system so that logging is not on an application’s critical path. <!--The logging is an I/O operation, but it shouldn't take much time to log; otherwise, the logging can become a bottleneck and affect the performance of the services processing the client's requests.--></p>
+</li>
+<li>
+<p><strong>Scalability:</strong> We want our logging system to be scalable. It should be able to handle the increasing amounts of logs over time and a growing number of concurrent users.</p>
+</li>
+<li>
+<p><strong>Availability:</strong> The logging system should be highly available to log the data.</p>
+</li>
+</ul>
+<h2 id="Building-blocks-we-will-use">Building blocks we will use<a href="#Building-blocks-we-will-use"><span>#</span></a></h2>
+<p>The design of a distributed logging system will utilize the following building blocks:</p>
+<ul>
+<li><strong><a href="https://www.educative.io/pageeditor/10370001/4941429335392256/4996814243889152" target="_blank">Pub-sub system</a></strong>: We’ll use a pub-sub- system to handle the huge size of logs.</li>
+<li><strong><a href="https://www.educative.io/pageeditor/10370001/4941429335392256/5400897294696448" target="_blank">Distributed search</a></strong>: We’ll use distributed search to query the logs efficiently.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/22/3/img_0.svg" alt="Building blocks we will use" loading="lazy" /><figcaption>Building blocks we will use</figcaption></figure>
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>The API design for this problem is given below:</p>
+<p><strong>Write a message</strong></p>
+<p>The API call to perform writing should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark" data-lang="txt"><span><span class="mtk1">write(unique_ID, message_to_be_logged)</span></span><br/></code></pre>
+<!--Where `message_to_be_logged` is the log message stored against a unique key. We assume that the key is a numeric containing application-id, service-id, and timestamp and the value is an object. <!--This function will return an acknowledgment or an error depicting the problem at the server end.-->
+
+<table class="table-fixed mx-px"><colgroup><col width="166"/><col width="458"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>unique_ID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It is a numeric ID containing <code>application-id</code>, <code>service-id,</code> and a time stamp.</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>message_to_be_logged</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It is the log message stored against a unique key.</p></td></tr></tbody></table>
+<p></p>
+<p><strong>Search log</strong></p>
+<p>The API call to search data should look like this:</p>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="language-txt vs-dark" data-lang="txt"><span><span class="mtk1">searching(keyword)</span></span><br/></code></pre>
+<p>This call returns a list of logs that contain the keyword.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="166"/><col width="450"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>keyword</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>It is used for finding the logs containing the <code>keyword</code>.</p></td></tr></tbody></table>
+<p></p>
+<h2 id="Initial-design">Initial design<a href="#Initial-design"><span>#</span></a></h2>
+<p>In a distributed system, clients across the globe generate events by requesting services from different serving nodes. The nodes generate logs while handling each of the requests. These logs are accumulated on the respective nodes.</p>
+<p>In addition to the building blocks, let’s list the major components of our system:</p>
+<ul>
+<li>
+<p><strong>Log accumulator</strong>: An agent that collects logs from each node and dumps them into storage. So, if we want to know about a particular event, we don’t need to visit each node, and we can fetch them from our storage.</p>
+</li>
+<li>
+<p><strong>Storage</strong>: The logs need to be stored somewhere after accumulation. We’ll choose blob storage to save our logs.</p>
+</li>
+<li>
+<p><strong>Log indexer</strong>: The growing number of log files affects the searching ability. The log indexer will use the distributed search to search efficiently.</p>
+</li>
+<li>
+<p><strong>Visualizer</strong>: The visualizer is used to provide a unified view of all the logs.</p>
+</li>
+</ul>
+<p>The design for this method looks like this:</p>
+
+<figure class="diagram"><img src="/images/22/3/img_1.svg" alt="Initial design" loading="lazy" /><figcaption>Initial design</figcaption></figure>
+<p>There are millions of servers in a distributed system, and using a single log accumulator severely affects scalability. Let’s learn how we’ll scale our system.</p>
+<h2 id="Logging-at-various-levels">Logging at various levels<a href="#Logging-at-various-levels"><span>#</span></a></h2>
+<p>Let’s explore how the logging system works at various levels.</p>
+<h3 id="In-a-server">In a server<a href="#In-a-server"><span>#</span></a></h3>
+<p>In this section, we’ll learn how various services belonging to different apps will log in to a server.</p>
+<p>Let’s consider a situation where we have multiple different applications on a server, such as App 1, App 2, and so on. Each application has various microservices running as well. For example, an e-commerce application can have services like authenticating users, fetching carts, and more running at the same time. Every service produces logs. We use an ID with <code>application-id</code>, <code>service-id</code>, and its time stamp to uniquely identify various services of multiple applications. Time stamps can help us to determine the causality of events.</p>
+<p>Each service will push its data to the <strong>log accumulator</strong> service. It is responsible for these actions:</p>
+<ul>
+<li>Receiving the logs.</li>
+<li>Storing the logs locally.</li>
+<li>Pushing the logs to a <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4996814243889152" target="_blank">pub-sub system</a>.</li>
+</ul>
+<p>We use the pub-sub system to cater to our scalability issue. Now, each server has its log accumulator (or multiple accumulators) push the data to pub-sub. The pub-sub system is capable of managing a huge amount of logs.</p>
+<p>To fulfill another requirement of low latency, we don’t want the logging to affect the performance of other processes, so we send the logs asynchronously via a low-priority thread. By doing this, our system does not interfere with the performance of others and ensures availability.</p>
+<!--
+
+Each microservice of a certain app will log its data to the pub-sub system. A unique ID will be prepended with each data. The unique ID is responsible for uniquely identifying the micro-service and the application it belongs to.
+
+The log accumulator fetches the data from every application and sends it to the storage of the respective application. It pushes the data to storage asynchronously so that the server is not caught up with the I/O operations more than handling the client requests. This ensures the availability of our system. 
+
+-->
+
+<figure class="diagram"><img src="/images/22/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/22/3/img_4.svg" alt="" loading="lazy" /></figure>
+<p>3 of 3
+We should be mindful that data can be lost in the process of logging huge amounts of messages. There is a trade-off between user-perceived latency and the guarantee that log data persists. For lower latency, log services often keep data in RAM and persist them asynchronously. Additionally, we can minimize data loss by adding redundant log accumulators to handle growing concurrent users.</p>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<blockquote>
+<p><strong>Note:</strong> For applications like banking and financial apps, the logs must be very secure so hackers cannot steal the data. The common practice is to encrypt the data and log. In this way, no one can decrypt the encrypted information using the data from logs.</p>
+</blockquote>
+<h3 id="At-datacenter-level">At datacenter level<a href="#At-datacenter-level"><span>#</span></a></h3>
+<p>All servers in a data center push the logs to a pub-sub system. Since we use a horizontally-scalable pub-sub system, it is possible to manage huge amounts of logs. We may use multiple instances of the pub-sub per data center. It makes our system scalable, and we can avoid bottlenecks. Then, the pub-sub system pushes the data to the blob storage.</p>
+<!--We can add more pub-sub systems depending on the influx of the logs. -->
+<figure class="diagram"><img src="/images/22/3/img_5.svg" alt="Log accumulator sending data to the pub-sub system" loading="lazy" /><figcaption>Log accumulator sending data to the pub-sub system</figcaption></figure>
+<p>The data does not reside in pub-sub forever and gets deleted after a few days before being stored in archival storage. However, we can utilize the data while it is available in the pub-sub system. The following services will work on the pub-sub data:</p>
+<ul>
+<li>
+<p><strong>Filterer</strong>: It identifies the application and stores the logs in the blob storage reserved for that application since we do not want to mix logs of two different applications.</p>
+</li>
+<li>
+<p><strong>Error aggregator</strong>: It is critical to identify an error as quickly as possible. We use a service that picks up the error messages from the pub-sub system and informs the respective client. It saves us the trouble of searching the logs.</p>
+</li>
+<li>
+<p><strong>Alert aggregator</strong>: Alerts are also crucial. So, it is important to be aware of them early.  This service identifies the alerts and notifies the appropriate stakeholders if a fatal error is encountered, or sends a message to a monitoring tool.</p>
+</li>
+</ul>
+<p>The updated design is given below:</p>
+
+<figure class="diagram"><img src="/images/22/3/img_6.svg" alt="Adding a filterer, error aggregator, and alert aggregator" loading="lazy" /><figcaption>Adding a filterer, error aggregator, and alert aggregator</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p>In our design, we have identified another component called the <strong>expiration checker</strong>. It is responsible for these tasks:</p>
+<ul>
+<li>Verifying the logs that have to be deleted.
+Verifying the logs to store in <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cold storage</span></span>.</li>
+</ul>
+<p>Moreover, our components log indexer and visualizer work on the blob storage to provide a good searching experience to the end user. We can see the final design of the logging service below:</p>
+
+<figure class="diagram"><img src="/images/22/3/img_7.svg" alt="Logging service design" loading="lazy" /><figcaption>Logging service design</figcaption></figure>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<blockquote>
+<p><strong>Note:</strong> Windows Azure Storage System (WAS) uses an extensive logging infrastructure in its development. It stores the logs in local disks, and given a large number of logs, they do not push the logs to the distributed storage. Instead, they use a grep-like utility that works as a distributed search. This way, they have a unified view of globally distributed logs data.</p>
+</blockquote>
+<p>There can be various ways to design a distributed logging service, but it solely depends on the requirements of our application.</p>
+<h2 id="Conclusion">Conclusion<a href="#Conclusion"><span>#</span></a></h2>
+<ul>
+<li>We learned how logging is crucial in understanding the flow of events in a distributed system. It helps to reduce the mean time to repair (MTTR) by steering us toward the root causes of issues.</li>
+</ul>
+<!--
+* The logging is structured by defining the levels (DEBUG, INFO, WARNING, ERROR, FATAL/CRITICAL). It helps identify the more important logs than others and reduces the huge size of logs.
+
+* The logs should not contain personal and sensitive information. Exposing such information compromises the system.
+-->
+<ul>
+<li>Logging is an I/O-intensive operation that is time-consuming and slow. It is essential to handle it carefully and not affect the critical path of other services’ execution.</li>
+<li>Logging is essential for monitoring because the data fetched from logs helps monitor the health of an application. (Alert and error aggregators serve this purpose.)</li>
+</ul>
+
+<p></p><p></p>

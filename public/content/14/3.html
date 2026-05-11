@@ -1,0 +1,42 @@
+<h1>Visualize Data in a Monitoring System</h1>
+<p>Large data centers have millions of servers, and visualizing the health data for all of them is challenging. An important aspect of monitoring a fleet of servers is to know which ones are alive and which ones are offline. A modern data center can house many thousands of servers in a building. We can use a heat map to display information about thousands of servers compactly in a data center.</p>
+<p>A <strong>heat map</strong> is a data visualization technique that shows the magnitude of a phenomenon in two dimensions by using colors.</p>
+<h2 id="Using-heat-maps-to-troubleshoot">Using heat maps to troubleshoot<a href="#Using-heat-maps-to-troubleshoot"><span>#</span></a></h2>
+<p>We’ll identify if a server is down by using heat maps. Each rack of servers is named and is sorted by data center, then cluster, then row, so problems common at any of these levels are readily apparent.</p>
+<p>A heat map depicting the operational state of a large number of components is an effective method. The health of each component is indicated by the color of each cell in a big matrix. Nodes with green cells operate within permitted parameters, while nodes with red cells are nonresponsive on multiple tries.</p>
+<p>Below, we have a heat map displaying the server’s state.</p>
+<!--
+This system allows visualizing an enormous amount of information at once in a way that makes it easy to spot problems and patterns. The information of thousands of hosts is visible on a small screen and is updated in real-time, in a matter of seconds or minutes.
+
+
+Consider the figure below, we have a huge number of various colors, representing the state of servers. Green means the server is working fine, yellow is an alerting message that the server may do down and red means the server is down.
+
+-->
+
+<figure class="diagram"><img src="/images/14/3/img_0.svg" alt="Viewing servers in a data center using heat maps" loading="lazy" /><figcaption>Viewing servers in a data center using heat maps</figcaption></figure>
+<p>We can use heat maps for the globally distributed systems and continuously share the health information of a server. We can use one bit (one for live, zero for dead). For 1,000,000 servers, we have 125 KB of data. We can quickly find out which server is down by the red color and focus on the problematic parts.</p>
+<p>We can create similar heat maps to get a bird’s-eye view of any resource, like filesystems, networking switches, links, and so on.</p>
+
+<h2 id="Summary">Summary<a href="#Summary"><span>#</span></a></h2>
+<ul>
+<li>
+<p>Monitoring systems are critical in distributed systems because they help in analyzing the system and alerting the stakeholders if a problem occurs.</p>
+</li>
+<li>
+<p>We can make a monitoring system scalable using a hybrid of the push and pull methods.</p>
+</li>
+<li>
+<p>Heat maps are a powerful tool for visualization and help us learn about the health of thousands of servers in a compact space.</p>
+</li>
+</ul>
+<!--* We learned how a monitoring system helps in knowing how our infrastructure of services works in a distributed environment.
+
+* We covered pre-requisites of monitoring; metrics, monitoring, and alerting. They provide an insight into the health of our systems.
+
+* We explored various strategies of monitoring systems i.e., push and pull.
+
+* The initial design used a push-based strategy where servers push their data to the monitoring system.
+
+* To make our system more scalable and available, we used a hybrid method that uses both push and pull-based approaches.
+
+* Lastly, we learned how heatmaps are a powerful tool for visualization and we can know about the health of thousands of servers in a single monitor screen.-->

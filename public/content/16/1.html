@@ -1,0 +1,54 @@
+<h1>System Design: The Distributed Cache</h1>
+<h2 id="Problem-statement">Problem statement<a href="#Problem-statement"><span>#</span></a></h2>
+<p>A typical system consists of the following components:</p>
+<ul>
+<li>It has a client that requests the service.</li>
+<li>It has one or more service hosts that entertain client requests.</li>
+<li>It has a database used by the service for data storage.</li>
+</ul>
+
+<p>Under normal circumstances, this abstraction performs fine. However, as the number of users increases, the database queries also increase. And as a result, the service providers are overburdened, resulting in slow performance.</p>
+<p>In such cases, a <strong>cache</strong> is added to the system to deal with performance deterioration. A cache is a temporary data storage that can serve data faster by keeping data entries in memory. Caches store only the most frequently accessed data. When a request reaches the serving host, it retrieves data from the cache (<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cache hit</span></span>) and serves the user. However, if the data is unavailable in the cache (<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cache miss</span></span>), the data will be queried from the database. Also, the cache is populated with the new value to avoid cache misses for the next time.</p>
+
+<figure class="diagram"><img src="/images/16/1/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/16/1/img_1.svg" alt="" loading="lazy" /></figure>
+<p>A cache is a nonpersistent storage area used to keep repeatedly read and written data, which provides the end user with lower latency. Therefore, a cache must serve data from a storage component that is fast, has enough storage, and is affordable in terms of dollar cost as we scale the caching service. The following illustration highlights the suitability of RAM as the raw building block for caching:</p>
+
+<figure class="diagram"><img src="/images/16/1/img_2.svg" alt="An approximation that depicts how RAM is the optimal choice for serving cached data" loading="lazy" /><figcaption>An approximation that depicts how RAM is the optimal choice for serving cached data</figcaption></figure>
+<p>We understand the need for a cache and suitable storage hardware, but what is distributed cache? Let’s discuss this next.</p>
+<h2 id="What-is-a-distributed-cache?">What is a distributed cache?<a href="#What-is-a-distributed-cache?"><span>#</span></a></h2>
+<p>A <strong>distributed cache</strong> is a caching system where multiple cache servers coordinate to store frequently accessed data. Distributed caches are needed in environments where a single cache server isn’t enough to store all the data. At the same time, it’s scalable and guarantees a higher degree of availability.</p>
+<p>Caches are generally small, frequently accessed, short-term storage with fast read time. Caches use the
+<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">locality of reference</span></span> principle.</p>
+<p>Generally, distributed caches are beneficial in the following ways:</p>
+<ul>
+<li>They minimize user-perceived latency by precalculating results and storing frequently accessed data.</li>
+<li>They pre-generate expensive queries from the database.</li>
+<li>They store user session data temporarily.</li>
+<li>They serve data from temporary storage even if the data store is down temporarily.</li>
+<li>Finally, they reduce network costs by serving data from local resources.</li>
+</ul>
+<h2 id="Why-distributed-cache?">Why distributed cache?<a href="#Why-distributed-cache?"><span>#</span></a></h2>
+<p>When the size of data required in the cache increases, storing the entire data in one system is impractical. This is because of the following three reasons:</p>
+<ul>
+<li>It can be a potential single point of failure (SPOF).</li>
+<li>A system is designed in layers, and each layer should have its caching mechanism to ensure the decoupling of sensitive data from different layers.</li>
+<li>Caching at different locations helps reduce the serving latency at that layer.</li>
+</ul>
+<p>In the table below, we describe how caching at different layers is performed through the use of various technologies. It’s important to note that key-value store components are used in various layers.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="110"/><col width="341"/><col width="250"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">System Layer</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Technology in Use</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Usage</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Web </p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>HTTP cache headers, web accelerators, key-value store, CDNs, and so on</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Accelerate retrieval of static web content, and manage sessions</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Application</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Local cache and key-value data store</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Accelerate application-level computations and data retrieval</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">Database</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Database cache, buffers, and key-value data store</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>Reduce data retrieval latency and I/O load from database</p></td></tr></tbody></table>
+<blockquote>
+<p>Apart from the three system layers above, caching is also performed at DNS and client-side technologies like browsers or end-devices.</p>
+</blockquote>
+<h2 id="How-will-we-design-distributed-cache?">How will we design distributed cache?<a href="#How-will-we-design-distributed-cache?"><span>#</span></a></h2>
+<p>We’ll divide the task of designing and reinforcing learning major concepts of distributed cache into five lessons:</p>
+<ol>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5353674067148800" target="_blank">Background of Distributed Cache</a></strong>: It’s imperative to build the background knowledge necessary to make critical decisions when designing distributed caches. This lesson will revisit some basic but important concepts.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5103962818084864" target="_blank">High-level Design of a Distributed Cache</a></strong>: We’ll build a high-level design of a distributed cache in this lesson.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4731033765543936" target="_blank">Detailed Design of a Distributed Cache</a></strong>: We’ll identify some limitations of our high-level design and work toward a scalable, affordable, and performant solution.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6094096892690432" target="_blank">Evaluation of a Distributed Cache Design</a></strong>: This lesson will evaluate our design for various non-functional requirements, such as scalability, consistency, availability, and so on.</li>
+<li><strong><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5441771256938496" target="_blank">Memcached versus Redis</a></strong>: We’ll discuss well-known industrial solutions, namely Memcached and Redis. We’ll also go through their details and compare their features to help us understand their potential use cases and how they relate to our design.</li>
+</ol>
+
+<p>Let’s begin by exploring the background of the distributed cache in the next lesson.</p>

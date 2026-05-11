@@ -1,0 +1,33 @@
+<h1>High-level Design of the Typeahead Suggestion System</h1>
+<h2 id="High-level-design">High-level design<a href="#High-level-design"><span>#</span></a></h2>
+<p>According to our requirements, the system shouldn’t just suggest queries in real time with minimum latency but should also store the new search queries in the database. This way, the user gets suggestions based on popular and recent searches.</p>
+<p>Our proposed system should do the following:</p>
+<ul>
+<li>Provide suggestions based on the search history of the user.</li>
+<li>Store all the new and trending queries in the database to include them in the list of suggestions.</li>
+</ul>
+<p>When a user starts typing a query, every typed character hits one of the application servers. Let’s assume that we have a <strong>suggestions service</strong> that obtains the top ten suggestions from the cache, Redis, and returns them as a response to the client. In addition to this, suppose we have another service known as an <strong>assembler</strong>. An assembler collects the user searches, applies some analytics to rank the searches, and stores them in a NoSQL database that’s distributed across several nodes.</p>
+
+<figure class="diagram"><img src="/images/37/3/img_0.svg" alt="The high-level design of the typeahead suggestion system" loading="lazy" /><figcaption>The high-level design of the typeahead suggestion system</figcaption></figure>
+<p>Furthermore, we also need load balancers to distribute the incoming requests evenly. We also add application servers as entry points for clients so that they can forward requests to the appropriate microservices. These web servers encapsulate the internal system architecture and provide other services, such as authentication, monitoring, request shaping, management, and more.</p>
+
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>Since the system provides suggestions to the user and adds trending queries to the databases, we need the following APIs.</p>
+<h3 id="Get-suggestion">Get suggestion<a href="#Get-suggestion"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">getSuggestions</span><span class="mtk9">(</span><span class="mtk1">prefix</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>This API call retrieves suggestions from the servers. This call is made via the suggestion service and returns the response to the client.</p>
+<p>The following table explains the parameter that’s passed to the API call:</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>prefix</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This refers to whatever the user has typed in the search bar.</p></td></tr></tbody></table>
+<p></p>
+<h3 id="Add-trending-queries-to-the-database">Add trending queries to the database<a href="#Add-trending-queries-to-the-database"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">addToDatabase</span><span class="mtk9">(</span><span class="mtk1">query</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>This API call adds a trending <code>query</code> to the database via an assembler if the query has already been searched and has crossed a certain threshold.</p>
+
+<table class="table-fixed mx-px"><colgroup><col width="147"/><col width="527"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Parameter</strong></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center"><strong>Description</strong></p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>query</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>This represents a frequently searched query that crosses the predefined limit. </p></td></tr></tbody></table>
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
+</span></span></div>
+<p></p><p></p><p></p>
+<p>In the next lesson, we’ll learn about an efficient data structure that’s used to store the suggestions or prefixes.</p>
+
+<p></p>

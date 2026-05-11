@@ -1,0 +1,52 @@
+<h1>Network Abstractions: Remote Procedure Calls</h1>
+<p><strong>Remote procedure calls</strong> (<strong>RPCs</strong>) provide an abstraction of a local procedure call to the developers by hiding the complexities of packing and sending function arguments to the remote server, receiving the return values, and managing any network retries.</p>
+<h2 id="What-is-an-RPC?">What is an RPC?<a href="#What-is-an-RPC?"><span>#</span></a></h2>
+<p><strong>RPC</strong> is an interprocess communication protocol that’s widely used in distributed systems. In the OSI model of network communication, RPC spans the transport and application layers.</p>
+<p>RPC mechanisms are employed when a computer program causes a procedure or subroutine to execute in a separate address space.</p>
+<blockquote>
+<p><strong>Note:</strong> The procedure or subroutine is coded as a regular/local procedure call without the programmer explicitly coding the details for the remote interaction.</p>
+</blockquote>
+<!--## Types of RPC
+There are three types of remote procedure calls which are the following.
+* **Callback:** It enables a P2P paradigm by allowing a process to provide both client and server services.
+* **Broadcast:** It allows a client's request to be broadcasted throughout the network and processed by all servers that have the method for processing that request reduces the load on the physical network.
+> The developer can declare broadcast ports. 
+* **Batch-mode:** It enables the client to queue and split RPC requests in a transmission buffer before sending them to the server in a single batch over the network.
+> Batch-mode RPC requires a reliable transmission protocol like TCP.-->
+<h2 id="How-does-RPC-work?">How does RPC work?<a href="#How-does-RPC-work?"><span>#</span></a></h2>
+<p>When we make a remote procedure call, the calling environment is paused and the procedure parameters are sent over the network to the environment where the procedure is to be executed.</p>
+<p>When the procedure execution finishes, the results are returned to the calling environment where execution restarts as a regular procedure call.</p>
+<p>To see how it works, let’s take an example of a client-server program. There are five main components involved in the RPC program, as shown in the following illustration:</p>
+
+<figure class="diagram"><img src="/images/3/2/img_0.svg" alt="The components of an RPC system" loading="lazy" /><figcaption>The components of an RPC system</figcaption></figure>
+<p>The client, the client stub, and one instance of RPC runtime are running on the client machine. The server, the server stub, and one instance of RPC runtime are running on the server machine.</p>
+<p>During the RPC process, the following steps occur:</p>
+<ol>
+<li>A client initiates a client stub process by giving parameters as normal. The client stub is stored in the address space of the client.</li>
+<li>The client stub converts the parameters into a standardized format and packs them into a message. After packing the parameter into a message, the client stub requests the local RPC runtime to deliver the message to the server.</li>
+<li>The RPC runtime at the client delivers the message to the server over the network. After sending a message to the server, it waits for the message result from the server.</li>
+<li>RPC runtime at the server receives the message and passes it to the server stub.</li>
+</ol>
+<!--At this point, the user can access RPC by using a regular Local Procedural Call. -->
+<blockquote>
+<p><strong>Note:</strong> The RPC runtime is responsible for transmitting messages between client and server via the network. The responsibilities of RPC runtime also include retransmission, acknowledgment, and encryption.</p>
+</blockquote>
+<ol start="5">
+<li>The server stub unpacks the message, takes the parameters out of it, and calls the desired server routine, using a local procedure call, to do the required execution.</li>
+</ol>
+
+<figure class="diagram"><img src="/images/3/2/img_1.svg" alt="The workflow of an RPC" loading="lazy" /><figcaption>The workflow of an RPC</figcaption></figure>
+<ol start="6">
+<li>After the server routine has been executed with the given parameters, the result is returned to the server stub.</li>
+<li>The server stub packs the returned result into a message and sends it to the RPC runtime at the server on the transport layer.</li>
+<li>The server’s RPC runtime returns the packed result to the client’s RPC runtime over the network.</li>
+<li>The client’s RPC runtime that was waiting for the result now receives the result and sends it to the client stub.</li>
+<li>The client stub unpacks the result, and the execution process returns to the caller at this point.</li>
+</ol>
+<blockquote>
+<p><strong>Note:</strong> Back-end services use RPC as a communication mechanism of choice due to its high performance and simple abstraction of calling remote code as local functions.</p>
+</blockquote>
+
+<h2 id="Summary">Summary<a href="#Summary"><span>#</span></a></h2>
+<p>The RPC method is similar to calling a local procedure, except that the called procedure is usually executed in a different process and on a different computer.</p>
+<p>RPC allows developers to build applications on top of distributed systems. Developers can use the RPC method without knowing the network communication details. As a result, they can concentrate on the design aspects, rather than the machine and communication-level specifics.</p>

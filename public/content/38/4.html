@@ -1,0 +1,92 @@
+<h1>Concurrency in Collaborative Editing</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>We’ve discussed the design for a collaborative document editing service, but we haven’t addressed how we’ll deal with concurrent changes in the document by different users. However, before discussing concurrency issues, we need to understand the collaborative text editor.</p>
+<h2 id="What-is-a-document-editor?">What is a document editor?<a href="#What-is-a-document-editor?"><span>#</span></a></h2>
+<p>A <strong>document</strong> is a composition of characters in a specific order. Each character has a value and a positional index. The character can be a letter, a number, an enter (↵), or a space. An index represents the character’s position within the ordered list of characters.</p>
+<p>The job of the text or document editor is to perform operations like <code>insert()</code>, <code>delete()</code>, <code>edit()</code>, and more on the characters within the document. A depiction of a document and how the editor will perform these operations is below.</p>
+
+<figure class="diagram"><img src="/images/38/4/img_0.svg" alt="How a document editor performs different operations" loading="lazy" /><figcaption>How a document editor performs different operations</figcaption></figure>
+<h2 id="Concurrency-issues">Concurrency issues<a href="#Concurrency-issues"><span>#</span></a></h2>
+<p>Collaboration on the same document by different users can lead to concurrency issues. Conflicts may arise whenever multiple users edit the same portion of a document. Since users have a local copy of the document, the final status of the document may be different at the server from what the users see at their end. After the server pushes the updated version, users discover the unexpected outcome.</p>
+<h3 id="Example-1">Example 1<a href="#Example-1"><span>#</span></a></h3>
+<p>Let’s consider a scenario where two users want to add some characters at the same positional index. Below, we’ve depicted how two users modifying the same sentence can lead to conflicting results:</p>
+
+<figure class="diagram"><img src="/images/38/4/img_1.svg" alt="How two users modifying the same text can lead to concurrency issues" loading="lazy" /><figcaption>How two users modifying the same text can lead to concurrency issues</figcaption></figure>
+<p>As shown above, two users are trying to modify the same sentence, “Educative by developers.” Both users are performing <code>insert()</code> at index <code>10</code>. The two possibilities are as follows:</p>
+<ul>
+<li>The phrase “for developers” overwrites “platform.” This leads to an outcome of “for developers.”</li>
+<li>The phrase “platform” overlaps “for developers.” This leads to an outcome of “platformlopers.”</li>
+</ul>
+<p>This example shows that operations applied in a different order don’t hold the commutative property.</p>
+<h3 id="Example-2">Example 2<a href="#Example-2"><span>#</span></a></h3>
+<p>Let’s look at another simple example where two users are trying to delete the same character from a word. Let’s use the word “EEDUCATIVE.” Because the word has an extra “E,” both the users would want to remove the extra character. Below, we see how an unexpected result can occur:</p>
+
+<figure class="diagram"><img src="/images/38/4/img_2.svg" alt="How deleting the same character can lead to unexpected changes" loading="lazy" /><figcaption>How deleting the same character can lead to unexpected changes</figcaption></figure>
+<p>This second example shows that different users applying the same operation won’t be <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">idempotent</span></span>. So, conflict resolution is necessary where multiple collaborators are editing the same portion of the document at the same time.</p>
+<p>From the examples above, we understand that a solution to concurrency issues in collaborative editing should respect two rules:</p>
+<ul>
+<li><strong>Commutativity</strong>: The order of applied operations shouldn’t affect the end result.</li>
+<li><strong>Idempotency</strong>: Similar operations that have been repeated should apply only once.</li>
+</ul>
+<p>Below, we identify two well-known techniques for conflict resolution.</p>
+
+<h2 id="Techniques-for-conflict-resolution">Techniques for conflict resolution<a href="#Techniques-for-conflict-resolution"><span>#</span></a></h2>
+<p>Let’s discuss two leading technologies that are used for conflict resolution in collaborative editing.</p>
+<h3 id="Operational-transformation">Operational transformation<a href="#Operational-transformation"><span>#</span></a></h3>
+<p><strong>Operational transformation (OT)</strong> is a technique that’s widely used for conflict resolution in collaborative editing. OT emerged in 1989 and has improved throughout the years. It’s a lock-free and non-blocking approach for conflict resolution. If operations between collaborators conflict, OT resolves conflicts and pushes the correct converged state to end users. As a result, OT provides consistency for users.</p>
+<p>OT performs operations using the positional index method to resolve conflicts, such as the ones we discussed above. OT resolves the problems above by holding commutativity and idempotency.</p>
+
+<figure class="diagram"><img src="/images/38/4/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/38/4/img_4.svg" alt="" loading="lazy" /></figure>
+<p>Collaborative editors based on OT are consistent if they have the following two properties:</p>
+<ul>
+<li><strong>Causality preservation</strong>: If operation <code>a</code> happened before operation <code>b</code>, then operation <code>a</code> is executed before operation <code>b</code>.</li>
+<li><strong>Convergence</strong>: All document replicas at different clients will eventually be identical.</li>
+</ul>
+<p>The properties above are a part of the <strong>CC consistency model</strong>, which is a model for consistency maintenance in collaborative editing.</p>
+
+<p>Consistency Models in OT</p>
+<p>OT has two disadvantages:</p>
+<ul>
+<li>
+<p>Each operation to characters may require changes to the positional index. This means that operations are <span><span><span class="font-bold cursor-pointer">order dependent<svg class="sc-559b404a-0 ipLJtW" expanded="0" fill="none" height="13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewbox="0 0 24 24" width="13" xmlns="http://www.w3.org/2000/svg"><polyline points="10 15 15 20 20 15"></polyline><path d="M4 4h7a4 4 0 0 1 4 4v12"></path></svg></span></span></span> on each other.</p>
+</li>
+<li>
+<p>It’s challenging to develop and implement.</p>
+</li>
+</ul>
+<!--
+**Wave** which was a precursor to Google Docs, was developed by Google and Apache. One of the engineers at Google has the following views regarding OT:
+-->
+<p>Operational transformation is a set of complex algorithms, and its correct implementation has proved challenging for real-world applications. For example, the Google Wave team took two years to implement an OT algorithm.</p>
+<!--
+>"Unfortunately, implementing OT sucks. There's a million algorithms with different tradeoffs, mostly trapped in academic papers. […] Wave took 2 years to write and if we rewrote it today, it would take almost as long to write a second time." 
+-->
+<h3 id="Conflict-free-Replicated-Data-Type-(CRDT)">Conflict-free Replicated Data Type (CRDT)<a href="#Conflict-free-Replicated-Data-Type-(CRDT)"><span>#</span></a></h3>
+<p>The <strong>Conflict-free Replicated Data Type (CRDT)</strong> was developed in an effort to improve OT. A CRDT has a complex data structure but a simplified algorithm.</p>
+<p>A CRDT satisfies both commutativity and idempotency by assigning two key properties to each character:</p>
+<ul>
+<li>It assigns a globally unique identity to each character.</li>
+<li>It globally orders each character.</li>
+</ul>
+<p>Each operation now has an updated data structure:</p>
+
+<figure class="diagram"><img src="/images/38/4/img_5.svg" alt="Simplified data structure of a CRDT" loading="lazy" /><figcaption>Simplified data structure of a CRDT</figcaption></figure>
+<p>The <code>SiteID</code> uniquely identifies a user’s site requesting an operation with a <code>Value</code> and a <code>PositionalIndex</code>. The value of <code>PositionalIndex</code> can be in fractions for two main reasons.</p>
+<ul>
+<li>The <code>PositionalIndex</code> of other characters won’t change because of certain operations.</li>
+<li>The order dependency of operations between different users will be avoided.</li>
+</ul>
+<p>The example below depicts that a user from site ID <code>123e4567-e89b-12d3</code> is inserting a character with a value of <code>A</code> at a <code>PositionalIndex</code> of <code>1.5</code>. Although a new character is added, the positional indexes of existing characters are preserved using fractional indices. Therefore, the order dependency between operations is avoided. As shown below, an <code>insert()</code> between <code>O</code> and <code>T</code> didn’t affect the position of <code>T</code>.</p>
+
+<figure class="diagram"><img src="/images/38/4/img_6.svg" alt="Preventing order dependency between operations" loading="lazy" /><figcaption>Preventing order dependency between operations</figcaption></figure>
+<p>CRDTs ensure strong consistency between users. Even if some users are offline, the local replicas at end users will converge when they come back online.</p>
+<p>Although well-known online editing platforms like Google Docs, Etherpad, and Firepad use OT, CRDTs have made concurrency and consistency in collaborative document editing easy. In fact, with CRDTs, it’s possible to implement a serverless peer-to-peer collaborative document editing service.</p>
+<blockquote>
+<p><strong>Note:</strong> OT and CRDTs are good solutions for conflict resolution in collaborative editing, but our use of WebSockets makes it possible to highlight a collaborator’s cursor. Other users will anticipate the position of a collaborator’s next operation and naturally avoid conflict.</p>
+</blockquote>
+
+<div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Quiz</p>
+</span></span></div>
+<figure class="diagram"><img src="/images/38/4/img_7.svg" alt="How a document editor performs different operations" loading="lazy" /><figcaption>How a document editor performs different operations</figcaption></figure>
+<p></p>

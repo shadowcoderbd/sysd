@@ -1,0 +1,56 @@
+<h1>Introduction to Distributed System Failures</h1>
+<h2 id="Introduction">Introduction<a href="#Introduction"><span>#</span></a></h2>
+<p>Once in a while, we encounter the failure of a service that’s a household name, and individuals and businesses react to them. As system designers, we might wonder how carefully designed services that have been perfected over years by experienced teams can also fail.</p>
+<p>This chapter discusses some of the major failures of well-known services and the measures that can be taken to mitigate such failures.</p>
+
+<p>The following two factors contribute to failures:</p>
+<ul>
+<li>
+<p><strong>Diverse users</strong>: Most services have a vibrant user community, and as their needs evolve, so do the software products. If a software doesn’t update in the way it provides new features and services, it will become stable over time. However, it might not have the features customers want.</p>
+</li>
+<li>
+<p><strong>Complex systems</strong>: Systems are complex, and they usually have emergent properties where the sum of system components is more complex than the individual pieces.</p>
+</li>
+</ul>
+
+<h2 id="Types-of-failure-in-distributed-systems">Types of failure in distributed systems<a href="#Types-of-failure-in-distributed-systems"><span>#</span></a></h2>
+<p>Most modern services are designed in such a way that failures are contained, and others might be localized for some users. Let’s explore the types of failures we can observe in the distributed systems.</p>
+<ul>
+<li>
+<p><strong>System failure</strong>: A software or hardware failure is the most common cause of system failure. The contents in the primary memory are lost when a system fails. However, the data in secondary storage or replicas remains unaffected. The system reboots during such a breakdown.</p>
+</li>
+<li>
+<p><strong>Method failure</strong>: Such failures suspend the working of distributed systems. It may also make the system execute the processes incorrectly or enter a deadlock state.</p>
+</li>
+<li>
+<p><strong>Communication medium failure</strong>: Such failures occur when one component or service of a system can’t reach the other internal or external entities.</p>
+</li>
+<li>
+<p><strong>Secondary storage failure</strong>: In such failures, the secondary storage or replicas are down. The data in these nodes becomes inaccessible, so primary nodes need to generate another replica to ensure reliability and fault tolerance.</p>
+</li>
+</ul>
+
+<figure class="diagram"><img src="/images/39/1/img_0.svg" alt="Types of failure in a distributed system" loading="lazy" /><figcaption>Types of failure in a distributed system</figcaption></figure>
+<h2 id="Vantage-points">Vantage points<a href="#Vantage-points"><span>#</span></a></h2>
+<p>Something is always failing for large services. It’s preferred to have a graceful degradation so that only a small portion of users are impacted for a short time. Therefore, we need globally dispersed vantage points to independently see the service status.</p>
+<blockquote>
+<p><strong>Note:</strong> Many independent services, such as Downdetector, exist for crowd-sourced problem reporting. It’s interesting to note that if we visit such a service and see the status of our favorite applications, we’ll see that there’s always someone in the world facing some service problem.</p>
+</blockquote>
+<h3 id="Importance-of-independent-service-providers">Importance of independent service providers<a href="#Importance-of-independent-service-providers"><span>#</span></a></h3>
+<p>One of the design goals of the original Internet was to provide resilience so that if one part fails, the rest can still operate.</p>
+<p>With the emergence of a handful of service providers over the last decade, <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">critics have raised concerns</span></span> about such centralization and the potential impacts of failures. Most companies provide some kind of dashboard to enable users to see the service status.
+However, some failures might even knock out these dashboards. Affected companies then communicate to their customers via services like Twitter to announce the updates. Independent third-party services are valuable for failure detection and status dissemination.</p>
+<blockquote>
+<p><strong>Note:</strong> The broader concept here is to use independent failure domains. A <strong>failure domain</strong> is a concept where anything failing inside a domain or network shouldn’t affect other components and services in other domains. At times, we say that two domains are independent if they’re outside the blast radius of each other.</p>
+</blockquote>
+<!--
+## Outage of Internet or service
+As we discussed earlier that a distributed system can be divided into two components---compute part and the network. An outage can be over the network or inside the service.
+
+![](/api/collection/10370001/4941429335392256/page/6503055815606272/image/4581403866169344?page_type=collection_lesson)
+
+-->
+
+<p></p>
+<figure class="diagram"><img src="/images/39/1/img_1.svg" alt="Importance of independent service" loading="lazy" /><figcaption>Importance of independent service</figcaption></figure>
+<p>In the following lessons, we’ll discuss the failures of well-known services by giant companies, the causes of failures, and what mitigation techniques can be used to avoid these failures. Although failures are a great way to learn what went wrong and what the original designers could do to avoid such failures, we’d like to prevent them from occurring at all.</p>

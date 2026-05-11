@@ -1,0 +1,32 @@
+<h1>System Design: The Distributed Search</h1>
+<h2 id="Why-do-we-need-a-search-system?">Why do we need a search system?<a href="#Why-do-we-need-a-search-system?"><span>#</span></a></h2>
+<p>Nowadays, we see a search bar on almost every website. We use that search bar to pick out relevant content from the enormous amount of content available on that website. A search bar enables us to quickly find what we’re looking for. For example, there are plenty of courses present on the Educative website. If we didn’t have a search feature, users would have to scroll through many pages and read the name of each course to find the one they’re looking for.</p>
+<p>Let’s take another example. There are billions of videos uploaded and stored on YouTube. Imagine if YouTube didn’t provide us with a search bar. How would we find a specific video among the millions of videos that have been posted on YouTube over the years? It would take months to navigate through all of those videos and find the one we need. Users find it challenging to find what they’re looking for simply by scrolling around.</p>
+
+<figure class="diagram"><img src="/images/21/1/img_0.svg" alt="Search bar" loading="lazy" /><figcaption>Search bar</figcaption></figure>
+<p>Search engines are an even bigger example. We have billions of websites on the Internet. Each website has many web pages and there is plenty of content on each of these web pages. With so much content, the Internet would practically be useless without search engines, and users would end up lost in a sea of irrelevant data. Search engines are, essentially, filters for the massive amount of data available. They let users quickly obtain information that is of true interest without having to sift through too many unnecessary web pages.</p>
+<p>Behind every search bar, there is a search system.</p>
+
+<h2 id="What-is-a-search-system?">What is a search system?<a href="#What-is-a-search-system?"><span>#</span></a></h2>
+<p>A <strong>search system</strong> is a system that takes some text input, a search query, from the user and returns the relevant content in a few seconds or less. There are three main components of a search system, namely:</p>
+<ul>
+<li>A <strong>crawler</strong>, which fetches content and creates <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">documents</span></span>.</li>
+<li>An <strong>indexer</strong>, which builds a searchable index.</li>
+<li>A <strong>searcher</strong>, which responds to search queries by running the search query on the <em>index</em> created by the <em>indexer</em>.</li>
+</ul>
+
+<figure class="diagram"><img src="/images/21/1/img_1.svg" alt="The three phases of a search system" loading="lazy" /><figcaption>The three phases of a search system</figcaption></figure>
+<p><strong>Note:</strong> We have a separate chapter dedicated to the explanation of the <a href="https://www.educative.io/collection/page/10370001/4941429335392256/4695113376989184" target="_blank">crawler</a> component. In this chapter, we’ll focus on indexing.</p>
+
+<h2 id="How-will-we-design-a-distributed-search-system?">How will we design a distributed search system?<a href="#How-will-we-design-a-distributed-search-system?"><span>#</span></a></h2>
+<p>We divided the design of a distributed search system into five lessons:</p>
+<ol>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5706146547761152" target="_blank"><strong>Requirements:</strong></a> In this lesson, we list the functional and non-functional requirements of a distributed search system. We also estimate our system’s resources, such as servers, storage, and the bandwidth needed to serve a number of queries.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6595902341120000" target="_blank"><strong>Indexing:</strong></a> This lesson provides us with background knowledge on the process of indexing with the help of an example. After discussing indexing, we also look into a centralized architecture of distributed search systems.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/6573171574046720" target="_blank"><strong>Initial design:</strong></a> This lesson consists of the high-level design of our system, its API, and the details of the indexing and searching process.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/5899429382455296" target="_blank"><strong>Final design:</strong></a> In this lesson, we evaluate our previous design and revamp it to make it more scalable.</li>
+<li><a href="https://www.educative.io/collection/page/10370001/4941429335392256/4962799423324160" target="_blank"><strong>Evaluation:</strong></a> This lesson explains how our designed distributed search system fulfills its requirements.</li>
+</ol>
+<p>Let’s start by understanding the requirements of designing a distributed search system.</p>
+
+<p> </p><p></p><p></p>

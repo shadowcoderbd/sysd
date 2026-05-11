@@ -1,0 +1,82 @@
+<h1>High-level Design of Uber</h1>
+<h2 id="Workflow-of-our-application">Workflow of our application<a href="#Workflow-of-our-application"><span>#</span></a></h2>
+<p>Before diving deep into the design, let’s understand how our application works. The following steps show the workflow of our application:</p>
+<ol>
+<li>
+<p>All the nearby drivers except those already serving rides can be seen when the rider starts our application.</p>
+</li>
+<li>
+<p>The rider enters the drop-off location and requests a ride.</p>
+</li>
+<li>
+<p>The application receives the request and finds a suitable driver.</p>
+</li>
+<li>
+<p>Until a  matching driver is found, the status will be “Waiting for the driver to respond.”</p>
+</li>
+<li>
+<p>The drivers report their location every four seconds. The application finds the trip information and returns it to the driver.</p>
+</li>
+<li>
+<p>The driver accepts or rejects the request:</p>
+<ul>
+<li>
+<p>The driver accepts the request, and status information is modified on both the rider’s and the driver’s applications. The rider finds that they have successfully matched and obtains the driver’s information.</p>
+</li>
+<li>
+<p>The driver refuses the ride request. The rider restarts from step 2 and rematches to another driver.</p>
+</li>
+</ul>
+</li>
+</ol>
+
+<figure class="diagram"><img src="/images/30/3/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/30/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/30/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/30/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram"><img src="/images/30/3/img_4.svg" alt="" loading="lazy" /></figure>
+<h2 id="High-level-design-of-Uber">High-level design of Uber<a href="#High-level-design-of-Uber"><span>#</span></a></h2>
+<p>At a high level, our system should be able to take requests for a ride from the rider and return the matched driver information and trip information to the rider. It also regularly takes the driver’s location. Additionally, it returns the trip and rider information to the driver when the driver is matched to a rider.</p>
+
+<figure class="diagram"><img src="/images/30/3/img_5.svg" alt="High-level design" loading="lazy" /><figcaption>High-level design</figcaption></figure>
+<h2 id="API-design">API design<a href="#API-design"><span>#</span></a></h2>
+<p>Let’s discuss the design of APIs according to the functionalities we provide. We’ll design APIs to translate our feature set into technical specifications.</p>
+<p>We won’t repeat the description of repeating parameters in the following APIs.</p>
+<h3 id="Update-driver-location">Update driver location<a href="#Update-driver-location"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">updateDriverLocation</span><span class="mtk9">(</span><span class="mtk1">driverID</span><span class="mtk9">,</span><span class="mtk1"> oldlat</span><span class="mtk9">,</span><span class="mtk1"> oldlong</span><span class="mtk9">,</span><span class="mtk1"> newlat</span><span class="mtk9">,</span><span class="mtk1"> newlong </span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>driverID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>oldlat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The previous latitude of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>oldlong</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The previous longitude of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>newlat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The new latitude of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>newlong</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The new longitude of the driver</p></td></tr></tbody></table>
+<p></p>
+<p>The <code>updateDriverLocation</code> API is used to send the driver’s coordinates to the driver location servers. This is where the location of the driver is updated and communicated to the riders.</p>
+<h3 id="Find-nearby-drivers">Find nearby drivers<a href="#Find-nearby-drivers"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">findNearbyDrivers</span><span class="mtk9">(</span><span class="mtk1">riderID</span><span class="mtk9">,</span><span class="mtk1"> lat</span><span class="mtk9">,</span><span class="mtk1"> long</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>riderID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the rider</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>lat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The latitude of the rider</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>long</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The longitude of the rider</p></td></tr></tbody></table>
+<p></p>
+<p>The <code>findNearbyDrivers</code> API is used to send the location of the rider for whom we want to find the nearby drivers.</p>
+<h3 id="Request-a-ride">Request a ride<a href="#Request-a-ride"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">requestRide</span><span class="mtk9">(</span><span class="mtk1">riderID</span><span class="mtk9">,</span><span class="mtk1"> lat</span><span class="mtk9">,</span><span class="mtk1"> long</span><span class="mtk9">,</span><span class="mtk1"> dropOfflat</span><span class="mtk9">,</span><span class="mtk1">dropOfflong</span><span class="mtk9">,</span><span class="mtk1"> typeOfVehicle</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>lat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The current latitude of the rider</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>long</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The current longitude of the rider</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>dropOfflat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The latitude of the rider’s drop-off location</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>dropOfflong<span class="ql-cursor">﻿</span></code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The longitude of the rider’s drop-off location</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>typeOfVehicle</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The type of vehicle required by the rider—for example, business, economy, and so on.</p></td></tr></tbody></table>
+<p></p>
+<p>The <code>requestRide</code> API is used to send the location of the rider and the type of vehicle the rider needs.</p>
+<h3 id="Show-driver-ETA">Show driver ETA<a href="#Show-driver-ETA"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">showETA</span><span class="mtk9">(</span><span class="mtk1">driverID</span><span class="mtk9">,</span><span class="mtk1"> eta</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>eta</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The estimated time of arrival of the driver</p></td></tr></tbody></table>
+<p></p>
+<p>The <code>showEta</code> API is used to show the estimated time of arrival to the rider.</p>
+<h3 id="Confirm-pickup">Confirm pickup<a href="#Confirm-pickup"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">confirmPickup</span><span class="mtk9">(</span><span class="mtk1">driverID</span><span class="mtk9">,</span><span class="mtk1"> riderID</span><span class="mtk9">,</span><span class="mtk1"> timestamp</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>timestamp</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The time at which the driver picked up the rider</p></td></tr></tbody></table>
+<p></p>
+<p>The <code>confirmPickup</code> API is used to determine when the driver has picked up the rider.</p>
+<h3 id="Show-trip-updates">Show trip updates<a href="#Show-trip-updates"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">showTripUpdates</span><span class="mtk9">(</span><span class="mtk1">tripID</span><span class="mtk9">,</span><span class="mtk1"> riderID</span><span class="mtk9">,</span><span class="mtk1"> driverID</span><span class="mtk9">,</span><span class="mtk1"> driverlat</span><span class="mtk9">,</span><span class="mtk1"> driverlong</span><span class="mtk9">,</span><span class="mtk1"> time_elapsed</span><span class="mtk9">,</span><span class="mtk1"> time_remaining</span><span class="mtk9">)</span></span><br/></code></pre>
+
+<table class="table-fixed mx-px"><colgroup><col width="250"/><col width="534"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Parameter</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Description</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>tripID</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The ID of the trip</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>driverlat</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The latitude of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>driverlong</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The longitude of the driver</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>time_elapsed<span class="ql-cursor">﻿﻿</span></code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The total time of the trip</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center"><code>time_remaining</code></p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p>The time remaining (extract the current time from the ETA) to reach the destination</p></td></tr></tbody></table>
+<p>The <code>showTripUpdates</code> API is used to show the updates of the trip, including the position of the driver and the time remaining to reach the destination.</p>
+<h3 id="End-the-trip">End the trip<a href="#End-the-trip"><span>#</span></a></h3>
+<pre class="cm-viewer-markdown disable-cursor" style="background-color: #1e1e1e"><code class="vs-dark" data-lang="javascript"><span><span class="mtk1">endTrip</span><span class="mtk9">(</span><span class="mtk1">tripID</span><span class="mtk9">,</span><span class="mtk1"> riderID</span><span class="mtk9">,</span><span class="mtk1"> driverID </span><span class="mtk9">,</span><span class="mtk1">time_elapsed</span><span class="mtk9">,</span><span class="mtk1"> lat</span><span class="mtk9">,</span><span class="mtk1"> long</span><span class="mtk9">)</span></span><br/></code></pre>
+<p>The <code>endTrip</code> API is used to end the trip.</p>
