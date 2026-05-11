@@ -66,11 +66,13 @@ To dive deep, we have a detailed chapter on an <a href="https://www.educative.io
 These distributed counters are known as <strong>sharded counters</strong>. These counters also help in another real-time problem named the <strong>Top-k</strong> problem. Let’s discuss an example of Twitter’s Top-k problems: trends and timeline.</p>
 <p><strong>Trends</strong>: Twitter shows Top-k trends (hashtags or keywords) locally and globally. Here, “locally” refers to when a topic or hashtag is used within the exact location where the requested user is active. Alternatively, “globally” refers to when the particular hashtag is used worldwide. There is a possibility that users from some regions are not using a specific hashtag in their Tweets but get this hashtag in their trends timeline. Hashtags with the maximum frequency (counts) become trends both locally and globally. Furthermore, Twitter shows various promoted trends (known as “paid trends”) in specified regions under trends. The below slides represent hashtags in the sliding window selected as Top-k trends over time.</p>
 
-<figure class="diagram"><img src="/images/31/4/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/31/4/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/31/4/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/31/4/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/31/4/img_9.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/31/4/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/31/4/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/31/4/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/31/4/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/31/4/img_9.svg" alt="" loading="lazy" /></figure>
+</div>
 <p><strong>Timeline</strong>: Twitter shows two types of timelines: home and user timelines. Here, we’ll discuss the home timeline that displays a stream of Tweets posted by the followed accounts. The decision to show Top-k Tweets in the timeline includes followed accounts Tweets and Tweets that are liked or Retweeted by the followed accounts. There’s also another category of promoted Tweets displayed in the home timeline.</p>
 <p>Sharded counters solve the discussed problems efficiently. We can also place shards of the specified counter near the user to reduce latency and increase overall performance like <strong>CDN</strong>. Another benefit we can get is a frequent response to the users when they interact (like or view) with a Tweet. The nearest servers managing various shards of the respective counters are continuously updating the like or view counts with short refresh intervals. We should note, however, that the near real-time counts will update on the Tweets with a long refresh interval. The reason is the application server waits for multiple counts submitted by the various servers placed in different regions. We have a detailed chapter on <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6071347163955200" target="_blank">Sharded Counters</a>, explaining how it works in real-time applications.</p>
 

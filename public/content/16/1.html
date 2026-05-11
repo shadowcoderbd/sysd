@@ -10,8 +10,10 @@
 <p>Under normal circumstances, this abstraction performs fine. However, as the number of users increases, the database queries also increase. And as a result, the service providers are overburdened, resulting in slow performance.</p>
 <p>In such cases, a <strong>cache</strong> is added to the system to deal with performance deterioration. A cache is a temporary data storage that can serve data faster by keeping data entries in memory. Caches store only the most frequently accessed data. When a request reaches the serving host, it retrieves data from the cache (<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cache hit</span></span>) and serves the user. However, if the data is unavailable in the cache (<span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">cache miss</span></span>), the data will be queried from the database. Also, the cache is populated with the new value to avoid cache misses for the next time.</p>
 
-<figure class="diagram"><img src="/images/16/1/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/16/1/img_1.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="2">
+<figure class="diagram slide"><img src="/images/16/1/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/16/1/img_1.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>A cache is a nonpersistent storage area used to keep repeatedly read and written data, which provides the end user with lower latency. Therefore, a cache must serve data from a storage component that is fast, has enough storage, and is affordable in terms of dollar cost as we scale the caching service. The following illustration highlights the suitability of RAM as the raw building block for caching:</p>
 
 <figure class="diagram"><img src="/images/16/1/img_2.svg" alt="An approximation that depicts how RAM is the optimal choice for serving cached data" loading="lazy" /><figcaption>An approximation that depicts how RAM is the optimal choice for serving cached data</figcaption></figure>

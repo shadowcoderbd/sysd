@@ -51,10 +51,12 @@
 <p>Let’s see how the end user gets the content on their device. Since we have the chunks of videos already deployed near users, we redirect users to the nearest available chunks. As shown below, whenever a user requests content that YouTube has recognized as popular, YouTube redirects the user to the nearest CDN.</p>
 <p>However, in the case of non-popular content, the user is served from colocation sites or YouTube’s data center where the content is stored initially. We have already learned how YouTube can reduce latency times by having distributed caches at different design layers.</p>
 
-<figure class="diagram"><img src="/images/26/5/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/26/5/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/26/5/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/26/5/img_7.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="4">
+<figure class="diagram slide"><img src="/images/26/5/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/26/5/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/26/5/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/26/5/img_7.svg" alt="" loading="lazy" /></figure>
+</div>
 <h3 id="Adaptive-streaming">Adaptive streaming<a href="#Adaptive-streaming"><span>#</span></a></h3>
 <p>While the content is being served, the bandwidth of the user is also being monitored at all times. Since the video is divided into chunks of different qualities, each of the same time frame, the chunks are provided to clients based on changing network conditions.</p>
 <p>As shown below, when the bandwidth is high, a higher quality chunk is sent to the client and vice versa.</p>

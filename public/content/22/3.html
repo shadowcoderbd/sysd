@@ -97,9 +97,11 @@ The log accumulator fetches the data from every application and sends it to the 
 
 -->
 
-<figure class="diagram"><img src="/images/22/3/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/22/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/22/3/img_4.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="3">
+<figure class="diagram slide"><img src="/images/22/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/22/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/22/3/img_4.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>3 of 3
 We should be mindful that data can be lost in the process of logging huge amounts of messages. There is a trade-off between user-perceived latency and the guarantee that log data persists. For lower latency, log services often keep data in RAM and persist them asynchronously. Additionally, we can minimize data loss by adding redundant log accumulators to handle growing concurrent users.</p>
 

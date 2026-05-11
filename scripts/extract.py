@@ -196,8 +196,50 @@ def extract_table_html(table_container, chapter_idx: int, lesson_idx: int, img_c
     return str(table_copy), img_counter
 
 
+def save_inline_svg(svg_element, chapter_idx: int, lesson_idx: int, img_counter: int) -> str | None:
+    """Save an inline <svg> element as a .svg file, return relative path."""
+    svg_str = str(svg_element)
+    if len(svg_str) < 200:
+        return None
+
+    img_dir = IMAGES_DIR / str(chapter_idx) / str(lesson_idx)
+    img_dir.mkdir(parents=True, exist_ok=True)
+
+    filename = f"img_{img_counter}.svg"
+    img_path = img_dir / filename
+    img_path.write_text(svg_str, encoding="utf-8")
+
+    return f"/images/{chapter_idx}/{lesson_idx}/{filename}"
+
+
+def extract_slide_block(container, chapter_idx: int, lesson_idx: int, img_counter: int) -> tuple[str, int]:
+    """Extract Fabric.js canvas slides as individual SVG images."""
+    svg_views = container.find_all("div", class_=lambda c: c and "canvas-svg-viewmode" in str(c))
+    parts = []
+
+    for sv in svg_views:
+        svg = sv.find("svg")
+        if not svg:
+            continue
+        new_src = save_inline_svg(svg, chapter_idx, lesson_idx, img_counter)
+        if new_src:
+            img_counter += 1
+            parts.append(f'<figure class="diagram slide"><img src="{new_src}" alt="" loading="lazy" /></figure>')
+
+    if parts:
+        slide_count = len(parts)
+        slides_html = "\n".join(parts)
+        return f'<div class="slide-group" data-slides="{slide_count}">\n{slides_html}\n</div>', img_counter
+    return "", img_counter
+
+
 def extract_other_html(container, chapter_idx: int, lesson_idx: int, img_counter: int) -> tuple[str, int]:
-    """Handle 'other' content blocks - extract any images, skip interactive parts."""
+    """Handle 'other' content blocks - check for slides first, then images."""
+    # Check for Fabric.js slide blocks
+    has_canvas = container.find("div", class_=lambda c: c and "canvas-svg-viewmode" in str(c))
+    if has_canvas:
+        return extract_slide_block(container, chapter_idx, lesson_idx, img_counter)
+
     imgs = container.find_all("img")
     parts = []
 

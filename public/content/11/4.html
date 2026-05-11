@@ -72,11 +72,13 @@ In the DNS redirection approach, the user's request for the IP address of the re
 
 One more issue is there are multiple CDNs; how does a user know which CDN to use as a proxy server. As we know CDN proxy server is not only a single machine. Instead, it consists of a cluster of machines. The reason behind the discussed issues is the users configured proxy servers. If the users configure the edge proxy server, we are not sure whether the users can benefit from a CDN's content distribution. So, we have to look for a solution where the edge proxy servers are configured by another entity instead of users to fully utilize CDN's content distribution. So to redirect a user to the most suitable edge server to utilize the CDNs content distribution to the maximum, we can use an approach called [DNS](https://www.educative.io/pageeditor/10370001/4941429335392256/5728619204182016) **redirection** that was first used by <keyword><word>Akamai</word><meaning>Akamai was the first major CDN provider and became the industry leader.</meaning></keyword>.  -->
 
-<figure class="diagram"><img src="/images/11/4/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/11/4/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/11/4/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/11/4/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/11/4/img_8.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/11/4/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/11/4/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/11/4/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/11/4/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/11/4/img_8.svg" alt="" loading="lazy" /></figure>
+</div>
 <blockquote>
 <p><strong>Note</strong>: The nearest proxy server doesn’t necessarily mean the one that’s geographically the closest. It could be, but it’s not only the geography that matters. Other factors like network distance, bandwidth, and traffic load already on that route also matter.</p>
 </blockquote>

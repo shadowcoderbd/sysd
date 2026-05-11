@@ -32,18 +32,22 @@ If we consistently have more work to do than the available resources, we might h
 <h2 id="Task-idempotency">Task idempotency<a href="#Task-idempotency"><span>#</span></a></h2>
 <p>If the task executes successfully, but for some reason the machine fails to send an acknowledgement, the scheduler will schedule the task again. The task is executed again, and we end up with the wrong result, which means the task was non-idempotent. An example of non-idempotence is shown in the following illustration:</p>
 
-<figure class="diagram"><img src="/images/23/4/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_5.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/23/4/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_5.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>We don’t want the final result to change when executing the task again. This is critical in financial applications while transferring money. We require that tasks are <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">idempotent</span></span>. An idempotent task produces the same result, no matter how many times we execute it. The execution of an idempotent task is shown in the following illustration:</p>
 
-<figure class="diagram"><img src="/images/23/4/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_9.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/23/4/img_10.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/23/4/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/23/4/img_10.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>Let’s make the task of uploading a video to the database an idempotent operation. We don’t want the video to be duplicated in the database in case the uploader didn’t receive the acknowledgment. Idempotency ensures that the video is not duplicated. This property is added in the implementation by the developers where they identify the video by something (for example, its name) and overwrite the old one. This way, no matter how many times someone uploads it, the final result is the same. Idempotency enables us to simply re-execute a failed task.</p>
 
 <div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>

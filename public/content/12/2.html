@@ -41,8 +41,10 @@
 </span></span></div>
 <p>To cater to the problem of a single point of failure, we modify the conventional auto-increment feature that increments by one. Instead of incrementing by one, let’s rely on a value <code>m</code>, where <code>m</code> equals the number of database servers we have. Each server generates an ID, and the following ID adds <code>m</code> to the previous value. This method is scalable and prevents the duplication of IDs. The following image provides a visualization of how a unique ID is generated using a database:</p>
 
-<figure class="diagram"><img src="/images/12/2/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/12/2/img_3.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="2">
+<figure class="diagram slide"><img src="/images/12/2/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/12/2/img_3.svg" alt="" loading="lazy" /></figure>
+</div>
 <h3 id="Pros">Pros<a href="#Pros"><span>#</span></a></h3>
 <p>This approach is scalable. We can add more servers, and the value of <code>m</code> will be updated accordingly.</p>
 <h3 id="Cons">Cons<a href="#Cons"><span>#</span></a></h3>

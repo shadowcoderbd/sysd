@@ -4,9 +4,11 @@
 <p>For example, let’s consider that we have four nodes, and we want 25% of the requests to go to each node to balance the load equally. The traditional way to solve this is through the modulus operator. When a request comes in, we assign a request ID, calculate its hash, and find the remainder by taking the modulus with the number of nodes available. The remainder value is the node number, and we send the request to that node to process it.</p>
 <p>The following slides explain this process:</p>
 
-<figure class="diagram"><img src="/images/10/3/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_2.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="3">
+<figure class="diagram slide"><img src="/images/10/3/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_2.svg" alt="" loading="lazy" /></figure>
+</div>
 <p></p>
 <p>We want to add and remove nodes with minimal change in our infrastructure. But in this method, when we add or remove a node, we need to move a lot of keys. This is inefficient. For example, node 2 is removed, and suppose for the same request ID, the new server to process a request will be node 1 because <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>10</mn><mi mathvariant="normal">%</mi><mn>3</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">10 \% 3 = 1</annotation></semantics></math></span><span aria-hidden="true" class="katex-html"><span class="base"><span class="strut" style="height:0.8056em; vertical-align:-0.0556em"></span><span class="mord">10%3</span><span class="mspace"></span><span class="mrel">=</span><span class="mspace"></span></span><span class="base"><span class="strut" style="height:0.6444em"></span><span class="mord">1</span></span></span></span>. Nodes hold information in their local caches, like keys and their values. So, we need to move that request’s data to the next node that has to process the request. But this replication can be costly and can cause high latency.</p>
 <p>Next, we’ll learn how to copy data efficiently.</p>
@@ -19,11 +21,13 @@
 </span><p>Whenever a new node is added to the ring, the immediate next node is affected. It has to share its data with the newly added node while other nodes are unaffected. It’s easy to scale since we’re able to keep changes to our nodes minimal. This is because only a small portion of overall keys need to move. The hashes are randomly distributed, so we expect the load of requests to be random and distributed evenly on average on the ring.</p>
 <!--https://www.youtube.com/watch?v=tHEyzVbl4bg 4:30 -->
 
-<figure class="diagram"><img src="/images/10/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_7.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/10/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_7.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>The primary benefit of consistent hashing is that as nodes join or leave, it ensures that a minimal number of keys need to move. However, the request load isn’t equally divided in practice. Any server that handles a large chunk of data can become a bottleneck in a distributed system. That node will receive a disproportionately large share of data storage and retrieval requests, reducing the overall system performance. As a result, these are referred to as hotspots.</p>
 <p>As shown in the figure below, most of the requests are between the N4 and N1 nodes. Now, N1 has to handle most of the requests compared to other nodes, and it has become a hotspot. That means non-uniform load distribution has increased load on a single server.</p>
 <blockquote>
@@ -53,11 +57,13 @@ Caption 5: (add arrow) The request will be processed by the virtual node of Node
 ![](/api/collection/10370001/4941429335392256/page/5256346714243072/image/6552740175544320?page_type=collection_lesson)
 -->
 
-<figure class="diagram"><img src="/images/10/3/img_9.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_10.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_11.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_12.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/10/3/img_13.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/10/3/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_10.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_11.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_12.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/10/3/img_13.svg" alt="" loading="lazy" /></figure>
+</div>
 <h5 id="Advantages-of-virtual-nodes">Advantages of virtual nodes<a href="#Advantages-of-virtual-nodes"><span>#</span></a></h5>
 <p>Following are some advantages of using virtual nodes:</p>
 <ul>

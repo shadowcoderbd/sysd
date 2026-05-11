@@ -68,11 +68,13 @@ Segments help identify the start and end of a message using an offset address. U
 <figure class="diagram"><img src="/images/18/3/img_2.svg" alt="A depiction of how messages are stored within segments inside a partition" loading="lazy" /><figcaption>A depiction of how messages are stored within segments inside a partition</figcaption></figure>
 <p>As we know, a <strong>topic</strong> is a persistent sequence of messages stored in the local storage of the broker.  Once the data has been added to the topic, it cannot be modified. Reading and writing a message from or to a topic is an I/O task for computers, and scaling such tasks is challenging. This is the reason we split the topics into multiple partitions. The data belonging to a single topic can be present in numerous partitions. For example, let’s assume have Topic A and we allocate three partitions for it. The producers will send their messages to the relevant topic. The messages received will be sent to various partitions on basis of the <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">round-robin algorithm</span></span>. We’ll use a variation of round-robin: <span><span class="border-0 border-b-2 border-solid border-black cursor-pointer dark:border-dark-contrastText">weighted round-robin</span></span>. The following slides show how the messages are stored in various partitions belonging to a single topic.</p>
 
-<figure class="diagram"><img src="/images/18/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_7.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/18/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_7.svg" alt="" loading="lazy" /></figure>
+</div>
 <div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Points to Ponder</p>
 </span></span></div>
 <p></p>
@@ -87,13 +89,17 @@ Each message will be stored as a **_segment_**.
 -->
 <p>Consider the slides below. We have various brokers in our system. Each broker has different topics. The topic is divided into multiple partitions.</p>
 
-<figure class="diagram"><img src="/images/18/3/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_9.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_10.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="3">
+<figure class="diagram slide"><img src="/images/18/3/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_10.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>We discussed that a message will be stored in a segment. We’ll identify each segment using an offset. Since these are immutable records, the readers are independent and they can read messages anywhere from this file using the necessary API functions. The following slides show the segment level detail.</p>
 
-<figure class="diagram"><img src="/images/18/3/img_11.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/18/3/img_12.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="2">
+<figure class="diagram slide"><img src="/images/18/3/img_11.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/18/3/img_12.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>The broker solved the problems that our first design had. We avoided a large number of queues by partitioning the topic. We introduced parallelism using partitions that avoided bottlenecks while consuming the message.</p>
 <h2 id="Cluster-manager">Cluster manager<a href="#Cluster-manager"><span>#</span></a></h2>
 <p>We’ll have multiple brokers in our cluster. The cluster manager will perform the following tasks:</p>

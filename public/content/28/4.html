@@ -38,11 +38,13 @@
 <p>Suppose the aerial distance between the source and the destination is 10 kilometers. In that case, we can include segments that are at a distance of 10 kilometers from the source and destination in each direction. This is a significant improvement over the large graph.</p>
 <p>Once the number of segments is limited, we can constrain our graph so that the vertices of the graph are the exit points of each segment, and the calculated paths between <!--the two points and all of the -->the exit points are the graph’s edges. All we have to do now is run the shortest path algorithm on this graph to find the route. The following illustration shows how we find the path between two points that lie in different segments.</p>
 
-<figure class="diagram"><img src="/images/28/4/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/28/4/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/28/4/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/28/4/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/28/4/img_9.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/28/4/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/28/4/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/28/4/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/28/4/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/28/4/img_9.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>Let’s summarize how we met the challenge of scalability. We divided our problem so that instead of working on a large road network as a whole, we worked on parts (segments) of it. The queries for a specific part of the road network are processed on that part only, and for the queries that require processing more than one part of the network, we connect those parts, as we have shown above.</p>
 <h3 id="ETA-computation">ETA computation<a href="#ETA-computation"><span>#</span></a></h3>
 <p>For computing the ETA with reasonable accuracy, we collect the live location data (<code>(userID, timestamp,(latitude, longitude))</code>) from the navigation service through a pub-sub system. With location data streams, we can calculate and predict traffic patterns on different roads. Some of the things that we can calculate are:</p>

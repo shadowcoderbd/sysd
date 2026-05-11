@@ -43,11 +43,13 @@ The following illustration explains how the service work to generate a timeline.
 <p>When a user opens their Instagram, we send a request for timeline generation. First, we fetch the list of people the user follows, get the photos they recently posted, store them in queues, and display them to the user. But this approach is slow to respond as we generate a timeline every time the user opens Instagram.</p>
 <p>We can substantially reduce user-perceived latency by generating the timeline offline. For example, we define a service that fetches the relevant data for the user before, and as the person opens Instagram, it displays the timeline. This decreases the latency rate to show the timeline. Let’s take a look at the slides below to understand the problem and its solution.</p>
 
-<figure class="diagram"><img src="/images/33/4/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/33/4/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/33/4/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/33/4/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/33/4/img_6.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/33/4/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/33/4/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/33/4/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/33/4/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/33/4/img_6.svg" alt="" loading="lazy" /></figure>
+</div>
 <p></p>
 <div class="overflow-x-auto w-full sc-6cd01bf8-1 cWRwHH" height="auto"><span class="text-base"><span class="markdownViewerQuiz Widget_markdown-default__ltKUN Widget_markdown-table__V8_WO Widget_quiz-viewer__u43LK text-gray-700 dark:text-gray-600"><p>Point to Ponder</p>
 </span></span></div>

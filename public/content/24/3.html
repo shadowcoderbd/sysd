@@ -27,20 +27,24 @@
 <p>One way to solve the above problem is to use a round-robin selection of shards. For example, let’s assume the number of shards is 100. The system starts with shard_1, then shard_2, and continues until it reaches shard_100. Usually, round-robin work allocation either overloads or underutilizes resources because scheduling is done without considering the current load conditions. However, if each request is similar (and roughly needs the same time to serve), a round-robin approach can be used and is attractive for its simplicity.</p>
 <p>In the following illustrations, we assume that user requests are first handed out to an appropriate server by the load balancer. Then, each such server uses its own round-robin scheduling to use a shard:</p>
 
-<figure class="diagram"><img src="/images/24/3/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_4.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/24/3/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_4.svg" alt="" loading="lazy" /></figure>
+</div>
 <h4 id="Random-selection">Random selection<a href="#Random-selection"><span>#</span></a></h4>
 <p>Another simple approach can be to uniformly and randomly select a shard for writing. The challenge with both round-robin selection and random selection is with variable load changes on the nodes (where shards are hosted). It is hard to appropriately distribute the load on available shards. Load variability on nodes is common because a physical node is often being used for multiple purposes.</p>
 <h4 id="Metrics-based-selection">Metrics-based selection<a href="#Metrics-based-selection"><span>#</span></a></h4>
 <p>The third approach is shard selection based on specific metrics. For example, a dedicated node (load balancer) manages the selection of the shards by reading the shards’ status. The below slides go over how sharded counters are created:</p>
 
-<figure class="diagram"><img src="/images/24/3/img_5.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_8.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="4">
+<figure class="diagram slide"><img src="/images/24/3/img_5.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_8.svg" alt="" loading="lazy" /></figure>
+</div>
 <h3 id="Manage-read-requests">Manage read requests<a href="#Manage-read-requests"><span>#</span></a></h3>
 <p>When the user sends the read request, the system will aggregate the value of all shards of the specified counter to return the total count of the feature (such as like or reply). Accumulating values from all the shards on each read request will result in low read throughput and high read latency.</p>
 <p>The decision of when the system will sum all shards values is also very critical. If there is high write traffic along with reads, it might be virtually impossible to get a real current value because by the time we report a read value to the client, it will have already changed. So, periodically reading all the shards of a counter and caching it should serve most of the use cases. By reducing the accumulation period, we can increase the accuracy of read values.</p>
@@ -81,11 +85,13 @@ Sharded counters placement is an important concern. When all sharded counters ma
 <p>We also need storage for the sharded counters, which store all information about them with their metadata. The Redis or Memcache servers can play a vital role here. For example, each tweet’s unique ID can become the key, and the value of this key can be a counter ID, or a list of counters’ IDs (like counter, reply counter, and so on). Furthermore, each counter ID has its own key-value store where the counter (for example, a likes counter) ID is a key and the value is a list of assigned shards.</p>
 <p>The job of identifying the relevant counter and mapping all write requests to the appropriate counter in sharded counters can be done in parallel. We map the all-write request to the appropriate counter, and then each counter chooses a shard randomly based on some metrics to do increments and decrements. In contrast, we reduce periodically to aggregate the value of all shards of the particular counter. Then, these counter values can be stored in the Cassandra store. The slides below help illustrate these points:</p>
 
-<figure class="diagram"><img src="/images/24/3/img_10.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_11.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_12.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_13.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/24/3/img_14.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/24/3/img_10.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_11.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_12.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_13.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/24/3/img_14.svg" alt="" loading="lazy" /></figure>
+</div>
 <h2 id="Evaluation-of-the-sharded-counters">Evaluation of the sharded counters<a href="#Evaluation-of-the-sharded-counters"><span>#</span></a></h2>
 <p>This section will evaluate the sharded counters and explain how sharded counters will increase performance by providing high availability and scalability.</p>
 <h3 id="Availability">Availability<a href="#Availability"><span>#</span></a></h3>

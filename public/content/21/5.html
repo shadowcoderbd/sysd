@@ -62,11 +62,13 @@ There are two phases in MapReduce.
 The nodes that are used in the map phase are called mappers. Mappers run the map function. The nodes that are used in the reduce phase are called reducers. Reducers run the reduce function.
 
 Mappers and reducers are not separate sets of nodes. The master identifies the idle nodes. The same node can be a mapper in the map phase and a reducer in the reduce phase. And there are often other jobs that run in parallel with index construction, so a node might do some crawling or another unrelated task between being a mapper and a reducer.-->
-<figure class="diagram"><img src="/images/21/5/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/21/5/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/21/5/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/21/5/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/21/5/img_5.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/21/5/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/21/5/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/21/5/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/21/5/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/21/5/img_5.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>To keep it simple, we have just shown two indicators for each term in the above illustration: the list of documents in which the term appears and the list of the frequency of the term in each document (refer to <a href="https://www.educative.io/collection/page/10370001/4941429335392256/6595902341120000" target="_blank">Indexing</a> for details).</p>
 <!--
 The `map` function takes documents as input and emits a sequence of (term, mapping) pairs for the docs it has. Mappers save the output temporarily on their local storage.

@@ -12,11 +12,13 @@ descriptors:
                request_per_unit: 5Enter to Rename, Shift+Enter to PreviewRate-limiting rules from Lyft</p>
 <p>In the above rate-limiting rule, the <code>unit</code> is set to <code>day</code> and the <code>request_per_unit</code> is set to <code>5</code>. These parameters define that the system can allow five marketing messages per day.</p>
 
-<figure class="diagram"><img src="/images/19/3/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_4.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/19/3/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_4.svg" alt="" loading="lazy" /></figure>
+</div>
 <h2 id="Detailed-design">Detailed design<a href="#Detailed-design"><span>#</span></a></h2>
 <p>The high-level design given above does not answer the following questions:</p>
 <ul>
@@ -60,10 +62,12 @@ descriptors:
 <table class="table-fixed mx-px"><colgroup><col width="197"/><col width="172"/><col width="141"/></colgroup><tbody><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Request ID</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Maximum Limit</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(30, 30, 39)"><p class="ql-align-center">Count</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">100</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">5</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">4</p></td></tr><tr><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">101</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">5</p></td><td class="relative px-3 py-2 align-top" style="background-color: rgb(21, 21, 30)"><p class="ql-align-center">3</p></td></tr></tbody></table>
 <p>If the condition is true, the rate limiter will first respond back to the front-end server with an <code>Allowed</code> signal. The corresponding <code>count</code> and other relevant information are updated offline in the next steps. The rate limiter writes back the updated data in the cache. Following this approach reduces latency and avoids the contention that incoming requests could have caused.</p>
 
-<figure class="diagram"><img src="/images/19/3/img_6.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/19/3/img_9.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="4">
+<figure class="diagram slide"><img src="/images/19/3/img_6.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/19/3/img_9.svg" alt="" loading="lazy" /></figure>
+</div>
 <blockquote>
 <p><strong>Note:</strong> We’ve seen a form of rate limiting in TCP network protocol, where the recipient can throttle the sender by advertising the size of the window (the outstanding data a recipient is willing to receive). The sender sends the minimum value of either the congestion window or the advertised window. Many network traffic shapers use similar mechanisms to provide preferential treatment to different network flows.</p>
 </blockquote>

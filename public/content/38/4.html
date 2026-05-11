@@ -36,8 +36,10 @@
 <p><strong>Operational transformation (OT)</strong> is a technique that’s widely used for conflict resolution in collaborative editing. OT emerged in 1989 and has improved throughout the years. It’s a lock-free and non-blocking approach for conflict resolution. If operations between collaborators conflict, OT resolves conflicts and pushes the correct converged state to end users. As a result, OT provides consistency for users.</p>
 <p>OT performs operations using the positional index method to resolve conflicts, such as the ones we discussed above. OT resolves the problems above by holding commutativity and idempotency.</p>
 
-<figure class="diagram"><img src="/images/38/4/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/38/4/img_4.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="2">
+<figure class="diagram slide"><img src="/images/38/4/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/38/4/img_4.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>Collaborative editors based on OT are consistent if they have the following two properties:</p>
 <ul>
 <li><strong>Causality preservation</strong>: If operation <code>a</code> happened before operation <code>b</code>, then operation <code>a</code> is executed before operation <code>b</code>.</li>

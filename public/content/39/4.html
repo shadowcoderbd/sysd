@@ -16,11 +16,13 @@
 </ul>
 <p>The following slides show the series of events that led to the outage.</p>
 
-<figure class="diagram"><img src="/images/39/4/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/39/4/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/39/4/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/39/4/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/39/4/img_4.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/39/4/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/39/4/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/39/4/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/39/4/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/39/4/img_4.svg" alt="" loading="lazy" /></figure>
+</div>
 <h2 id="Analysis">Analysis<a href="#Analysis"><span>#</span></a></h2>
 <ul>
 <li><strong>Hampered AWS services</strong>: The networking difficulties affected a variety of AWS services, impacting customers that utilized these service capabilities. Since the primary AWS network remained unaffected, certain client applications that don’t depend on these capabilities suffered relatively minor consequences as a result of this occurrence. AWS users, such as Amazon RDS, EMR, and Workspaces, were unable to generate new resources due to the inability of the system to launch new EC2 instances.</li>

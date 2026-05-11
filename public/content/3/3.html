@@ -17,11 +17,13 @@
 <h2 id="Eventual-consistency">Eventual consistency<a href="#Eventual-consistency"><span>#</span></a></h2>
 <p><strong>Eventual consistency</strong> is the weakest consistency model. The applications that don’t have strict ordering requirements and don’t require reads to return the latest write choose this model. Eventual consistency ensures that all the replicas will eventually return the same value to the read request, but the returned value isn’t meant to be the latest value. However, the value will finally reach its latest state.</p>
 
-<figure class="diagram"><img src="/images/3/3/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_2.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_3.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_4.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_5.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/3/3/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_2.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_3.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_4.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_5.svg" alt="" loading="lazy" /></figure>
+</div>
 <p></p>
 <p>Eventual consistency ensures <strong>high availability</strong>. <!-- But with eventual consistency, If the node that has the latest write fails, we can lose that write.--></p>
 <p><strong>Example</strong></p>
@@ -57,11 +59,13 @@ https://www.youtube.com/watch?v=_Jv4H0GI1ls -->
 <p>A <strong>strict consistency</strong> or <strong>linearizability</strong> is the strongest consistency model. This model ensures that a read request from any replicas will get the latest write value. Once the client receives the acknowledgment that the write operation has been performed, other clients can read that value.</p>
 <p>Linearizability is not obvious in a distributed system. This is shown in the following illustration:</p>
 
-<figure class="diagram"><img src="/images/3/3/img_7.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_8.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_9.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_10.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/3/3/img_11.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="5">
+<figure class="diagram slide"><img src="/images/3/3/img_7.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_8.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_9.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_10.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/3/3/img_11.svg" alt="" loading="lazy" /></figure>
+</div>
 <p>Synchronous replication ensures linearizability, in which an acknowledgment is not sent to the client until the new value is written to all replicas.</p>
 <p>Linearizability affects the system’s availability, which is why it’s not always used. Applications with strong consistency requirements use techniques like <strong>quorum-based replication</strong> to increase the system’s availability.</p>
 <p><strong>Example</strong></p>

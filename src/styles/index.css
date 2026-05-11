@@ -307,6 +307,70 @@
   display: none;
 }
 
+/* Slide groups - show one at a time with navigation */
+.lesson-content .slide-group {
+  position: relative;
+  margin: 1.5rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.lesson-content .slide-group figure.slide {
+  margin: 0;
+  display: none;
+}
+
+.lesson-content .slide-group figure.slide.active {
+  display: block;
+}
+
+.lesson-content .slide-group figure.slide img {
+  border: none;
+  border-radius: 0;
+  padding: 1rem;
+}
+
+.slide-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--border);
+  background: var(--muted);
+  font-size: 0.875rem;
+}
+
+.slide-nav button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.375rem;
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.slide-nav button:hover {
+  background: var(--accent);
+}
+
+.slide-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.slide-nav span {
+  color: var(--muted-foreground);
+  min-width: 4rem;
+  text-align: center;
+}
+
 /* Code block syntax tokens (from Educative VS dark theme) */
 .lesson-content .mtk1 { color: var(--foreground); }
 .lesson-content .mtk9 { color: var(--muted-foreground); }

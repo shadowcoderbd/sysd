@@ -10,9 +10,11 @@
 <h3 id="Maintain-cache-servers-list">Maintain cache servers list<a href="#Maintain-cache-servers-list"><span>#</span></a></h3>
 <p>Let’s start by resolving the first problem. We’ll take incremental steps toward the best possible solution. Let’s look at the following slides to get an idea of each of the solutions described below:</p>
 
-<figure class="diagram"><img src="/images/16/4/img_0.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/16/4/img_1.svg" alt="" loading="lazy" /></figure>
-<figure class="diagram"><img src="/images/16/4/img_2.svg" alt="" loading="lazy" /></figure>
+<div class="slide-group" data-slides="3">
+<figure class="diagram slide"><img src="/images/16/4/img_0.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/16/4/img_1.svg" alt="" loading="lazy" /></figure>
+<figure class="diagram slide"><img src="/images/16/4/img_2.svg" alt="" loading="lazy" /></figure>
+</div>
 <ul>
 <li><strong>Solution 1</strong>: It’s possible to have a configuration file in each of the service hosts where the cache clients reside. The configuration file will contain the updated health and metadata required for the cache clients to utilize the cache servers efficiently. Each copy of the configuration service can be updated through a push service by any DevOps tool. The main problem with this strategy is that the configuration file will have to be manually updated and deployed through some DevOps tools.</li>
 <li><strong>Solution 2</strong>: We can store the configuration file in a centralized location that the cache clients can use to get updated information about cache servers. This solves the deployment issue, but we still need to manually update the configuration file and monitor the health of each server.</li>
