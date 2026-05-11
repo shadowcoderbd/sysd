@@ -19,8 +19,10 @@ export function getLesson(chapterSlug: string, lessonSlug: string): { chapter: C
   return { chapter, lesson };
 }
 
+const BASE = import.meta.env.BASE_URL;
+
 export async function fetchLessonHtml(htmlFile: string): Promise<string> {
-  const resp = await fetch(`/${htmlFile}`);
+  const resp = await fetch(`${BASE}${htmlFile}`);
   if (!resp.ok) throw new Error(`Failed to load lesson: ${resp.statusText}`);
   return resp.text();
 }

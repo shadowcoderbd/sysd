@@ -39,7 +39,9 @@ export function useLesson(): UseLessonResult {
     fetchLessonHtml(result.lesson.htmlFile)
       .then((data) => {
         if (!cancelled) {
-          setHtml(data);
+          const base = import.meta.env.BASE_URL;
+          const fixed = data.replace(/src="\/images\//g, `src="${base}images/`);
+          setHtml(fixed);
           setLoading(false);
         }
       })
