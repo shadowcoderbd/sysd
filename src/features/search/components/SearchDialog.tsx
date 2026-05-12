@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { useSearch } from "../hooks/useSearch";
@@ -49,11 +50,11 @@ export function SearchDialog() {
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={() => setOpen(false)}>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center" onClick={() => setOpen(false)}>
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-xs" />
       <div
-        className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-background shadow-2xl"
+        className="relative z-10 mx-4 w-full max-w-lg rounded-xl border border-border bg-background shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 border-b border-border px-4 py-3">
@@ -90,6 +91,7 @@ export function SearchDialog() {
           <div className="px-4 py-8 text-center text-sm text-muted-foreground">No results found.</div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
