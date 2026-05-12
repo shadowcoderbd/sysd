@@ -20,7 +20,7 @@ export function RootLayout() {
         {/* Mobile sidebar */}
         <Sheet open={isOpen} onOpenChange={(open) => !open && close()}>
           <SheetContent side="left" className="w-72 p-0">
-            <div className="pt-12">
+            <div className="h-full overflow-hidden pt-12">
               <Sidebar />
             </div>
           </SheetContent>
